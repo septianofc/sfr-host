@@ -1,0 +1,6 @@
+{
+  "name": "SFR Host",
+  "description": "Aplikasi web hosting Android native dengan HTTP server lokal, tunneling, file manager, dan remote notifications.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
