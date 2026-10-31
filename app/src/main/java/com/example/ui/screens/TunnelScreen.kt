@@ -83,6 +83,7 @@ import com.example.tunnel.CloudflareTunnelRunner
 import com.example.tunnel.InstallStage
 import com.example.tunnel.TunnelLog
 import com.example.tunnel.TunnelState
+import com.example.ui.theme.SfrButtonColors
 import com.example.ui.theme.SfrPrimaryBlue
 import com.example.ui.theme.SfrSecondaryOrange
 import com.example.ui.theme.StatusOfflineRed
@@ -213,22 +214,22 @@ fun TunnelScreen(
                         if (isTunnelActive) {
                             Button(
                                 onClick = onStopTunnel,
-                                colors = ButtonDefaults.buttonColors(containerColor = StatusOfflineRed),
+                                colors = ButtonDefaults.buttonColors(containerColor = SfrButtonColors.DangerRed),
                                 shape = RoundedCornerShape(10.dp)
                             ) {
                                 Icon(Icons.Default.Stop, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Putuskan", fontSize = 12.sp)
+                                Text("Putuskan", fontSize = 12.sp, color = Color.White)
                             }
                         } else {
                             Button(
                                 onClick = onStartTunnel,
-                                colors = ButtonDefaults.buttonColors(containerColor = SfrPrimaryBlue),
+                                colors = ButtonDefaults.buttonColors(containerColor = SfrButtonColors.PrimaryBlue),
                                 shape = RoundedCornerShape(10.dp)
                             ) {
                                 Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Hubungkan", fontSize = 12.sp)
+                                Text("Hubungkan", fontSize = 12.sp, color = Color.White)
                             }
                         }
                     }

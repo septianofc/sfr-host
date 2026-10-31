@@ -72,7 +72,7 @@ object DefaultWebPages {
                         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
                     }
                     h1 {
-                        font-size: 26px;
+                        font-size: 24px;
                         font-weight: 700;
                         color: #f8fafc;
                         margin-bottom: 8px;
@@ -154,7 +154,87 @@ object DefaultWebPages {
                     <div class="footer">
                         Host Server HP Android • <strong>SFR Host</strong><br>
                         Dikelola oleh <strong>Septian Fathur Rohman</strong><br>
-                        <a href="https://sfrhost.septianfr.web.id/download" target="_blank">Unduh Aplikasi SFR Host</a>
+                        <a href="https://github.com/septianofc/sfr-host" target="_blank">Repository Resmi SFR Host</a>
+                    </div>
+                </div>
+            </body>
+            </html>
+        """.trimIndent()
+    }
+
+    fun getDefaultWelcomePage(websiteName: String, docRoot: String): String {
+        return """
+            <!DOCTYPE html>
+            <html lang="id">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Selamat Datang di $websiteName - SFR Host</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+                    body {
+                        background: linear-gradient(135deg, #0b132b 0%, #1c2541 100%);
+                        color: #f1f5f9;
+                        min-height: 100vh;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 24px;
+                    }
+                    .card {
+                        max-width: 560px;
+                        width: 100%;
+                        background: rgba(30, 41, 59, 0.85);
+                        backdrop-filter: blur(16px);
+                        border: 1px solid rgba(255, 255, 255, 0.12);
+                        border-radius: 24px;
+                        padding: 40px 32px;
+                        text-align: center;
+                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+                    }
+                    .badge {
+                        display: inline-block;
+                        padding: 6px 16px;
+                        background: #2E7D32;
+                        color: #ffffff;
+                        font-weight: 800;
+                        font-size: 13px;
+                        border-radius: 999px;
+                        margin-bottom: 16px;
+                        letter-spacing: 1px;
+                    }
+                    h1 { font-size: 26px; color: #f8fafc; margin-bottom: 8px; }
+                    .subtitle { font-size: 14px; color: #94a3b8; margin-bottom: 24px; }
+                    .info-box {
+                        background: rgba(15, 23, 42, 0.7);
+                        border-radius: 14px;
+                        padding: 16px 20px;
+                        text-align: left;
+                        border-left: 4px solid #42A5F5;
+                        margin-bottom: 24px;
+                        font-size: 13px;
+                        line-height: 1.8;
+                    }
+                    .info-box code { color: #38bdf8; font-family: monospace; }
+                    .footer { font-size: 12px; color: #64748b; margin-top: 24px; }
+                    .footer a { color: #42A5F5; text-decoration: none; }
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <div style="margin-bottom: 16px;">$LOGO_SVG</div>
+                    <span class="badge">SERVER AKTIF (ONLINE)</span>
+                    <h1>Website Berhasil Dibuat!</h1>
+                    <p class="subtitle">Hosting berjalan normal di HP Android menggunakan <strong>SFR Host</strong></p>
+                    <div class="info-box">
+                        <p><strong>Website:</strong> $websiteName</p>
+                        <p><strong>Document Root:</strong> <code>$docRoot</code></p>
+                        <p><strong>Langkah Selanjutnya:</strong></p>
+                        <p>Silakan buka tab <strong>File Manager</strong> di aplikasi SFR Host, lalu unggah atau buat berkas <code>index.php</code> atau <code>index.html</code> Anda di folder <code>public_html</code>.</p>
+                    </div>
+                    <div class="footer">
+                        Powered by <strong>SFR Host</strong> (Android Self-Hosting)<br>
+                        <a href="https://github.com/septianofc/sfr-host" target="_blank">Repository GitHub SFR Host</a>
                     </div>
                 </div>
             </body>
@@ -164,25 +244,29 @@ object DefaultWebPages {
 
     private fun getBadgeColor(statusCode: Int): String {
         return when (statusCode) {
-            400, 401, 403 -> "#f59e0b"
+            400, 401, 403, 405, 408, 413, 414, 415, 422, 429, 431 -> "#f59e0b"
             404 -> "#ef4444"
-            405, 408, 413, 429 -> "#d97706"
-            500, 502, 503, 504 -> "#dc2626"
+            500, 501, 502, 503, 504 -> "#dc2626"
             else -> "#42a5f5"
         }
     }
 
     private fun getErrorDescriptions(code: Int): Triple<String, String, String> {
         return when (code) {
-            400 -> Triple("Permintaan Tidak Valid", "Bad Request", "Server tidak dapat memproses permintaan ini karena sintaks tidak valid.")
-            401 -> Triple("Otentikasi Diperlukan", "Unauthorized", "Akses ke halaman ini membutuhkan otorisasi.")
+            400 -> Triple("Permintaan Tidak Valid", "Bad Request", "Server tidak dapat memproses permintaan ini karena format sintaks tidak valid.")
+            401 -> Triple("Otentikasi Diperlukan", "Unauthorized", "Akses ke halaman ini membutuhkan otentikasi atau otorisasi yang sah.")
             403 -> Triple("Akses Ditolak", "Forbidden", "Anda tidak memiliki izin untuk mengakses resource atau direktori ini.")
-            404 -> Triple("Halaman Tidak Ditemukan", "Not Found", "File atau halaman yang Anda cari tidak tersedia di document root server ini.")
+            404 -> Triple("Halaman Tidak Ditemukan", "Not Found", "Berkas atau halaman yang Anda minta tidak ditemukan di document root server ini.")
             405 -> Triple("Metode Tidak Diizinkan", "Method Not Allowed", "Metode HTTP yang diminta tidak diizinkan untuk resource ini.")
             408 -> Triple("Waktu Permintaan Habis", "Request Timeout", "Koneksi ke server HP melewati batas waktu tunggu yang ditentukan.")
             413 -> Triple("Ukuran Muatan Terlalu Besar", "Payload Too Large", "Ukuran file atau data yang diunggah melebihi kapasitas batas server SFR Host.")
-            429 -> Triple("Terlalu Banyak Permintaan", "Too Many Requests", "Laju permintaan telah melebihi batas rate limit server.")
+            414 -> Triple("URI Terlalu Panjang", "URI Too Long", "Alamat URI yang diminta melebihi batas panjang yang dapat diproses server.")
+            415 -> Triple("Tipe Media Tidak Didukung", "Unsupported Media Type", "Format data muatan permintaan tidak didukung oleh endpoint server.")
+            422 -> Triple("Entitas Tidak Dapat Diproses", "Unprocessable Entity", "Sintaks permintaan valid namun instruksi tidak dapat diproses oleh server.")
+            429 -> Triple("Terlalu Banyak Permintaan", "Too Many Requests", "Laju permintaan telah melebihi batas rate limit server Android.")
+            431 -> Triple("Field Header Terlalu Besar", "Request Header Fields Too Large", "Ukuran header HTTP yang dikirim melebihi batas alokasi buffer server.")
             500 -> Triple("Kesalahan Server Internal", "Internal Server Error", "Terjadi kesalahan saat memproses skrip website atau skrip PHP di server HP.")
+            501 -> Triple("Belum Diimplementasikan", "Not Implemented", "Server HP tidak mendukung fungsionalitas yang diperlukan untuk memenuhi permintaan.")
             502 -> Triple("Gateway Bermasalah", "Bad Gateway", "Server menerima respons yang tidak valid saat menghubungkan tunnel gateway.")
             503 -> Triple("Layanan Tidak Tersedia", "Service Unavailable", "Web server HP sedang dalam kondisi offline atau kelebihan beban.")
             504 -> Triple("Waktu Gateway Habis", "Gateway Timeout", "Server gateway tidak menerima respons tepat waktu dari server lokal HP.")
@@ -317,7 +401,7 @@ object DefaultWebPages {
                     </table>
                     <div class="footer">
                         Web Server HP Android • <strong>SFR Host</strong> • Dikembangkan oleh Septian Fathur Rohman<br>
-                        <a href="https://sfrhost.septianfr.web.id/download" target="_blank">Unduh Aplikasi SFR Host</a>
+                        <a href="https://github.com/septianofc/sfr-host" target="_blank">Repository Resmi SFR Host</a>
                     </div>
                 </div>
             </body>

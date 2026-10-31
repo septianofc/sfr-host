@@ -31,8 +31,14 @@ object PrefKeys {
     val TRAFFIC_OUT = longPreferencesKey("traffic_out_bytes")
     val FORCE_HTTPS = booleanPreferencesKey("force_https")
     val FLOATING_BAR_ENABLED = booleanPreferencesKey("floating_bar_enabled")
-    val STORAGE_PATH_CUSTOM = stringPreferencesKey("storage_path_custom")
     val HAS_COMPLETED_ONBOARDING = booleanPreferencesKey("has_completed_onboarding")
+    val THEME_MODE = stringPreferencesKey("theme_mode") // SYSTEM, LIGHT, DARK
+    val SCREENSHOT_PROTECTION = booleanPreferencesKey("screenshot_protection")
+    val LOCK_TIMEOUT_MODE = stringPreferencesKey("lock_timeout_mode") // IMMEDIATELY, 1_MIN, 5_MIN, 10_MIN, SCREEN_OFF
+    val PHP_VERSION_PROFILE = stringPreferencesKey("php_version_profile") // PHP 7.4, 8.0, 8.1, 8.2, 8.3
+    val PHP_MEMORY_LIMIT = stringPreferencesKey("php_memory_limit") // 128M, 256M, 512M
+    val PHP_UPLOAD_MAX = stringPreferencesKey("php_upload_max") // 10M, 50M, 100M
+    val PHP_DISPLAY_ERRORS = booleanPreferencesKey("php_display_errors")
 }
 
 class DataStoreManager(private val context: Context) {
@@ -180,5 +186,61 @@ class DataStoreManager(private val context: Context) {
 
     suspend fun setCompletedOnboarding(completed: Boolean) {
         context.dataStore.edit { it[PrefKeys.HAS_COMPLETED_ONBOARDING] = completed }
+    }
+
+    val themeMode: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[PrefKeys.THEME_MODE] ?: "SYSTEM"
+    }
+
+    suspend fun setThemeMode(mode: String) {
+        context.dataStore.edit { it[PrefKeys.THEME_MODE] = mode }
+    }
+
+    val screenshotProtection: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[PrefKeys.SCREENSHOT_PROTECTION] ?: false
+    }
+
+    suspend fun setScreenshotProtection(enabled: Boolean) {
+        context.dataStore.edit { it[PrefKeys.SCREENSHOT_PROTECTION] = enabled }
+    }
+
+    val lockTimeoutMode: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[PrefKeys.LOCK_TIMEOUT_MODE] ?: "IMMEDIATELY"
+    }
+
+    suspend fun setLockTimeoutMode(mode: String) {
+        context.dataStore.edit { it[PrefKeys.LOCK_TIMEOUT_MODE] = mode }
+    }
+
+    val phpVersionProfile: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[PrefKeys.PHP_VERSION_PROFILE] ?: "PHP 8.2"
+    }
+
+    suspend fun setPhpVersionProfile(ver: String) {
+        context.dataStore.edit { it[PrefKeys.PHP_VERSION_PROFILE] = ver }
+    }
+
+    val phpMemoryLimit: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[PrefKeys.PHP_MEMORY_LIMIT] ?: "256M"
+    }
+
+    suspend fun setPhpMemoryLimit(limit: String) {
+        context.dataStore.edit { it[PrefKeys.PHP_MEMORY_LIMIT] = limit }
+    }
+
+    val phpUploadMax: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[PrefKeys.PHP_UPLOAD_MAX] ?: "50M"
+    }
+
+    suspend fun setPhpUploadMax(limit: String) {
+        context.dataStore.edit { it[PrefKeys.PHP_UPLOAD_MAX] = limit }
+    }
+
+    val phpDisplayErrors: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[PrefKeys.PHP_DISPLAY_ERRORS] ?: true
+    }
+
+    suspend fun setPhpDisplayErrors(display: Boolean) {
+        context.dataStore.edit { it[PrefKeys.PHP_DISPLAY_ERRORS] = display }
     }
 }

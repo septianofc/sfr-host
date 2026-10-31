@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit
 class NotificationRepository(private val context: Context) {
 
     companion object {
-        const val ENDPOINT_URL = "https://sfrhost.septianfr.web.id/notif"
+        const val ENDPOINT_URL = "https://raw.githubusercontent.com/septianofc/sfr-host/main/notifications.json"
 
         @Volatile
         private var instance: NotificationRepository? = null

@@ -156,8 +156,24 @@ class MainActivity : ComponentActivity() {
             Screen.OVERVIEW
         }
 
+        val dataStore = DataStoreManager(this)
+
         setContent {
-            SfrHostTheme {
+            val themeMode by dataStore.themeMode.collectAsState(initial = "SYSTEM")
+            val screenshotProtection by dataStore.screenshotProtection.collectAsState(initial = false)
+
+            LaunchedEffect(screenshotProtection) {
+                if (screenshotProtection) {
+                    window.setFlags(
+                        android.view.WindowManager.LayoutParams.FLAG_SECURE,
+                        android.view.WindowManager.LayoutParams.FLAG_SECURE
+                    )
+                } else {
+                    window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+                }
+            }
+
+            SfrHostTheme(themeMode = themeMode) {
                 MainContent(initialScreen = initialScreen)
             }
         }
@@ -505,9 +521,9 @@ fun MainContent(initialScreen: Screen = Screen.OVERVIEW) {
                     domains = customDomainsList,
                     websites = websitesList,
                     gatewayHost = gatewayEndpoint,
-                    onAddDomain = { domain, type, mode, targetWeb ->
+                    onAddDomain = { domain, type, mode, targetWeb, parentDomain ->
                         scope.launch {
-                            domainManager.addDomain(domain, type, mode, targetWeb)
+                            domainManager.addDomain(domain, type, mode, targetWeb, parentDomain)
                         }
                     },
                     onRemoveDomain = { domain ->

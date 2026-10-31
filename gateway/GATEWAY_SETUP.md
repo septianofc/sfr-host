@@ -62,7 +62,7 @@ Dokumen ini menjelaskan cara menjalankan **SFR Host Public Gateway** di server V
 2. **Pengguna Menambahkan DNS Record di Registrar / Cloudflare:**
    - **Type:** `CNAME`
    - **Name:** `@` atau `www`
-   - **Target:** `gateway.sfrhost.septianfr.web.id` (atau IP/Domain Gateway Anda)
+   - **Target:** `tunnel.your-gateway-domain.com` (atau IP Publik Gateway VPS Anda / Cloudflare Tunnel CNAME)
    - **Proxy Status:** `Proxied` (Awan Jingga) jika menggunakan Cloudflare untuk SSL/HTTPS gratis otomatis!
 
 3. **Verifikasi Kepemilikan (TXT Record):**

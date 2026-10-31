@@ -59,8 +59,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import com.example.ui.theme.SfrButtonColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -145,6 +148,9 @@ fun HostingAndFilesScreen(
     var deleteTargetItem by remember { mutableStateOf<FileItem?>(null) }
     var editingFileItem by remember { mutableStateOf<FileItem?>(null) }
     var zipExtractTargetItem by remember { mutableStateOf<FileItem?>(null) }
+    var isMultiSelectMode by remember { mutableStateOf(false) }
+    var selectedFileNames by remember { mutableStateOf(setOf<String>()) }
+    var showZipCreateDialog by remember { mutableStateOf(false) }
 
     fun refresh() {
         projects = fileManager.getWebsites()
@@ -210,7 +216,7 @@ fun HostingAndFilesScreen(
             Tab(
                 selected = selectedSubTab == 1,
                 onClick = { selectedSubTab = 1 },
-                text = { Text("File Manager (ZArchiver)", fontWeight = FontWeight.Bold, fontSize = 13.sp) },
+                text = { Text("File Manager", fontWeight = FontWeight.Bold, fontSize = 13.sp) },
                 icon = { Icon(Icons.Default.FolderOpen, contentDescription = null, modifier = Modifier.size(18.dp)) }
             )
         }
@@ -236,7 +242,7 @@ fun HostingAndFilesScreen(
                 }
             )
         } else {
-            // ==================== TAB 2: FILE MANAGER (ZARCHIVER STYLE) ====================
+            // ==================== TAB 2: FILE MANAGER ====================
             FileManagerSection(
                 projects = projects,
                 currentWebsite = currentWebsite,
@@ -244,16 +250,49 @@ fun HostingAndFilesScreen(
                 fileItems = fileItems.filter { it.name.contains(searchQuery, ignoreCase = true) },
                 searchQuery = searchQuery,
                 sortMode = sortMode,
+                isMultiSelectMode = isMultiSelectMode,
+                selectedFileNames = selectedFileNames,
+                onToggleMultiSelectMode = {
+                    isMultiSelectMode = !isMultiSelectMode
+                    if (!isMultiSelectMode) selectedFileNames = emptySet()
+                },
+                onToggleSelectFile = { fileName ->
+                    selectedFileNames = if (selectedFileNames.contains(fileName)) {
+                        selectedFileNames - fileName
+                    } else {
+                        selectedFileNames + fileName
+                    }
+                },
+                onSelectAllFiles = {
+                    val filtered = fileItems.filter { it.name.contains(searchQuery, ignoreCase = true) }
+                    selectedFileNames = if (selectedFileNames.size == filtered.size) {
+                        emptySet()
+                    } else {
+                        filtered.map { it.name }.toSet()
+                    }
+                },
+                onCompressSelectedClick = { showZipCreateDialog = true },
                 onWebsiteChange = { ws ->
                     currentWebsite = ws
                     currentSubPath = ""
+                    selectedFileNames = emptySet()
                 },
-                onSubPathChange = { path -> currentSubPath = path },
+                onSubPathChange = { path ->
+                    currentSubPath = path
+                    selectedFileNames = emptySet()
+                },
                 onSearchChange = { searchQuery = it },
                 onSortChange = { sortMode = it },
                 onFileClick = { item ->
-                    if (item.isDirectory) {
+                    if (isMultiSelectMode) {
+                        selectedFileNames = if (selectedFileNames.contains(item.name)) {
+                            selectedFileNames - item.name
+                        } else {
+                            selectedFileNames + item.name
+                        }
+                    } else if (item.isDirectory) {
                         currentSubPath = if (currentSubPath.isEmpty()) item.name else "$currentSubPath/${item.name}"
+                        selectedFileNames = emptySet()
                     } else if (isTextEditable(item.extension)) {
                         editingFileItem = item
                     } else if (item.extension == "zip") {
@@ -266,6 +305,7 @@ fun HostingAndFilesScreen(
                 onImportZipClick = { zipImportLauncher.launch("application/zip") },
                 onRenameClick = { renameTargetItem = it },
                 onDeleteClick = { deleteTargetItem = it },
+                onExtractZipClick = { zipExtractTargetItem = it },
                 onRefreshClick = { refresh() }
             )
         }
@@ -420,31 +460,158 @@ fun HostingAndFilesScreen(
         )
     }
 
-    // 6. Ekstrak ZIP Dialog
+    // 6. Manual Ekstrak ZIP Dialog (Destination Selection & Overwrite Toggle)
     zipExtractTargetItem?.let { item ->
+        var extractDestMode by remember { mutableStateOf("CURRENT") } // "CURRENT", "SUBFOLDER", "ROOT"
+        var overwriteExisting by remember { mutableStateOf(true) }
+
+        val destPath = when (extractDestMode) {
+            "SUBFOLDER" -> {
+                val sub = item.name.substringBeforeLast('.')
+                if (currentSubPath.isEmpty()) sub else "$currentSubPath/$sub"
+            }
+            "ROOT" -> "public_html"
+            else -> currentSubPath
+        }
+
         AlertDialog(
             onDismissRequest = { zipExtractTargetItem = null },
-            title = { Text("Ekstrak Arsip ZIP") },
-            text = { Text("Ekstrak isi arsip '${item.name}' ke dalam folder ini?") },
+            title = { Text("Ekstrak Arsip ZIP", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Pilih lokasi tujuan ekstraksi untuk '${item.name}':", fontSize = 12.sp)
+
+                    // Destination options
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { extractDestMode = "CURRENT" },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(selected = extractDestMode == "CURRENT", onClick = { extractDestMode = "CURRENT" })
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Column {
+                            Text("Folder Saat Ini", fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                            Text(if (currentSubPath.isEmpty()) "root" else currentSubPath, fontSize = 10.sp, color = MaterialTheme.colorScheme.outline)
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { extractDestMode = "SUBFOLDER" },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(selected = extractDestMode == "SUBFOLDER", onClick = { extractDestMode = "SUBFOLDER" })
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Column {
+                            Text("Subfolder Baru (${item.name.substringBeforeLast('.')})", fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                            Text("Membuat subdirektori tersendiri untuk arsip", fontSize = 10.sp, color = MaterialTheme.colorScheme.outline)
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { extractDestMode = "ROOT" },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(selected = extractDestMode == "ROOT", onClick = { extractDestMode = "ROOT" })
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Column {
+                            Text("Root Website (public_html)", fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                            Text("Ekstrak langsung ke document root utama", fontSize = 10.sp, color = MaterialTheme.colorScheme.outline)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { overwriteExisting = !overwriteExisting },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = overwriteExisting,
+                            onCheckedChange = { overwriteExisting = it },
+                            colors = CheckboxDefaults.colors(checkedColor = SfrButtonColors.PrimaryBlue)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Timpa berkas yang sudah ada", fontSize = 11.sp)
+                    }
+                }
+            },
             confirmButton = {
                 Button(
                     onClick = {
-                        val ok = fileManager.unzipFile(currentWebsite, item.relativePath)
+                        val result = fileManager.unzipFileTo(
+                            websiteName = currentWebsite,
+                            zipRelativePath = item.relativePath,
+                            destinationRelativePath = destPath,
+                            overwrite = overwriteExisting
+                        )
                         zipExtractTargetItem = null
-                        if (ok) {
-                            Toast.makeText(context, "Arsip ZIP berhasil diekstrak!", Toast.LENGTH_SHORT).show()
-                            refresh()
-                        } else {
-                            Toast.makeText(context, "Gagal mengekstrak ZIP.", Toast.LENGTH_SHORT).show()
-                        }
+                        Toast.makeText(context, result.second, Toast.LENGTH_LONG).show()
+                        if (result.first) refresh()
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = SfrPrimaryBlue)
+                    colors = ButtonDefaults.buttonColors(containerColor = SfrButtonColors.PrimaryBlue)
                 ) {
                     Text("Ekstrak Sekarang")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { zipExtractTargetItem = null }) { Text("Batal") }
+            }
+        )
+    }
+
+    // 7. Kompres ke ZIP Dialog (Multi-Select Compression)
+    if (showZipCreateDialog) {
+        var zipNameInput by remember { mutableStateOf("archive.zip") }
+        AlertDialog(
+            onDismissRequest = { showZipCreateDialog = false },
+            title = { Text("Kompres ke Berkas ZIP", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Mengompres ${selectedFileNames.size} item terpilih ke dalam format .zip:", fontSize = 12.sp)
+                    OutlinedTextField(
+                        value = zipNameInput,
+                        onValueChange = { zipNameInput = it },
+                        label = { Text("Nama Berkas ZIP") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (zipNameInput.isNotBlank()) {
+                            val ok = fileManager.zipFiles(
+                                websiteName = currentWebsite,
+                                relativeParent = currentSubPath,
+                                fileNames = selectedFileNames.toList(),
+                                zipFileName = zipNameInput.trim()
+                            )
+                            showZipCreateDialog = false
+                            if (ok) {
+                                isMultiSelectMode = false
+                                selectedFileNames = emptySet()
+                                Toast.makeText(context, "Berhasil membuat arsip ZIP!", Toast.LENGTH_SHORT).show()
+                                refresh()
+                            } else {
+                                Toast.makeText(context, "Gagal membuat arsip ZIP.", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = SfrButtonColors.PrimaryBlue)
+                ) {
+                    Text("Kompres Sekarang")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showZipCreateDialog = false }) { Text("Batal") }
             }
         )
     }
@@ -657,12 +824,13 @@ fun WebsitesListSection(
                                 )
                             }
                         } else {
-                            OutlinedButton(
+                            Button(
                                 onClick = { onSetActiveWebsite(project.name) },
+                                colors = ButtonDefaults.buttonColors(containerColor = SfrButtonColors.ActiveGreen),
                                 shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier.height(32.dp)
                             ) {
-                                Text("Aktifkan", fontSize = 11.sp)
+                                Text("Aktifkan", fontSize = 11.sp, color = Color.White)
                             }
                         }
                     }
@@ -687,7 +855,7 @@ fun WebsitesListSection(
                     ) {
                         Button(
                             onClick = { onSelectWebsite(project.name) },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+                            colors = ButtonDefaults.buttonColors(containerColor = SfrButtonColors.PrimaryBlue),
                             shape = RoundedCornerShape(8.dp),
                             modifier = Modifier
                                 .weight(1f)
@@ -696,17 +864,17 @@ fun WebsitesListSection(
                             Icon(
                                 Icons.Default.FolderOpen,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                tint = Color.White,
                                 modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Buka Berkas", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                            Text("Buka Berkas", fontSize = 11.sp, color = Color.White)
                         }
 
                         if (projects.size > 1 && !isActive) {
                             OutlinedButton(
                                 onClick = { onDeleteWebsite(project.name) },
-                                colors = ButtonDefaults.outlinedButtonColors(contentColor = StatusOfflineRed),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = SfrButtonColors.DangerRed),
                                 shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier.height(36.dp)
                             ) {
@@ -723,7 +891,7 @@ fun WebsitesListSection(
 }
 
 /**
- * Tab 2: Full ZArchiver-like File Manager Section
+ * Tab 2: File Manager Section
  */
 @Composable
 fun FileManagerSection(
@@ -733,6 +901,12 @@ fun FileManagerSection(
     fileItems: List<FileItem>,
     searchQuery: String,
     sortMode: SortMode,
+    isMultiSelectMode: Boolean,
+    selectedFileNames: Set<String>,
+    onToggleMultiSelectMode: () -> Unit,
+    onToggleSelectFile: (String) -> Unit,
+    onSelectAllFiles: () -> Unit,
+    onCompressSelectedClick: () -> Unit,
     onWebsiteChange: (String) -> Unit,
     onSubPathChange: (String) -> Unit,
     onSearchChange: (String) -> Unit,
@@ -744,6 +918,7 @@ fun FileManagerSection(
     onImportZipClick: () -> Unit,
     onRenameClick: (FileItem) -> Unit,
     onDeleteClick: (FileItem) -> Unit,
+    onExtractZipClick: (FileItem) -> Unit,
     onRefreshClick: () -> Unit
 ) {
     Column(
@@ -790,20 +965,77 @@ fun FileManagerSection(
 
             // Quick Operation Buttons
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                IconButton(onClick = onToggleMultiSelectMode, modifier = Modifier.size(36.dp)) {
+                    Icon(
+                        Icons.Default.CheckCircle,
+                        contentDescription = "Pilih Banyak",
+                        tint = if (isMultiSelectMode) SfrButtonColors.PrimaryBlue else MaterialTheme.colorScheme.outline
+                    )
+                }
                 IconButton(onClick = onNewFolderClick, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Default.CreateNewFolder, contentDescription = "Buat Folder", tint = SfrPrimaryBlue)
+                    Icon(Icons.Default.CreateNewFolder, contentDescription = "Buat Folder", tint = SfrButtonColors.PrimaryBlue)
                 }
                 IconButton(onClick = onNewFileClick, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Default.NoteAdd, contentDescription = "Buat Berkas", tint = SfrPrimaryBlue)
+                    Icon(Icons.Default.NoteAdd, contentDescription = "Buat Berkas", tint = SfrButtonColors.PrimaryBlue)
                 }
                 IconButton(onClick = onImportFileClick, modifier = Modifier.size(36.dp)) {
                     Icon(Icons.Default.UploadFile, contentDescription = "Impor Berkas", tint = SfrSecondaryOrange)
                 }
                 IconButton(onClick = onImportZipClick, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Default.Archive, contentDescription = "Ekstrak ZIP", tint = SfrSecondaryOrange)
+                    Icon(Icons.Default.Archive, contentDescription = "Impor ZIP", tint = SfrSecondaryOrange)
                 }
                 IconButton(onClick = onRefreshClick, modifier = Modifier.size(36.dp)) {
                     Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                }
+            }
+        }
+
+        // Multi-Select Banner
+        if (isMultiSelectMode) {
+            Spacer(modifier = Modifier.height(6.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = fileItems.isNotEmpty() && selectedFileNames.size == fileItems.size,
+                            onCheckedChange = { onSelectAllFiles() },
+                            colors = CheckboxDefaults.colors(checkedColor = SfrButtonColors.PrimaryBlue)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${selectedFileNames.size} dipilih",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        if (selectedFileNames.isNotEmpty()) {
+                            Button(
+                                onClick = onCompressSelectedClick,
+                                colors = ButtonDefaults.buttonColors(containerColor = SfrButtonColors.PrimaryBlue),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(32.dp)
+                            ) {
+                                Icon(Icons.Default.Archive, contentDescription = null, modifier = Modifier.size(14.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Kompres ZIP", fontSize = 11.sp, color = Color.White)
+                            }
+                        }
+                        TextButton(onClick = onToggleMultiSelectMode) {
+                            Text("Selesai", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
                 }
             }
         }
@@ -851,7 +1083,7 @@ fun FileManagerSection(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // 3. Breadcrumb Path Bar (ZArchiver style)
+        // 3. Breadcrumb Path Bar
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
@@ -914,7 +1146,7 @@ fun FileManagerSection(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 4. File and Folder List (ZArchiver format)
+        // 4. File and Folder List
         if (fileItems.isEmpty()) {
             Box(
                 modifier = Modifier
@@ -936,9 +1168,13 @@ fun FileManagerSection(
                 items(fileItems) { item ->
                     FileItemRow(
                         item = item,
+                        isMultiSelectMode = isMultiSelectMode,
+                        isSelected = selectedFileNames.contains(item.name),
+                        onToggleSelect = { onToggleSelectFile(item.name) },
                         onClick = { onFileClick(item) },
                         onRename = { onRenameClick(item) },
-                        onDelete = { onDeleteClick(item) }
+                        onDelete = { onDeleteClick(item) },
+                        onExtractZip = { onExtractZipClick(item) }
                     )
                 }
 
@@ -951,9 +1187,13 @@ fun FileManagerSection(
 @Composable
 fun FileItemRow(
     item: FileItem,
+    isMultiSelectMode: Boolean = false,
+    isSelected: Boolean = false,
+    onToggleSelect: () -> Unit = {},
     onClick: () -> Unit,
     onRename: () -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onExtractZip: () -> Unit = {}
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -975,9 +1215,12 @@ fun FileItemRow(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(onClick = if (isMultiSelectMode) onToggleSelect else onClick),
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+            else MaterialTheme.colorScheme.surface
+        )
     ) {
         Row(
             modifier = Modifier
@@ -985,6 +1228,16 @@ fun FileItemRow(
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            if (isMultiSelectMode) {
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = { onToggleSelect() },
+                    colors = CheckboxDefaults.colors(checkedColor = SfrButtonColors.PrimaryBlue),
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+
             Icon(
                 imageVector = icon,
                 contentDescription = null,
@@ -1008,16 +1261,24 @@ fun FileItemRow(
                 }
             }
 
-            Box {
-                IconButton(onClick = { menuExpanded = true }, modifier = Modifier.size(28.dp)) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Menu", modifier = Modifier.size(16.dp))
-                }
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false }
-                ) {
-                    DropdownMenuItem(text = { Text("Ubah Nama") }, onClick = { onRename(); menuExpanded = false })
-                    DropdownMenuItem(text = { Text("Hapus") }, onClick = { onDelete(); menuExpanded = false })
+            if (!isMultiSelectMode) {
+                Box {
+                    IconButton(onClick = { menuExpanded = true }, modifier = Modifier.size(28.dp)) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Menu", modifier = Modifier.size(16.dp))
+                    }
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false }
+                    ) {
+                        if (item.extension == "zip") {
+                            DropdownMenuItem(
+                                text = { Text("Ekstrak Arsip ZIP") },
+                                onClick = { onExtractZip(); menuExpanded = false }
+                            )
+                        }
+                        DropdownMenuItem(text = { Text("Ubah Nama") }, onClick = { onRename(); menuExpanded = false })
+                        DropdownMenuItem(text = { Text("Hapus") }, onClick = { onDelete(); menuExpanded = false })
+                    }
                 }
             }
         }

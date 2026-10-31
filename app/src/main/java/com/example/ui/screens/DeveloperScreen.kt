@@ -154,16 +154,16 @@ fun DeveloperScreen() {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Website Developer
+                // Official GitHub Repository
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Website Developer", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Text("Repository GitHub Resmi", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         Text(
-                            text = "https://septianfr.web.id",
+                            text = "https://github.com/septianofc/sfr-host",
                             fontSize = 12.sp,
                             fontFamily = FontFamily.Monospace,
                             color = MaterialTheme.colorScheme.outline
@@ -171,10 +171,10 @@ fun DeveloperScreen() {
                     }
 
                     Row {
-                        IconButton(onClick = { copyText("Website", "https://septianfr.web.id") }) {
+                        IconButton(onClick = { copyText("Repository", "https://github.com/septianofc/sfr-host") }) {
                             Icon(Icons.Default.ContentCopy, contentDescription = "Salin", tint = SfrPrimaryBlue, modifier = Modifier.size(18.dp))
                         }
-                        IconButton(onClick = { openUrl("https://septianfr.web.id") }) {
+                        IconButton(onClick = { openUrl("https://github.com/septianofc/sfr-host") }) {
                             Icon(Icons.Default.OpenInBrowser, contentDescription = "Buka", tint = SfrPrimaryBlue, modifier = Modifier.size(20.dp))
                         }
                     }
@@ -184,16 +184,16 @@ fun DeveloperScreen() {
                 Divider()
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Download Page
+                // Download Page Releases
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Halaman Unduh Resmi", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Text("Unduh Rilis APK Terbaru", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         Text(
-                            text = "https://sfrhost.septianfr.web.id/download",
+                            text = "https://github.com/septianofc/sfr-host/releases",
                             fontSize = 12.sp,
                             fontFamily = FontFamily.Monospace,
                             color = MaterialTheme.colorScheme.outline
@@ -201,10 +201,10 @@ fun DeveloperScreen() {
                     }
 
                     Row {
-                        IconButton(onClick = { copyText("Download Link", "https://sfrhost.septianfr.web.id/download") }) {
+                        IconButton(onClick = { copyText("Download Link", "https://github.com/septianofc/sfr-host/releases") }) {
                             Icon(Icons.Default.ContentCopy, contentDescription = "Salin", tint = SfrPrimaryBlue, modifier = Modifier.size(18.dp))
                         }
-                        IconButton(onClick = { openUrl("https://sfrhost.septianfr.web.id/download") }) {
+                        IconButton(onClick = { openUrl("https://github.com/septianofc/sfr-host/releases") }) {
                             Icon(Icons.Default.Download, contentDescription = "Unduh", tint = SfrPrimaryBlue, modifier = Modifier.size(20.dp))
                         }
                     }

@@ -141,4 +141,4 @@ Untuk menghubungkan domain Anda sendiri (misal `domainanda.com`):
 - **WhatsApp:** [082130392599](https://wa.me/6282130392599)
 - **Telegram:** [@sfrdigital](https://t.me/sfrdigital)
 - **Instagram:** [@_septianfr](https://www.instagram.com/_septianfr/)
-- **Website:** [https://septianfr.web.id](https://septianfr.web.id)
+- **GitHub Repository:** [https://github.com/septianofc/sfr-host](https://github.com/septianofc/sfr-host)

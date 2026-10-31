@@ -45,10 +45,16 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun SfrHostTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: String = "SYSTEM",
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val isSystemDark = isSystemInDarkTheme()
+    val useDark = when (themeMode.uppercase()) {
+        "DARK" -> true
+        "LIGHT" -> false
+        else -> isSystemDark
+    }
+    val colorScheme = if (useDark) DarkColorScheme else LightColorScheme
 
     MaterialTheme(
         colorScheme = colorScheme,
@@ -59,9 +65,9 @@ fun SfrHostTheme(
 
 @Composable
 fun MyApplicationTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: String = "SYSTEM",
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    SfrHostTheme(darkTheme = darkTheme, content = content)
+    SfrHostTheme(themeMode = themeMode, content = content)
 }

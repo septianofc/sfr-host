@@ -57,6 +57,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import com.example.ui.theme.SfrButtonColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -493,12 +494,14 @@ fun ServerHeroCard(
                         modifier = Modifier
                             .weight(1f)
                             .testTag("toggle_server_btn"),
-                        colors = ButtonDefaults.buttonColors(containerColor = if (isServerOnline) StatusOfflineRed else SfrPrimaryBlue),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isServerOnline) SfrButtonColors.DangerRed else SfrButtonColors.ActiveGreen
+                        ),
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Icon(imageVector = if (isServerOnline) Icons.Default.Stop else Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text(if (isServerOnline) "STOP SERVER" else "START SERVER", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text(if (isServerOnline) "STOP SERVER" else "START SERVER", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color.White)
                     }
 
                     if (isServerOnline) {
@@ -507,6 +510,7 @@ fun ServerHeroCard(
                             modifier = Modifier
                                 .weight(0.75f)
                                 .testTag("restart_server_btn"),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = SfrButtonColors.WarningOrange),
                             shape = RoundedCornerShape(10.dp)
                         ) {
                             Icon(imageVector = Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -517,16 +521,19 @@ fun ServerHeroCard(
                 }
 
                 val isTunnelRunning = tunnelState == TunnelState.CONNECTED || tunnelState == TunnelState.CONNECTING
-                OutlinedButton(
+                Button(
                     onClick = if (isTunnelRunning) onStopTunnel else onStartTunnel,
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("toggle_tunnel_btn"),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isTunnelRunning) SfrButtonColors.DangerRed else SfrButtonColors.PrimaryBlue
+                    ),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Icon(imageVector = Icons.Default.Cloud, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(if (isTunnelRunning) "STOP TUNNEL" else "START TUNNEL", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text(if (isTunnelRunning) "STOP TUNNEL" else "START TUNNEL", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color.White)
                 }
             }
         }

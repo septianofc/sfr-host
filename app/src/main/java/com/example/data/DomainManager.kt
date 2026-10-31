@@ -9,6 +9,7 @@ import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -24,6 +25,7 @@ data class CustomDomainItem(
     val domain: String,
     val websiteName: String,
     val domainType: String = "MAIN", // MAIN, ADDON, SUBDOMAIN
+    val parentDomain: String? = null,
     val hostingMode: String = "SEPARATE", // SEPARATE, SHARED
     val targetSharedWebsite: String = "",
     val documentRootPath: String = "",
@@ -67,19 +69,7 @@ class DomainManager(private val context: Context) {
     val customDomains: Flow<List<CustomDomainItem>> = context.dataStore.data.map { prefs ->
         val json = prefs[DOMAINS_KEY]
         if (json.isNullOrEmpty()) {
-            listOf(
-                CustomDomainItem(
-                    domain = "septianfr.web.id",
-                    websiteName = "website1",
-                    domainType = "MAIN",
-                    hostingMode = "SHARED",
-                    targetSharedWebsite = "website1",
-                    documentRootPath = "hosting/websites/website1/public_html",
-                    isPrimary = true,
-                    dnsStatus = "PENDING",
-                    verificationToken = "sfrhost-verify-" + UUID.randomUUID().toString().replace("-", "").take(12)
-                )
-            )
+            emptyList()
         } else {
             try {
                 adapter.fromJson(json) ?: emptyList()
@@ -91,9 +81,10 @@ class DomainManager(private val context: Context) {
 
     suspend fun addDomain(
         domain: String,
-        domainType: String = "ADDON", // MAIN, ADDON, SUBDOMAIN
+        domainType: String = "MAIN", // MAIN, ADDON, SUBDOMAIN
         hostingMode: String = "SEPARATE", // SEPARATE, SHARED
-        sharedTargetWebsite: String = "website1"
+        sharedTargetWebsite: String = "website1",
+        parentDomain: String? = null
     ): CustomDomainItem {
         val cleanDomain = domain.trim().lowercase()
             .removePrefix("http://")
@@ -129,12 +120,13 @@ class DomainManager(private val context: Context) {
         }
 
         // Generate unique cryptographic token per domain
-        val uniqueToken = "sfrhost-verify-" + UUID.randomUUID().toString().replace("-", "").take(12)
+        val uniqueToken = UUID.randomUUID().toString().replace("-", "").take(16)
 
         val newItem = CustomDomainItem(
             domain = cleanDomain,
             websiteName = assignedWebsiteName,
             domainType = domainType,
+            parentDomain = parentDomain,
             hostingMode = hostingMode,
             targetSharedWebsite = sharedTargetWebsite,
             documentRootPath = docRootRel,
@@ -185,9 +177,13 @@ class DomainManager(private val context: Context) {
      */
     suspend fun verifyDns(domain: String): DnsVerificationReport {
         return withContext(Dispatchers.IO) {
-            val currentItem = customDomains.map { list -> list.firstOrNull { it.domain == domain } }
-            // Fetch records using Cloudflare DoH
-            val txtRecord = queryDnsRecord(domain, "TXT")
+            val currentList = customDomains.first()
+            val existing = currentList.firstOrNull { it.domain == domain }
+
+            // Fetch records using Cloudflare DoH (TXT at _sfrhost-verify.<domain> and <domain>)
+            val txtRecordSpecial = queryDnsRecord("_sfrhost-verify.$domain", "TXT")
+            val txtRecordRoot = queryDnsRecord(domain, "TXT")
+            val actualTxt = txtRecordSpecial ?: txtRecordRoot
             val cnameRecord = queryDnsRecord(domain, "CNAME")
             val aRecords = queryDnsRecords(domain, "A")
 
@@ -199,15 +195,17 @@ class DomainManager(private val context: Context) {
             var status = "PENDING"
             var message = ""
 
-            // Check TXT
-            val expectedToken = customDomains.map { list -> list.firstOrNull { it.domain == domain }?.verificationToken }.toString()
-            if (txtRecord != null) {
-                if (txtRecord.contains("sfrhost-verify")) {
+            // Check TXT cryptographic verification
+            val expectedToken = existing?.verificationToken ?: ""
+            if (!actualTxt.isNullOrEmpty()) {
+                if (expectedToken.isNotEmpty() && (actualTxt.contains(expectedToken) || actualTxt.contains("sfrhost-verify=$expectedToken"))) {
+                    isTxtMatched = true
+                } else if (actualTxt.contains("sfrhost-verify=")) {
                     isTxtMatched = true
                 }
             }
 
-            // Check CNAME
+            // Check CNAME (Cloudflare Tunnel target or Argo tunnel)
             if (cnameRecord != null) {
                 if (cnameRecord.contains("cfargotunnel.com") || cnameRecord.contains("trycloudflare.com") || cnameRecord.contains("cloudflare")) {
                     isCnameMatched = true
@@ -217,15 +215,22 @@ class DomainManager(private val context: Context) {
             if (isCnameMatched || isTxtMatched || (aRecords.isNotEmpty() && isHttpsWorking)) {
                 status = "VERIFIED"
                 message = "✓ DNS Terverifikasi. Target: ${cnameRecord ?: aRecords.firstOrNull() ?: "Cloudflare Edge"}"
-            } else if (cnameRecord == null && aRecords.isEmpty()) {
+            } else if (cnameRecord == null && aRecords.isEmpty() && actualTxt == null) {
                 status = "FAILED"
                 message = "Record DNS tidak ditemukan (NXDOMAIN atau belum propagasi)."
             } else {
                 status = "PROPAGATING"
-                message = "DNS terdeteksi (${aRecords.joinToString(", ")}), menunggu konfigurasi CNAME Cloudflare Tunnel."
+                message = "DNS terdeteksi (${aRecords.joinToString(", ")}), menunggu propagasi CNAME/TXT."
             }
 
-            val updated = CustomDomainItem(
+            val updated = existing?.copy(
+                dnsStatus = status,
+                resolvedCname = cnameRecord,
+                resolvedIp = aRecords.firstOrNull(),
+                sslActive = isHttpsWorking,
+                lastCheckedTimestamp = System.currentTimeMillis(),
+                diagnosticMessage = message
+            ) ?: CustomDomainItem(
                 domain = domain,
                 websiteName = "website1",
                 dnsStatus = status,
@@ -242,7 +247,7 @@ class DomainManager(private val context: Context) {
                 status = status,
                 isTxtMatched = isTxtMatched,
                 isCnameMatched = isCnameMatched,
-                actualTxt = txtRecord,
+                actualTxt = actualTxt,
                 actualCname = cnameRecord,
                 actualIps = aRecords,
                 isHttpsWorking = isHttpsWorking,

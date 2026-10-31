@@ -72,16 +72,25 @@ import androidx.compose.ui.unit.sp
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import com.example.R
+import com.example.data.DataStoreManager
 import com.example.files.FileManager
 import com.example.notification.NotificationHelper
 import com.example.server.SfrFloatingWidgetService
+import com.example.ui.theme.SfrButtonColors
 import com.example.ui.theme.SfrPrimaryBlue
 import com.example.ui.theme.SfrSecondaryOrange
 import com.example.ui.theme.StatusOnlineGreen
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(
@@ -102,6 +111,10 @@ fun SettingsScreen(
     onSaveGatewayEndpoint: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val dataStore = remember { DataStoreManager(context) }
+    val currentThemeMode by dataStore.themeMode.collectAsState(initial = "SYSTEM")
+
     var portText by remember { mutableStateOf(serverPort.toString()) }
     var gatewayText by remember { mutableStateOf(gatewayEndpoint) }
 
@@ -140,6 +153,62 @@ fun SettingsScreen(
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         item { Spacer(modifier = Modifier.height(4.dp)) }
+
+        // 0. Theme Selection Card
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(imageVector = Icons.Default.DarkMode, contentDescription = null, tint = SfrPrimaryBlue)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Tema & Tampilan Aplikasi",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    val themeOptions = listOf(
+                        "SYSTEM" to "Ikuti Pengaturan Sistem",
+                        "LIGHT" to "Mode Terang (Light Mode)",
+                        "DARK" to "Mode Gelap (Dark Mode)"
+                    )
+
+                    themeOptions.forEach { (mode, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    coroutineScope.launch { dataStore.setThemeMode(mode) }
+                                }
+                                .padding(vertical = 6.dp, horizontal = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = (currentThemeMode == mode),
+                                onClick = {
+                                    coroutineScope.launch { dataStore.setThemeMode(mode) }
+                                },
+                                colors = RadioButtonDefaults.colors(selectedColor = SfrPrimaryBlue)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    fontWeight = if (currentThemeMode == mode) FontWeight.SemiBold else FontWeight.Normal
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
         // 1. Server Settings Section
         item {
@@ -305,9 +374,12 @@ fun SettingsScreen(
                                 }
                             },
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = if (hasOverlayPermission) SfrButtonColors.ActiveGreen else SfrButtonColors.PrimaryBlue
+                            )
                         ) {
-                            Text("Beri Izin Overlay", fontSize = 11.sp)
+                            Text(if (hasOverlayPermission) "Izin Terbuka" else "Beri Izin Overlay", fontSize = 11.sp)
                         }
 
                         androidx.compose.material3.Button(
@@ -326,7 +398,7 @@ fun SettingsScreen(
                             },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(10.dp),
-                            colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = SfrPrimaryBlue)
+                            colors = ButtonDefaults.buttonColors(containerColor = SfrButtonColors.PrimaryBlue)
                         ) {
                             Text("Uji Widget", fontSize = 11.sp)
                         }
@@ -412,11 +484,14 @@ fun SettingsScreen(
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp)
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = if (hasStoragePermission) SfrButtonColors.ActiveGreen else SfrButtonColors.PrimaryBlue
+                        )
                     ) {
                         Icon(imageVector = Icons.Default.Folder, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Beri Izin Akses File Penuh (Storage)")
+                        Text(if (hasStoragePermission) "Akses Penyimpanan: Diberikan" else "Beri Izin Akses File Penuh (Storage)")
                     }
                 }
             }
@@ -610,10 +685,10 @@ fun SettingsScreen(
 
                     ContactActionItem(
                         icon = Icons.Default.Language,
-                        label = "Website",
-                        value = "https://septianfr.web.id",
-                        url = "https://septianfr.web.id",
-                        iconColor = SfrPrimaryBlue
+                        label = "GitHub Repository",
+                        value = "septianofc/sfr-host",
+                        url = "https://github.com/septianofc/sfr-host",
+                        iconColor = SfrButtonColors.PrimaryBlue
                     )
                 }
             }

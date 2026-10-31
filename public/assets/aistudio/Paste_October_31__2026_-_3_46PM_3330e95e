@@ -1,0 +1,1239 @@
+Kenapa Add Domain Mau Domain Utama Sub (Req + Domain Utama) Kenapa Gakbisa Lebih Pas Add Subdomain Malah Jadi Domain Utama Dan Gakada Verifikasi Domain Txt Nya, Di Hosting &amp; File Padahal Pakai Fordel Hp Tetapi Pas Dikunjungi Kenapa Gakada Akses Padahal File index Ada, File Zip, 7z, Dll Tambahkan Tombol Entrak Bukan Entrak Otomatis, Tambahkan Tombol Pilih File Banyak Jadikan zib, 7z, dll, Bagian Domain Target Tunnel Kenapa Gak Pakai Domain Custom Tunnel Atau Apake Anti Dummy Bisa Mempermudah Pemula, Database Gakjelas Wajib MySql, Sqllite Opsional (Terakhir Jika Gakbisa) intinya Sql Kurng Jelas Dan Gakjelas Gak Seperti MySql Cpanel, server &amp; php Gakbisa Diubah Seperti Versi PHP 7..+,8..+, dll, Metode Https Didukung Tidak bisa Diubah (Gak Support Tolak Akses), . htaccess &amp; error Gakjelas, Kode Error Kok Cuman Dikit, Fitur Tunnel Gakjelas, Pastikan Dipilih Otomatis Oleh Server Open Source Ke Google Atau Kemaa Biar Bisa Ganti Binary Gitu, Kalau Import Sendiri Menyusahkan Jadi Sediakan Banyak Binary Dan Bisa Cari, Tetap Support Import, Fitur Dns Gakjelas, Padahal Custom Domain Tunnel Udah Diubah Tapi Masih Ngacak Jadi Gakjelas, Fitur SSL/TLS Gak Jelas Domain Mati Pun Dianggap Ceklis, Di Security Banyak Fitur Yang Gakbisa Dimatikan Atau Dinyalakan Gakada Tombol Save, Tambahkan Fitur Anti Screenshot Apk, Tambahkan Waktu Kunci Aplikasi: Setelah Keluar Aplikasi, Setelah 1 Menit, Segera, Setelah Layar Mau, Dll, Banyak UI Dan Fitur Gak Berguna Silahkan Cek Semua (Gak Berguna Karena Dummy Atau Dibuat Asal), Dan Izin Full Akses Malah Mauk Info Apk Gakjelas (Wajib) Setelah Apk Dibuka, Cek Ss Untuk Detail, Dan Cek File Zip Apk , Banyak Tombol Biru Gakada Teks Error UI Paling Kecil Gak Profesional Buatnya Terlalu Asal Mode Dark/Light Gak Kerja, Cek Sendiri Wajib Real-time bekerja semua Fitur Hapus Teks Gak Guna Seperti zachiver, Dll Agar Profesional Dan UI Prrbagus Perkecil, Dan Perbaikin Perbedaan Lah Tata Letak Dll, Mirip Cpanel, Cloudflare, Zachiver Fitur Semua Masukin 3 Brand Itu, Semua Halaman Gakjelas Dan Error, Memproses selama 35s
+
+Saya sudah membuka ZIP source SFR Host terbaru (`sfr-host-main (2).zip`) dan memeriksa screenshot yang kamu kirim. Jadi prompt kali ini saya buat berdasarkan masalah yang terlihat dan kode yang memang ada, bukan sekadar daftar keinginan.
+
+Ada beberapa temuan penting:
+
+* Domain dan DNS: `DnsManagementScreen.kt` membuat target CNAME sendiri dengan format `${domain}.cdn.cloudflare.net`. Itu bukan target tunnel yang boleh diasumsikan benar. `DomainManager.kt` juga menyediakan domain contoh `septianfr.web.id` secara otomatis ketika data domain belum tersedia.
+
+* PHP: `PhpExecutionEngine.kt` ternyata merupakan interpreter sederhana dengan `PHP_VERSION` yang ditulis tetap `8.2.14-sfrhost`, bukan bukti bahwa PHP 7.x atau 8.x asli dapat dipilih dan dijalankan.
+
+* Database: `DatabaseManager.kt` dan PHP engine masih menggunakan SQLite Android. Belum ada bukti bahwa MariaDB/MySQL server lokal benar-benar dijalankan.
+
+* Cloudflare: `CloudflareTunnelRunner.kt` masih mengambil `cloudflared-linux-$arch`. Screenshot menunjukkan binary terunduh, tetapi eksekusinya gagal dengan `error=13, Permission denied`.
+
+* Hosting: screenshot 403 menunjukkan server menolak akses ke root website. Jadi perlu audit pemetaan document root, izin folder, default index, dan pemeriksaan keamanan path.
+
+* SSL/DNS: tampilan sekarang belum cukup membuktikan sertifikat dan konfigurasi domain benar-benar aktif. Status harus berasal dari pemeriksaan aktual, bukan nilai bawaan atau konfigurasi yang belum diterapkan.
+
+Saya juga memasukkan perbaikan subdomain, TXT verification, ekstraksi ZIP/7z, pemilihan banyak file, pengelolaan binary, `.htaccess`, HTTP error codes, keamanan, tema, dan desain mobile.
+
+# MASTER PROMPT — SFR HOST COMPLETE REBUILD & DEEP AUDIT
+## cPanel + Cloudflare + ZArchiver-inspired Android Hosting Platform
+
+Kamu bertindak sebagai Senior Android Engineer, Backend Engineer, Cloudflare Tunnel Engineer, PHP Runtime Engineer, Database Administrator, Security Engineer, dan UI/UX Designer.
+
+Saya memberikan source code project SFR Host terbaru beserta screenshot kondisi aplikasi. Kamu WAJIB memeriksa semuanya dan memperbaiki project yang sudah ada secara langsung.
+
+**Jangan membuat aplikasi baru dari nol. Jangan sekadar membuat desain. Jangan mempertahankan fitur dummy. Semua fitur yang ditampilkan harus benar-benar bekerja.**
+
+---
+
+# 1. IDENTITAS PROJECT
+
+- Nama: SFR Host
+- Package: `com.sfrhostapp`
+- Bahasa: Kotlin
+- UI: Jetpack Compose
+- Platform: Android
+- Warna utama: `#42A5F5`
+- Repository: `https://github.com/septianofc/sfr-host`
+
+Referensi desain dan pengalaman:
+- cPanel: pengelolaan website, domain, database, PHP, file, dan keamanan.
+- Cloudflare: pengelolaan tunnel, DNS, hostname, SSL/TLS, dan keamanan.
+- ZArchiver: file browser, folder, arsip, ekstraksi, dan manajemen file.
+
+Gunakan ketiga produk tersebut sebagai inspirasi fungsi dan pengalaman pengguna. Jangan menyalin logo, identitas merek, atau tampilan proprietary secara persis.
+
+Pertahankan identitas SFR Host.
+
+# 2. AUDIT WAJIB TERHADAP SOURCE TERBARU
+
+Periksa seluruh file dalam ZIP, bukan hanya file yang terlihat bermasalah.
+
+Prioritaskan:
+
+- `DomainManager.kt`
+- `CloudflareTunnelRunner.kt`
+- `TunnelManager.kt`
+- `FileManager.kt`
+- `DatabaseManager.kt`
+- `PhpExecutionEngine.kt`
+- `SfrHttpServer.kt`
+- `HtaccessManager.kt`
+- `SfrServerService.kt`
+- `AppLockManager.kt`
+- `SecurityLockScreen.kt`
+- `CustomDomainsScreen.kt`
+- `DnsManagementScreen.kt`
+- `SslTlsScreen.kt`
+- `TunnelScreen.kt`
+- `WebServerPhpScreen.kt`
+- `DatabasesScreen.kt`
+- `HostingAndFilesScreen.kt`
+- `HtaccessScreen.kt`
+- `SecurityScreen.kt`
+- `SettingsScreen.kt`
+- `Theme.kt`
+- `MainActivity.kt`
+- `AndroidManifest.xml`
+- Gradle dan GitHub Actions.
+
+Cari seluruh:
+- Dummy data.
+- Hardcoded status.
+- Contoh domain otomatis.
+- CNAME palsu.
+- Token verifikasi yang tidak tersimpan.
+- Tombol tanpa aksi.
+- Fitur yang hanya mengubah UI.
+- Fungsi yang tidak terhubung ke backend.
+- Konfigurasi yang tidak pernah diterapkan.
+- Error yang disembunyikan.
+- Menu duplikat.
+- Implementasi yang hanya meniru fitur cPanel.
+
+Buat laporan audit sebelum melakukan perubahan.
+
+# 3. PERBAIKAN DOMAIN — DOMAIN UTAMA, ADDON, DAN SUBDOMAIN
+
+Ini salah satu masalah paling penting.
+
+Saat menambahkan domain, sistem harus membedakan domain utama, addon domain, dan subdomain secara benar.
+
+### A. Domain utama
+
+Contoh:
+
+`example.com`
+
+Domain utama adalah domain induk yang dikelola sebagai domain utama hosting.
+
+### B. Addon domain
+
+Contoh:
+
+`example.net`
+
+Addon domain adalah domain tambahan yang dapat menggunakan document root terpisah atau berbagi document root sesuai pilihan pengguna.
+
+### C. Subdomain
+
+Contoh:
+
+- `blog.example.com`
+- `api.example.com`
+- `shop.example.com`
+- `dev.example.com`
+
+Subdomain tidak boleh dianggap sebagai domain utama baru.
+
+Saat pengguna memilih SUBDOMAIN, sediakan:
+- Pilihan domain induk yang sudah terdaftar.
+- Input nama subdomain.
+- Preview hostname hasil gabungan.
+- Pilihan document root.
+- Pilihan website target.
+- Validasi hubungan domain induk dan subdomain.
+
+Contoh:
+
+Domain induk: `example.com`
+
+Nama subdomain: `blog`
+
+Hasil otomatis: `blog.example.com`
+
+Jangan meminta pengguna mengisi domain lengkap secara membingungkan jika sudah memilih domain induk.
+
+Validasi:
+- Domain induk harus terdaftar.
+- Subdomain tidak boleh menjadi domain induk palsu.
+- Tolak karakter ilegal.
+- Tolak URL lengkap yang mengandung path atau protokol.
+- Tangani domain duplikat.
+- Tangani hostname yang sudah digunakan.
+- Jangan menimpa domain lama tanpa konfirmasi.
+
+### D. Jenis hosting
+
+Setiap domain dapat memilih:
+
+1. Separate document root.
+2. Shared document root.
+3. Menggunakan website yang sudah ada.
+
+Contoh:
+
+`example.com` → `/websites/main/public_html`
+
+`blog.example.com` → `/websites/blog/public_html`
+
+`shop.example.com` → `/websites/shop/public_html`
+
+Semua pemetaan harus benar-benar diterapkan pada HTTP server dan Cloudflare Tunnel.
+
+# 4. VERIFIKASI DOMAIN DENGAN TXT RECORD
+
+Saat menambahkan domain, wajib ada proses verifikasi yang jelas.
+
+Buat token unik dan kriptografis untuk setiap domain.
+
+Contoh:
+
+Nama record:
+
+`_sfrhost-verify.example.com`
+
+Tipe:
+
+`TXT`
+
+Nilai:
+
+` s frhost-verify=<TOKEN_UNIK>`
+
+Gunakan nilai token sebenarnya tanpa spasi.
+
+Tampilkan:
+- Record type.
+- Record name.
+- Record value.
+- Tombol salin.
+- Tombol verifikasi.
+- Status DNS.
+- Hasil pemeriksaan terakhir.
+
+Pengguna harus bisa menyalin record dan memasangnya di DNS provider.
+
+Verifikasi harus memeriksa TXT record sebenarnya menggunakan DNS resolver yang mendukung TXT.
+
+Status:
+- Belum diverifikasi.
+- Menunggu propagasi.
+- TXT cocok.
+- TXT tidak cocok.
+- Domain gagal di-resolve.
+- Verifikasi berhasil.
+
+Jangan menampilkan Verified hanya karena domain memiliki A record.
+
+Jangan membuat token baru setiap kali halaman dibuka.
+
+Token harus disimpan secara permanen dan konsisten sampai verifikasi selesai.
+
+Jika domain dihapus, token dan konfigurasi terkait harus ditangani dengan benar.
+
+# 5. CLOUDFLARE TUNNEL — HOSTNAME DAN TARGET NYATA
+
+Hilangkan seluruh target domain palsu seperti:
+
+`${domain}.cdn.cloudflare.net`
+
+Jangan membuat target CNAME berdasarkan tebakan.
+
+Gunakan konfigurasi Cloudflare Tunnel yang benar.
+
+### Pengelolaan tunnel
+
+Pengguna harus bisa:
+- Menghubungkan token remotely-managed.
+- Memeriksa koneksi.
+- Melihat tunnel yang aktif.
+- Mengelola hostname.
+- Mengatur service origin.
+- Memeriksa konfigurasi.
+- Memutus tunnel.
+- Reconnect.
+
+### Target hostname
+
+Setiap hostname harus diarahkan ke tunnel yang benar melalui mekanisme resmi Cloudflare.
+
+Contoh:
+
+`example.com` → `http://127.0.0.1:8080`
+
+`blog.example.com` → `http://127.0.0.1:8081`
+
+`api.example.com` → `http://127.0.0.1:8082`
+
+Jangan menganggap semua domain otomatis menuju website aktif.
+
+Implementasikan mapping hostname ke website secara nyata.
+
+Jika memakai Cloudflare API:
+- Autentikasi dengan API token yang benar.
+- Tampilkan izin API yang dibutuhkan.
+- Gunakan least privilege.
+- Ambil zone yang memang diizinkan.
+- Kelola DNS dan Published Application Routes.
+- Periksa respons API.
+- Simpan konfigurasi hasil aktual.
+
+Jika pengguna hanya memakai token tunnel tanpa API token, jelaskan bahwa beberapa pengelolaan DNS/hostname mungkin perlu dilakukan melalui dashboard Cloudflare.
+
+Jangan menjanjikan pengelolaan otomatis yang belum tersedia.
+
+# 6. DNS MANAGEMENT SEPERTI CLOUDFLARE
+
+Buat halaman DNS yang jelas seperti panel DNS Cloudflare.
+
+Fitur:
+- Daftar DNS record.
+- Tambah record.
+- Edit record.
+- Hapus record.
+- Cek propagasi.
+- Verifikasi TXT.
+- Cek CNAME.
+- Cek A dan AAAA.
+- Status proxy.
+- TTL.
+- Nama record.
+- Nilai record.
+
+Tipe record yang dapat dikelola jika API mendukung:
+
+- A
+- AAAA
+- CNAME
+- TXT
+- MX
+- NS
+- SRV
+- CAA
+
+Tampilkan record yang benar-benar berasal dari DNS/API, bukan daftar contoh.
+
+Jangan menganggap DNS sudah aktif hanya karena record tersimpan di aplikasi.
+
+Bedakan:
+- Konfigurasi lokal.
+- Konfigurasi di Cloudflare.
+- Hasil DNS publik.
+- Status propagasi.
+- Status koneksi tunnel.
+
+Jika ada record yang tidak sesuai, berikan rekomendasi perbaikan.
+
+# 7. SSL/TLS — JANGAN ADA STATUS PALSU
+
+Screenshot menunjukkan SSL/TLS dianggap aktif tanpa bukti yang memadai.
+
+Perbaiki total.
+
+Bedakan:
+
+1. Cloudflare Edge Certificate.
+2. HTTPS pengunjung ke Cloudflare.
+3. Tunnel terenkripsi dari HP ke Cloudflare.
+4. HTTPS origin jika memang digunakan.
+5. Sertifikat origin.
+6. Validasi sertifikat domain.
+
+Jangan menyamakan semua hal tersebut.
+
+Mode SSL/TLS:
+- Flexible.
+- Full.
+- Full (Strict).
+
+Namun, jangan membuat pilihan yang hanya mengubah nilai UI. Mode yang ditampilkan harus benar-benar sesuai konfigurasi Cloudflare.
+
+Jika mode hanya bisa diubah melalui Cloudflare API, integrasikan API atau berikan petunjuk yang benar.
+
+### Pemeriksaan sertifikat
+
+Periksa:
+- Domain dapat di-resolve.
+- HTTPS dapat diakses.
+- TLS handshake berhasil.
+- Sertifikat valid.
+- Subject Alternative Name cocok dengan hostname.
+- Masa berlaku sertifikat.
+- Issuer.
+- Error sertifikat.
+
+Status:
+- Aktif.
+- Menunggu penerbitan.
+- Tidak ditemukan.
+- Kedaluwarsa.
+- Hostname tidak cocok.
+- TLS gagal.
+- Domain tidak dapat diakses.
+
+Jika domain mati, jangan tampilkan ceklis hijau.
+
+Jangan menganggap sertifikat Cloudflare Edge otomatis berarti HTTPS origin HP juga aktif.
+
+### Always Use HTTPS
+
+Jika diaktifkan, terapkan melalui konfigurasi Cloudflare yang benar atau konfigurasi server yang benar-benar mendukung redirect.
+
+Jika gagal, tampilkan error.
+
+# 8. FILE MANAGER SEPERTI ZARCHIVER
+
+Buat file manager profesional.
+
+Dukung:
+- Folder.
+- File.
+- Multi-select.
+- Copy.
+- Move.
+- Rename.
+- Delete.
+- New Folder.
+- Upload.
+- Import.
+- Extract.
+- Search.
+- Sort.
+- Detail ukuran dan tanggal.
+
+### Format arsip
+
+Dukung:
+- ZIP.
+- 7Z.
+- TAR.
+- TAR.GZ.
+- GZ.
+- BZ2 jika library mendukung.
+
+Gunakan library yang sesuai dan masih aktif.
+
+Jangan membuat tombol Extract yang hanya membuka pesan sukses tanpa mengekstrak file.
+
+### Ekstraksi manual
+
+Jangan ekstrak otomatis setiap kali file ZIP ditambahkan.
+
+Alur:
+
+1. Pengguna memilih arsip.
+2. Aplikasi menampilkan detail arsip.
+3. Pengguna menekan tombol Ekstrak.
+4. Pengguna memilih lokasi tujuan.
+5. Pengguna memilih apakah file yang ada boleh ditimpa.
+6. Proses ekstraksi berjalan.
+7. Progress ditampilkan berdasarkan pekerjaan sebenarnya.
+8. Hasil ekstraksi ditampilkan.
+
+Dukung:
+- Ekstrak ke folder saat ini.
+- Ekstrak ke folder baru.
+- Ekstrak ke document root.
+- Ekstrak file tertentu jika library mendukungnya.
+
+### Multi-select dan kompresi
+
+Pengguna dapat memilih banyak file/folder.
+
+Setelah memilih:
+- Kompres menjadi ZIP.
+- Kompres menjadi 7Z jika implementasi tersedia.
+- Pilih nama arsip.
+- Pilih lokasi penyimpanan.
+- Atur level kompresi jika didukung.
+- Tampilkan progress kompresi.
+
+Jangan tampilkan pilihan format yang belum benar-benar didukung.
+
+### Keamanan arsip
+
+Cegah:
+- Zip Slip.
+- Path traversal.
+- Ekstraksi di luar folder tujuan.
+- File overwrite tanpa persetujuan.
+- Arsip rusak.
+- Arsip terlalu besar tanpa penanganan.
+
+# 9. WEBSITE HOSTING — PERBAIKI ERROR 403
+
+Screenshot menunjukkan `127.0.0.1:8080` menghasilkan HTTP 403 meskipun folder mempunyai index.
+
+Audit:
+- Document root.
+- URI folder.
+- Permission.
+- Canonical path.
+- File provider.
+- Default index.
+- Directory traversal protection.
+- File readability.
+- Domain-to-website mapping.
+
+Pastikan `index.php`, `index.html`, dan `index.htm` dapat dikenali.
+
+Jika folder website dipilih dari Storage Access Framework, pastikan server benar-benar memiliki akses untuk membaca file melalui URI tersebut.
+
+Jangan menyimpan URI lalu memperlakukannya sebagai path filesystem biasa.
+
+Jika server membutuhkan akses random file dan PHP native, lakukan impor/sinkronisasi ke direktori internal hosting yang dapat diakses runtime, atau gunakan metode yang memang mendukung URI.
+
+Berikan pesan error spesifik jika:
+- Document root tidak ditemukan.
+- Folder tidak bisa dibaca.
+- Index tidak ditemukan.
+- File tidak bisa diakses.
+- PHP runtime gagal.
+- Permission ditolak.
+
+Jangan mengembalikan 403 untuk semua kondisi.
+
+### Hostname routing
+
+Request harus dipetakan berdasarkan HTTP Host header.
+
+Contoh:
+- `example.com` → website utama.
+- `blog.example.com` → website blog.
+- `shop.example.com` → website toko.
+
+Pastikan pemetaan benar-benar berfungsi.
+
+# 10. PHP RUNTIME ASLI — PILIH VERSI PHP
+
+Saat ini `PhpExecutionEngine.kt` adalah interpreter sederhana dan memiliki versi PHP hardcoded.
+
+Ini harus diperbaiki.
+
+Saya ingin pilihan versi PHP seperti hosting cPanel:
+
+- PHP 7.4.
+- PHP 8.0.
+- PHP 8.1.
+- PHP 8.2.
+- PHP 8.3.
+- PHP 8.4.
+- Versi tambahan jika binary kompatibel tersedia.
+
+Jangan menampilkan versi yang tidak benar-benar tersedia.
+
+### Runtime
+
+Gunakan PHP runtime asli yang dapat dijalankan di Android.
+
+Audit opsi:
+- PHP source resmi.
+- Build PHP untuk Android.
+- PHP CLI atau FastCGI yang kompatibel.
+- Extension yang tersedia.
+- ABI perangkat.
+- Dependency native.
+
+Jangan menganggap interpreter Kotlin sederhana sebagai PHP lengkap.
+
+PHP harus mendukung fitur nyata seperti:
+- `echo`.
+- Function.
+- Class.
+- Include/require.
+- GET/POST.
+- Session.
+- Cookie.
+- JSON.
+- File handling.
+- PDO.
+- Database drivers.
+- Error handling.
+- Common extensions.
+
+Pastikan `phpinfo()` menunjukkan runtime dan extension yang benar-benar terpasang.
+
+### Pengaturan PHP
+
+Sediakan:
+- Versi PHP aktif.
+- Pilihan versi.
+- `php.ini`.
+- `memory_limit`.
+- `upload_max_filesize`.
+- `post_max_size`.
+- `max_execution_time`.
+- `display_errors`.
+- Extension manager.
+- Restart runtime.
+
+Setiap perubahan harus diterapkan dan dapat diuji.
+
+Jika suatu versi belum dapat dibangun untuk Android, jangan menampilkan versi tersebut sebagai tersedia.
+
+# 11. DATABASE — MYSQL/MARIADB WAJIB MENJADI PRIORITAS
+
+Saya menginginkan database seperti cPanel.
+
+Prioritas utama:
+- MySQL.
+- MariaDB.
+
+SQLite hanya menjadi alternatif terakhir jika MySQL/MariaDB benar-benar tidak dapat dijalankan secara lokal.
+
+### Database manager
+
+Sediakan:
+- Buat database.
+- Hapus database.
+- Rename jika didukung.
+- Buat user database.
+- Password.
+- Hak akses.
+- Host.
+- Port.
+- Daftar tabel.
+- SQL editor.
+- Import SQL.
+- Export SQL.
+- Backup.
+- Restore.
+- Query history.
+- Status server.
+- Versi database.
+
+Tampilkan koneksi seperti:
+
+Host: `127.0.0.1`
+
+Port: `3306`
+
+Engine: `MariaDB` atau `MySQL`
+
+Version: versi server yang sebenarnya.
+
+### Implementasi nyata
+
+Periksa kelayakan MariaDB native Android.
+
+Jika bisa:
+- Build binary yang kompatibel.
+- Kelola data directory.
+- Inisialisasi server.
+- Start/stop.
+- User authentication.
+- Socket/TCP.
+- Integrasi PHP.
+
+Jika tidak bisa:
+- Jangan berpura-pura menjalankan MySQL.
+- Sediakan remote MySQL/MariaDB melalui protokol asli.
+- SQLite hanya sebagai opsi alternatif dengan label yang jujur.
+
+Jangan menampilkan fitur database seperti phpMyAdmin jika backend-nya tidak mendukung operasi SQL sungguhan.
+
+# 12. SERVER & PHP PANEL SEPERTI CPANEL
+
+Buat halaman pengaturan server yang jelas.
+
+Fitur:
+- Start server.
+- Stop server.
+- Restart server.
+- Port.
+- Server uptime.
+- Versi HTTP server.
+- PHP runtime.
+- Website aktif.
+- Request count.
+- Error logs.
+- Resource usage jika dapat diukur.
+
+Pastikan perubahan port benar-benar mengubah port listener.
+
+Jika port sedang dipakai, tampilkan error.
+
+Jika server gagal berjalan, jangan tampilkan ONLINE.
+
+Sediakan pengaturan per website bila diperlukan.
+
+# 13. `.HTACCESS` DAN ERROR PAGES
+
+Saat ini pengelolaan `.htaccess` belum jelas dan dukungan parser terbatas.
+
+Jangan mengklaim Apache `.htaccess` sepenuhnya didukung jika server SFR Host tidak menggunakan Apache.
+
+### Pilihan implementasi
+
+Buat parser kompatibel untuk directive yang benar-benar didukung, atau gunakan server Apache-compatible jika memungkinkan.
+
+Sediakan status per directive:
+- Didukung.
+- Didukung sebagian.
+- Tidak didukung.
+
+Fitur:
+- DirectoryIndex.
+- ErrorDocument.
+- RewriteEngine.
+- RewriteRule yang didukung.
+- Redirect.
+- Options Indexes.
+- Options -Indexes.
+- Access control yang aman.
+- MIME type.
+- Header yang didukung.
+
+Jangan hanya menampilkan kode contoh tanpa menerapkannya.
+
+### Error pages
+
+Dukung setidaknya:
+
+- 400 Bad Request.
+- 401 Unauthorized.
+- 403 Forbidden.
+- 404 Not Found.
+- 405 Method Not Allowed.
+- 408 Request Timeout.
+- 413 Content Too Large.
+- 414 URI Too Long.
+- 415 Unsupported Media Type.
+- 418 jika sengaja didukung.
+- 422 Unprocessable Content.
+- 429 Too Many Requests.
+- 431 Request Header Fields Too Large.
+- 500 Internal Server Error.
+- 501 Not Implemented.
+- 502 Bad Gateway.
+- 503 Service Unavailable.
+- 504 Gateway Timeout.
+
+Gunakan kode HTTP yang sesuai dengan kondisi sebenarnya.
+
+Pengguna dapat:
+- Menggunakan halaman default SFR Host.
+- Menggunakan file HTML custom.
+- Memilih file error page.
+- Mengedit halaman.
+- Preview.
+- Mengaktifkan/nonaktifkan custom page.
+
+Jangan membuat seluruh error selalu mengembalikan HTTP 200.
+
+# 14. SECURITY CENTER
+
+Buat Security Center seperti hosting profesional.
+
+Fitur harus benar-benar berfungsi.
+
+Audit dan implementasikan:
+- File protection.
+- Directory protection.
+- Hidden files.
+- `.env` protection.
+- `.git` protection.
+- Database file protection.
+- `.htaccess` protection.
+- Access control.
+- IP blocking.
+- Request limits.
+- Rate limiting.
+- Brute force protection jika tersedia.
+- Security logs.
+- Suspicious request detection.
+
+Setiap fitur harus mempunyai:
+- Tombol ON/OFF.
+- Status aktif.
+- Tombol Save jika perubahan belum otomatis disimpan.
+- Pesan berhasil/gagal.
+- Keterangan efek konfigurasi.
+
+Jika fitur tidak dapat diterapkan pada server yang digunakan, tandai tidak didukung dan jangan tampilkan seolah-olah aktif.
+
+# 15. ANTI SCREENSHOT DAN ANTI SCREEN RECORDING
+
+Tambahkan pengaturan:
+
+`Proteksi Screenshot`
+
+Jika aktif, gunakan `WindowManager.LayoutParams.FLAG_SECURE` pada window aplikasi.
+
+Efek:
+- Mencegah screenshot pada halaman yang dilindungi.
+- Mencegah screen recording pada window yang dilindungi sesuai kemampuan Android.
+- Mencegah preview aplikasi muncul di recent apps jika didukung.
+
+Jika nonaktif, screenshot kembali diizinkan.
+
+Simpan preferensi pengguna.
+
+Jangan mengklaim dapat mencegah semua bentuk perekaman eksternal menggunakan kamera lain.
+
+Jangan menerapkan proteksi secara permanen tanpa opsi pengguna.
+
+# 16. APP LOCK — GUNAKAN KEAMANAN BAWAAN HP
+
+Gunakan AndroidX BiometricPrompt.
+
+Dukung:
+- Sidik jari.
+- PIN perangkat.
+- Pola perangkat.
+- Password perangkat.
+
+Jangan membuat PIN khusus aplikasi.
+
+Tambahkan pilihan waktu penguncian:
+
+- Segera setelah keluar aplikasi.
+- Setelah 1 menit.
+- Setelah 5 menit.
+- Setelah 10 menit.
+- Saat layar dimatikan.
+- Saat aplikasi dibuka kembali.
+
+Pastikan opsi yang dipilih benar-benar bekerja berdasarkan lifecycle aplikasi.
+
+Jika pengguna menekan Batal pada dialog autentikasi sistem:
+- Tutup aplikasi atau kembali ke luar aplikasi sesuai rancangan.
+- Jangan menampilkan dialog berulang kali.
+- Jangan meminta PIN buatan aplikasi.
+
+Jika perangkat tidak mempunyai secure lock screen, berikan instruksi untuk mengaktifkan keamanan perangkat.
+
+# 17. STORAGE ACCESS
+
+Perbaiki izin storage.
+
+Saat pertama kali aplikasi dibuka, lakukan pemeriksaan kebutuhan izin secara jelas.
+
+Jika fitur hosting membutuhkan akses folder:
+- Minta pengguna memilih folder.
+- Simpan persistable URI permission.
+- Pastikan akses tetap ada setelah restart.
+- Tampilkan folder aktif.
+- Sediakan tombol ganti folder.
+
+Jika aplikasi membutuhkan ALL FILES ACCESS untuk fitur tertentu, jelaskan alasannya dan arahkan ke pengaturan Android yang benar.
+
+Jangan membuka App Info umum yang tidak membantu pengguna.
+
+Gunakan intent pengaturan yang tepat, misalnya halaman Manage All Files Access jika memang diperlukan.
+
+Jangan meminta izin yang tidak diperlukan.
+
+Jika izin ditolak, tampilkan dampak dan cara mengaktifkannya.
+
+# 18. TEMA DARK/LIGHT YANG BENAR-BENAR BEKERJA
+
+Sekarang pengaturan Dark/Light tidak berfungsi dengan baik.
+
+Perbaiki total.
+
+Sediakan:
+- System Default.
+- Light.
+- Dark.
+
+Simpan preferensi menggunakan DataStore.
+
+Saat pengguna mengubah tema:
+- Seluruh halaman berubah langsung.
+- Semua card berubah.
+- Semua teks menyesuaikan.
+- Dialog ikut berubah.
+- Input ikut berubah.
+- Navigation bar ikut berubah.
+- Tidak perlu restart aplikasi.
+
+Jangan menggunakan warna hardcoded yang merusak tema.
+
+Gunakan Material 3 ColorScheme secara konsisten.
+
+# 19. UI/UX PROFESIONAL UNTUK HP KECIL
+
+Screenshot memperlihatkan:
+- Tombol terlalu besar.
+- Banyak tombol biru tanpa hierarki.
+- Teks panjang berantakan.
+- Navigasi horizontal tidak nyaman.
+- Spacing tidak konsisten.
+- Beberapa teks saling bertumpuk.
+- Halaman terlalu kosong.
+- Card terlalu besar.
+- Informasi penting tidak tersusun.
+- Ada tulisan yang tidak berguna.
+
+Lakukan redesign menyeluruh.
+
+### Ukuran layar target
+
+- 320dp.
+- 340dp.
+- 360dp.
+- 393dp.
+- 412dp.
+
+Uji font scale besar.
+
+### Prinsip desain
+
+1. Gunakan ukuran teks yang profesional.
+2. Hindari terlalu banyak card besar.
+3. Gunakan hierarki informasi.
+4. Gunakan tombol dengan ukuran proporsional.
+5. Jangan semua tombol berwarna biru.
+6. Gunakan warna merah untuk tindakan berbahaya.
+7. Gunakan warna hijau untuk status berhasil.
+8. Gunakan warna netral untuk tindakan sekunder.
+9. Gunakan ikon yang konsisten.
+10. Jangan membuat tombol dengan teks panjang bertumpuk.
+11. Gunakan ellipsis hanya jika tidak menghilangkan informasi penting.
+12. Pecah tombol menjadi layout vertikal ketika layar kecil.
+13. Pastikan semua konten dapat discroll.
+14. Perbaiki status bar dan navigation bar.
+15. Perbaiki keyboard inset.
+16. Pastikan tidak ada konten tertutup system UI.
+
+Gunakan komponen reusable agar desain konsisten.
+
+### Navigasi
+
+Pertahankan navigasi utama yang sederhana:
+
+- Dashboard.
+- Hosting & File.
+- Tunnel.
+- Databases.
+- Settings.
+
+Halaman sekunder dapat menggunakan tab atau navigasi internal yang terorganisir.
+
+Hapus menu duplikat dan halaman yang hanya mengulang fungsi sama.
+
+### Dashboard
+
+Tampilkan informasi penting:
+- Status server.
+- Status tunnel.
+- Website aktif.
+- Domain aktif.
+- Database aktif.
+- Request.
+- Uptime.
+- Error terbaru.
+
+Semua data harus berasal dari backend aktual.
+
+# 20. FITUR YANG HARUS DIHAPUS ATAU DIPERBAIKI
+
+Hapus teks promosi dan keterangan yang tidak berguna seperti:
+- Tulisan ZArchiver pada nama fitur jika tidak relevan.
+- Penjelasan berulang.
+- Label dummy.
+- Contoh domain palsu.
+- Informasi yang tidak mempunyai fungsi.
+- Tombol duplikat.
+- Status yang tidak akurat.
+- Pilihan yang belum didukung.
+
+Jangan menghapus fitur penting hanya karena belum selesai. Implementasikan dengan benar atau tampilkan sebagai belum tersedia.
+
+# 21. LOG DAN DIAGNOSTIK
+
+Buat pusat log yang benar-benar berguna.
+
+Kategori:
+- Application.
+- Web Server.
+- PHP.
+- Cloudflare Tunnel.
+- DNS.
+- SSL/TLS.
+- Database.
+- Security.
+
+Fitur:
+- Filter.
+- Search.
+- Waktu.
+- Severity.
+- Detail error.
+- Copy log.
+- Clear log.
+- Export log.
+
+Jangan menampilkan token Cloudflare, password database, atau kredensial sensitif.
+
+Error harus menjelaskan:
+- Apa yang gagal.
+- Penyebab yang diketahui.
+- Langkah perbaikan.
+- Apakah perlu retry.
+
+# 22. KETENTUAN BINARY DAN DEPENDENCY OPEN SOURCE
+
+Saya ingin pengguna tidak kesulitan mencari binary secara manual.
+
+Buat Binary Manager yang terorganisir.
+
+Untuk setiap komponen:
+- Nama.
+- Versi.
+- ABI.
+- Sumber resmi.
+- Ukuran.
+- SHA-256.
+- Status kompatibilitas.
+- Status terpasang.
+- Tombol Download.
+- Tombol Update.
+- Tombol Import.
+- Tombol Hapus versi jika aman.
+
+Komponen dapat mencakup:
+- cloudflared.
+- PHP runtime.
+- MariaDB jika tersedia.
+- Utility lain yang memang dibutuhkan.
+
+### Sumber binary
+
+Gunakan repository resmi atau rilis open-source terpercaya.
+
+Contoh:
+- Cloudflare cloudflared official repository.
+- PHP official source.
+- MariaDB official source.
+
+Jangan mengambil binary acak dari website tidak jelas.
+
+Jangan menganggap binary Linux otomatis kompatibel dengan Android.
+
+Periksa:
+- ABI.
+- libc.
+- Android API level.
+- Dynamic dependencies.
+- Permission.
+- SELinux.
+- Execution policy.
+
+Untuk setiap download:
+- Progress aktual.
+- Ukuran.
+- Kecepatan.
+- ETA.
+- Checksum.
+- Retry.
+- Cancel.
+- Error.
+
+Jika versi terbaru tidak kompatibel, sediakan pilihan versi kompatibel yang sudah diverifikasi.
+
+### Import manual
+
+Tetap dukung Import Binary.
+
+Pengguna dapat memilih file dari storage HP.
+
+Setelah dipilih:
+- Validasi format.
+- Validasi ABI.
+- Validasi executable.
+- Validasi versi.
+- Uji eksekusi.
+- Simpan hanya jika valid.
+
+Jangan menandai binary terpasang hanya karena file berhasil dipilih.
+
+# 23. REAL-TIME DAN PENYIMPANAN DATA
+
+Semua perubahan harus tersimpan dengan benar.
+
+Gunakan:
+- DataStore untuk preferensi.
+- Database untuk data terstruktur.
+- File storage untuk website.
+- Android Keystore untuk kredensial.
+- Service state untuk proses yang aktif.
+
+Jika pengguna mengubah domain:
+- Mapping domain ikut berubah.
+- DNS diagnostics ikut diperbarui.
+- Tunnel route ikut diperbarui.
+- Dashboard ikut diperbarui.
+
+Jika pengguna mengubah PHP:
+- Runtime harus berubah.
+- Status versi harus diperbarui.
+- Website harus memakai runtime yang dipilih.
+
+Jika pengguna mengubah port:
+- Server listener harus restart.
+- Tunnel origin harus diperbarui jika diperlukan.
+
+Jangan membuat perubahan UI yang tidak diterapkan ke backend.
+
+# 24. PENGUJIAN WAJIB
+
+Jalankan pengujian nyata.
+
+### Domain
+- Domain utama.
+- Addon domain.
+- Subdomain.
+- Shared document root.
+- Separate document root.
+- Domain duplikat.
+- Domain invalid.
+
+### DNS
+- TXT valid.
+- TXT invalid.
+- CNAME valid.
+- CNAME invalid.
+- Propagasi.
+- Record tidak tersedia.
+
+### Cloudflare
+- Token valid.
+- Token invalid.
+- Tunnel tersambung.
+- Tunnel putus.
+- Reconnect.
+- Hostname routing.
+- Website dari jaringan luar.
+
+### SSL
+- Domain aktif.
+- Domain mati.
+- Sertifikat valid.
+- Sertifikat expired.
+- Hostname mismatch.
+- TLS failure.
+
+### Hosting
+- Index PHP.
+- Index HTML.
+- Subdomain routing.
+- 403.
+- 404.
+- PHP error.
+- Directory listing.
+- Permission.
+
+### File manager
+- Multi-select.
+- ZIP.
+- 7Z.
+- Extract.
+- Compress.
+- Copy.
+- Move.
+- Rename.
+- Delete.
+- Storage permission.
+- Persistable URI.
+
+### PHP
+- Versi aktual.
+- `phpinfo()`.
+- GET/POST.
+- Include.
+- Session.
+- PDO.
+- Extension.
+
+### Database
+- MySQL/MariaDB.
+- Koneksi.
+- SQL.
+- User.
+- Import/export.
+- Backup/restore.
+
+### Security
+- Screenshot protection.
+- Screen lock.
+- Timeout.
+- Save settings.
+- Theme.
+- Access rules.
+
+### UI
+- 320dp.
+- 360dp.
+- 393dp.
+- Font scale besar.
+- Dark mode.
+- Light mode.
+- Keyboard.
+- Semua halaman.
+
+Jangan mengarang hasil pengujian.
+
+# 25. HASIL YANG WAJIB DIBERIKAN
+
+Saya ingin:
+
+1. Source code lengkap yang sudah diperbaiki.
+2. Semua file yang diubah.
+3. Semua file baru.
+4. Penjelasan arsitektur.
+5. Daftar fitur yang benar-benar bekerja.
+6. Daftar fitur yang belum didukung.
+7. Hasil build APK.
+8. GitHub Actions yang berfungsi.
+9. Panduan instalasi.
+10. Panduan penggunaan.
+11. Hasil pengujian.
+12. Catatan migrasi data jika diperlukan.
+
+Jangan hanya mengirim beberapa potongan kode.
+
+Jangan menghapus data pengguna tanpa migrasi atau persetujuan.
+
+Jangan menandai fitur aktif jika backend belum berhasil menerapkannya.
+
+Jika suatu teknologi tidak dapat dijalankan pada Android, jelaskan secara teknis dan berikan solusi alternatif yang benar.
+
+**TARGET AKHIR: SFR HOST HARUS MENJADI APLIKASI HOSTING ANDROID YANG NYATA, BUKAN SEKADAR SIMULATOR CPANEL.**
+
+Prioritas:
+1. Hosting website benar-benar dapat diakses.
+2. Domain dan subdomain benar.
+3. Cloudflare Tunnel benar-benar terhubung.
+4. DNS TXT dan CNAME dapat diverifikasi.
+5. PHP runtime asli.
+6. MySQL/MariaDB nyata.
+7. File Manager lengkap.
+8. SSL/TLS akurat.
+9. Security Center berfungsi.
+10. UI profesional, ringan, dan responsif.
+
+Jangan berhenti setelah APK berhasil dikompilasi. Buktikan setiap fitur dengan pengujian yang relevan.
+
+### Temuan tambahan dari screenshot
+
+![Send Emails With Postmark · Cloudflare Workers docs](https://images.openai.com/static-rsc-4/WQqk3YcFKg5zZs8cvE7BdEiThw88qrQtTvma8ilKTzeZ_y0U3ku5iTl1m2RySlo3JwJDlvf6I-aUxNipb6OCf4knmX8FiLZy6Sb3MwNfsmZoo0ac30SyalrXooARmbKUuITBxJjK34osXP6SyM65mH9VpWQ8iUEOLKRdFNZTo6VOX4s93OXBCRZpKsBycPB1?purpose=fullsize)
+
+Domain dan DNS
+
+Target tunnel harus diambil dari konfigurasi tunnel sebenarnya. TXT verification harus menampilkan nilai yang konsisten dan dapat diperiksa.
+
+![How to add a new subdomain in jupiter cpanel theme?  - Kennisbank - HostNowNow](https://images.openai.com/static-rsc-4/qWhqRuuzIBcNobXUI-6hW0iuxrlu-oPusDVvDZ7195zhcy9naSYRjvbP5mEaeQOe8h3D1Ch6kuf9kWXsmlCEUvClMinRm--wk_HPNZ-3lb23Mb9YbmGtDb4K4DZAh16R3pwMzp40yh5TGDW3t1BZyiUm68-GpqzHJRp9ulaEb8F0D1j67QehF6bTkmSD5f0C?purpose=fullsize)
+
+Domain utama dan subdomain
+
+Subdomain harus menjadi anak domain induk, bukan tercatat sebagai domain utama baru.
+
+![How to change the PHP version on cPanel - Documentation](https://images.openai.com/static-rsc-4/tRQBz32X0IDO0MM-td4rjamsuukfzPmrQ93FTUgXtBoNILTd9mbXg8xqFcNPPKev8xYYcmH-Ce3-F4CKEXWjS0jgl70FQYt1T2z0l_zSaM9DT6Fsc-N43uleIp1PCMrSfjVBvoY3-qZ77kJ2YtOWSZCRyXzg9xzwe8usbNqf848w7L45tglKF9-P-CYibno4?purpose=fullsize)
+
+PHP dan database
+
+Pilihan versi harus sesuai runtime asli yang terpasang, bukan angka versi yang ditulis tetap.
+
+![Cómo comprimir y descomprimir archivos en Android](https://images.openai.com/static-rsc-4/xCwHX9Q_Jcx5QmjxtAr8A-kDZWmko80Bqr-sAKXhGZ3nvFB4pM5lf8jZ5p0Opa1BahhlUnvxzZAH4C4oiBte0oIvefbPH-hGrufWJvGaXpOTZYu-zDkq2wYABnNUQhHfXgQczh2i4-2U86TkA0jH9H9uEA6Om4Qkzr-HBpOYnCOjZtjRt8YQY5hDzxJkIONH?purpose=fullsize)
+
+File Manager
+
+Operasi ekstrak dan kompres harus benar-benar berjalan, termasuk multi-select dan penanganan arsip.
+
+Saran saya: jangan minta AI menyelesaikan semuanya sekaligus tanpa tahapan. Minta ia menyelesaikan audit dan fondasi backend terlebih dahulu, kemudian domain/tunnel, PHP/database, file manager, security, lalu UI. Kalau langsung mengubah semua halaman sekaligus, risiko fitur yang sebelumnya berjalan ikut rusak akan lebih besar.

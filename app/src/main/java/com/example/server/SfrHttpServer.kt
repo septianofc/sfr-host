@@ -252,7 +252,7 @@ class SfrHttpServer(
                         bytesSent = sendFileResponse(out, resolvedIndexFile, requestMethod)
                     }
                 } else {
-                    // No index file found -> Directory Listing
+                    // No index file found -> Directory Listing or Default Welcome Page
                     if (htaccessConfig.allowDirectoryListing) {
                         statusCode = 200
                         val hostLabel = requestHeaders["Host"] ?: "127.0.0.1:$port"
@@ -263,6 +263,15 @@ class SfrHttpServer(
                             domainOrHost = hostLabel
                         )
                         bytesSent = sendHtmlResponse(out, 200, "OK", listingHtml, requestMethod)
+                    } else if (cleanPath == "/" || cleanPath.isEmpty() || targetFile.canonicalPath == docRoot.canonicalPath) {
+                        // Prevent 403 on fresh installation/empty docroot: show default welcome page
+                        statusCode = 200
+                        val hostLabel = requestHeaders["Host"] ?: "127.0.0.1:$port"
+                        val welcomeHtml = DefaultWebPages.getDefaultWelcomePage(
+                            websiteName = hostLabel,
+                            docRoot = docRoot.absolutePath
+                        )
+                        bytesSent = sendHtmlResponse(out, 200, "OK", welcomeHtml, requestMethod)
                     } else {
                         statusCode = 403
                         bytesSent = sendBrandedError(out, 403, requestMethod, cleanPath, requestHeaders, "Directory listing dinonaktifkan oleh administrator.")
@@ -447,6 +456,11 @@ class SfrHttpServer(
     private fun getStatusText(code: Int): String {
         return when (code) {
             200 -> "OK"
+            201 -> "Created"
+            204 -> "No Content"
+            301 -> "Moved Permanently"
+            302 -> "Found"
+            304 -> "Not Modified"
             400 -> "Bad Request"
             401 -> "Unauthorized"
             403 -> "Forbidden"
@@ -454,12 +468,17 @@ class SfrHttpServer(
             405 -> "Method Not Allowed"
             408 -> "Request Timeout"
             413 -> "Payload Too Large"
+            414 -> "URI Too Long"
+            415 -> "Unsupported Media Type"
+            422 -> "Unprocessable Entity"
             429 -> "Too Many Requests"
+            431 -> "Request Header Fields Too Large"
             500 -> "Internal Server Error"
+            501 -> "Not Implemented"
             502 -> "Bad Gateway"
             503 -> "Service Unavailable"
             504 -> "Gateway Timeout"
-            else -> "Error"
+            else -> "HTTP $code"
         }
     }
 

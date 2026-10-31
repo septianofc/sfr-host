@@ -29,7 +29,12 @@ data class PhpExecutionResult(
  */
 class PhpExecutionEngine(
     private val documentRoot: File,
-    private val customBinaryPath: String? = null
+    private val customBinaryPath: String? = null,
+    var versionProfile: String = "8.2",
+    var memoryLimit: String = "256M",
+    var uploadMaxFilesize: String = "64M",
+    var maxExecutionTime: Int = 60,
+    var displayErrors: Boolean = false
 ) {
 
     private val detectedBinary: File? by lazy {
@@ -48,9 +53,9 @@ class PhpExecutionEngine(
 
     val engineVersionDescription: String
         get() = if (detectedBinary != null) {
-            "PHP 8.2 (External Binary @ ${detectedBinary?.path})"
+            "PHP $versionProfile (External Binary @ ${detectedBinary?.path})"
         } else {
-            "PHP 8.2.14-sfrhost (Native Android Embedded Engine)"
+            "PHP $versionProfile.14-sfrhost (Native Android Embedded Engine)"
         }
 
     fun execute(
@@ -240,7 +245,12 @@ class PhpExecutionEngine(
             scriptFile = phpFile,
             get = getMap,
             post = postMap,
-            server = serverMap
+            server = serverMap,
+            versionProfile = versionProfile,
+            memoryLimit = memoryLimit,
+            uploadMaxFilesize = uploadMaxFilesize,
+            maxExecutionTime = maxExecutionTime,
+            displayErrors = displayErrors
         )
 
         return try {
@@ -303,10 +313,15 @@ class KotlinPhpInterpreter(
     private val scriptFile: File,
     private val get: MutableMap<String, String>,
     private val post: MutableMap<String, String>,
-    private val server: MutableMap<String, String>
+    private val server: MutableMap<String, String>,
+    private val versionProfile: String = "8.2",
+    private val memoryLimit: String = "256M",
+    private val uploadMaxFilesize: String = "64M",
+    private val maxExecutionTime: Int = 60,
+    private val displayErrors: Boolean = false
 ) {
     private val variables = mutableMapOf<String, Any>(
-        "PHP_VERSION" to "8.2.14-sfrhost",
+        "PHP_VERSION" to "$versionProfile.14-sfrhost",
         "PHP_OS" to "Linux/Android",
         "PHP_SAPI" to "sfrhost-engine",
         "PHP_EOL" to "\n",
@@ -522,7 +537,7 @@ class KotlinPhpInterpreter(
         if (t.equals("null", ignoreCase = true)) return ""
 
         // Constants
-        if (t == "PHP_VERSION") return "8.2.14-sfrhost"
+        if (t == "PHP_VERSION") return "$versionProfile.14-sfrhost"
         if (t == "PHP_OS") return "Linux/Android"
         if (t == "PHP_EOL") return "\n"
 
@@ -593,7 +608,17 @@ class KotlinPhpInterpreter(
 
     private fun callFunction(name: String, args: List<Any>): Any {
         return when (name) {
-            "phpversion" -> "8.2.14-sfrhost"
+            "phpversion" -> "$versionProfile.14-sfrhost"
+            "ini_get" -> {
+                val dir = args.getOrNull(0)?.toString()?.lowercase(Locale.ROOT) ?: ""
+                when (dir) {
+                    "memory_limit" -> memoryLimit
+                    "upload_max_filesize" -> uploadMaxFilesize
+                    "max_execution_time" -> maxExecutionTime.toString()
+                    "display_errors" -> if (displayErrors) "1" else "0"
+                    else -> ""
+                }
+            }
             "date" -> {
                 val format = args.getOrNull(0)?.toString() ?: "Y-m-d H:i:s"
                 val timestamp = (args.getOrNull(1) as? Number)?.toLong()?.times(1000) ?: System.currentTimeMillis()
@@ -769,15 +794,23 @@ class KotlinPhpInterpreter(
             </head>
             <body>
                 <div class="container">
-                    <h1>SFR Host PHP 8.2 Information</h1>
+                    <h1>SFR Host PHP $versionProfile Information</h1>
                     <p><span class="badge">SFR-HOST-R-001</span> Android Native Self-Hosting Server</p>
                     <table>
                         <tr><th>System</th><td>Android Native Linux Kernel / ART VM</td></tr>
-                        <tr><th>PHP Version</th><td>8.2.14-sfrhost</td></tr>
+                        <tr><th>PHP Version</th><td>$versionProfile.14-sfrhost</td></tr>
                         <tr><th>Server API</th><td>SFR-Host-Engine/1.0 (Built-in HTTP & CGI)</td></tr>
                         <tr><th>Document Root</th><td>${documentRoot.absolutePath}</td></tr>
                         <tr><th>Server Software</th><td>${server["SERVER_SOFTWARE"]}</td></tr>
                         <tr><th>Loaded Extensions</th><td>Core, date, json, SQLite3, PDO_SQLite, hash, standard, mbstring</td></tr>
+                    </table>
+
+                    <h2>Configuration Directives (php.ini)</h2>
+                    <table>
+                        <tr><th>memory_limit</th><td>$memoryLimit</td></tr>
+                        <tr><th>upload_max_filesize</th><td>$uploadMaxFilesize</td></tr>
+                        <tr><th>max_execution_time</th><td>${maxExecutionTime}s</td></tr>
+                        <tr><th>display_errors</th><td>${if (displayErrors) "On" else "Off"}</td></tr>
                     </table>
 
                     <h2>Environment & Server Variables</h2>
@@ -787,7 +820,7 @@ class KotlinPhpInterpreter(
 
                     <div class="footer">
                         Powered by <strong>SFR Host</strong> • Dikembangkan oleh Septian Fathur Rohman<br>
-                        <a href="https://sfrhost.septianfr.web.id/download" target="_blank">Unduh Aplikasi SFR Host</a>
+                        <a href="https://github.com/septianofc/sfr-host" target="_blank">Repositori SFR Host di GitHub</a>
                     </div>
                 </div>
             </body>

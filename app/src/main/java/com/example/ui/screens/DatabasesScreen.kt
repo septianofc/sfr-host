@@ -72,6 +72,7 @@ import androidx.compose.ui.unit.sp
 import com.example.data.DatabaseManager
 import com.example.data.SfrDatabaseItem
 import com.example.data.SqlQueryResult
+import com.example.ui.theme.SfrButtonColors
 import com.example.ui.theme.SfrPrimaryBlue
 import com.example.ui.theme.SfrSecondaryOrange
 import kotlinx.coroutines.Dispatchers
@@ -264,7 +265,8 @@ fun DatabasesScreen(
                                                 selectedDb = item
                                                 selectedTab = 1
                                             },
-                                            modifier = Modifier.height(36.dp)
+                                            modifier = Modifier.height(36.dp),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = SfrButtonColors.PrimaryBlue)
                                         ) {
                                             Text("Kelola", fontSize = 12.sp)
                                         }
@@ -329,7 +331,7 @@ fun DatabasesScreen(
                                         }
                                     }
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = SfrPrimaryBlue),
+                                colors = ButtonDefaults.buttonColors(containerColor = SfrButtonColors.ActiveGreen),
                                 enabled = !isRunningQuery && selectedDb != null
                             ) {
                                 Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -349,7 +351,8 @@ fun DatabasesScreen(
                                         exportDumpText = dump
                                         showExportDialog = true
                                     }
-                                }
+                                },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = SfrButtonColors.PrimaryBlue)
                             ) {
                                 Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -358,7 +361,8 @@ fun DatabasesScreen(
                         }
 
                         OutlinedButton(
-                            onClick = { showImportDialog = true }
+                            onClick = { showImportDialog = true },
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = SfrButtonColors.PrimaryBlue)
                         ) {
                             Icon(Icons.Default.Upload, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
@@ -730,7 +734,7 @@ fun DatabasesScreen(
                         refreshList()
                         showDeleteConfirmDialog = null
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(containerColor = SfrButtonColors.DangerRed)
                 ) {
                     Text("Hapus Permanen")
                 }

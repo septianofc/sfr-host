@@ -27,11 +27,15 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -52,7 +56,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.DataStoreManager
 import com.example.security.AppLockManager
+import com.example.ui.theme.SfrButtonColors
 import com.example.ui.theme.SfrPrimaryBlue
 import com.example.ui.theme.SfrSecondaryOrange
 import com.example.ui.theme.StatusOfflineRed
@@ -68,9 +74,12 @@ fun SecurityScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val dataStore = remember { DataStoreManager(context) }
 
     val isLockEnabled by appLockManager.isLockEnabled.collectAsState(initial = false)
     val isDeviceSecure = remember { appLockManager.isDeviceSecure() }
+    val screenshotProtection by dataStore.screenshotProtection.collectAsState(initial = false)
+    val lockTimeoutMode by dataStore.lockTimeoutMode.collectAsState(initial = "IMMEDIATELY")
 
     var rateLimitEnabled by remember { mutableStateOf(true) }
     var traversalGuardEnabled by remember { mutableStateOf(true) }
@@ -153,51 +162,105 @@ fun SecurityScreen(
                     Divider()
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Device Security Status
+                    // Proteksi Layar (FLAG_SECURE Anti-Screenshot)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = if (isDeviceSecure) Icons.Default.CheckCircle else Icons.Default.Security,
-                                    contentDescription = null,
-                                    tint = if (isDeviceSecure) StatusOnlineGreen else SfrSecondaryOrange,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = if (isDeviceSecure) "Pengaman Layar HP Terdeteksi" else "Kunci Layar HP Belum Diatur",
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 12.sp,
-                                    color = if (isDeviceSecure) StatusOnlineGreen else SfrSecondaryOrange
-                                )
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(SfrPrimaryBlue.copy(alpha = 0.12f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.VisibilityOff, contentDescription = null, tint = SfrPrimaryBlue, modifier = Modifier.size(18.dp))
                             }
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = "Menggunakan autentikasi bawaan sistem Android (Fingerprint, PIN, Pola, Sandi)",
-                                fontSize = 11.sp,
-                                color = MaterialTheme.colorScheme.outline
-                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text("Proteksi Layar (FLAG_SECURE)", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                Text("Cegah screenshot & rekaman layar HP", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                            }
                         }
 
-                        if (!isDeviceSecure) {
+                        Switch(
+                            checked = screenshotProtection,
+                            onCheckedChange = { checked ->
+                                scope.launch { dataStore.setScreenshotProtection(checked) }
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = SfrButtonColors.PrimaryBlue
+                            )
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Divider()
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Waktu Kunci Otomatis (Timeout)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(SfrPrimaryBlue.copy(alpha = 0.12f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.Timer, contentDescription = null, tint = SfrPrimaryBlue, modifier = Modifier.size(18.dp))
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text("Waktu Kunci Otomatis", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                Text("Kunci ulang setelah aplikasi ditinggalkan", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                            }
+                        }
+
+                        var timeoutMenuExpanded by remember { mutableStateOf(false) }
+                        Box {
                             OutlinedButton(
-                                onClick = {
-                                    try {
-                                        context.startActivity(Intent(Settings.ACTION_SECURITY_SETTINGS))
-                                    } catch (e: Exception) {
-                                        context.startActivity(Intent(Settings.ACTION_SETTINGS))
-                                    }
-                                },
+                                onClick = { timeoutMenuExpanded = true },
                                 shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier.height(34.dp)
                             ) {
-                                Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(12.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Atur di HP", fontSize = 11.sp)
+                                val label = when (lockTimeoutMode) {
+                                    "IMMEDIATELY" -> "Segera"
+                                    "1M" -> "1 Menit"
+                                    "5M" -> "5 Menit"
+                                    "10M" -> "10 Menit"
+                                    "SCREEN_OFF" -> "Layar Mati"
+                                    else -> lockTimeoutMode
+                                }
+                                Text(label, fontSize = 11.sp)
+                            }
+
+                            DropdownMenu(
+                                expanded = timeoutMenuExpanded,
+                                onDismissRequest = { timeoutMenuExpanded = false }
+                            ) {
+                                listOf(
+                                    "IMMEDIATELY" to "Segera (Saat keluar)",
+                                    "1M" to "1 Menit",
+                                    "5M" to "5 Menit",
+                                    "10M" to "10 Menit",
+                                    "SCREEN_OFF" to "Saat Layar HP Mati"
+                                ).forEach { (mode, title) ->
+                                    DropdownMenuItem(
+                                        text = { Text(title) },
+                                        onClick = {
+                                            scope.launch { dataStore.setLockTimeoutMode(mode) }
+                                            timeoutMenuExpanded = false
+                                        }
+                                    )
+                                }
                             }
                         }
                     }

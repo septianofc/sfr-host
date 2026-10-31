@@ -520,6 +520,108 @@ class FileManager(private val context: Context) {
         }
     }
 
+    /**
+     * Compress multiple selected files and folders into a ZIP archive.
+     */
+    fun zipFiles(
+        websiteName: String,
+        relativeParent: String,
+        fileNames: List<String>,
+        zipFileName: String
+    ): Boolean {
+        if (fileNames.isEmpty()) return false
+        val base = getWebsiteDirectory(websiteName)
+        val parent = if (relativeParent.isEmpty()) base else File(base, relativeParent)
+        val sanitized = sanitizeFileName(if (zipFileName.endsWith(".zip", ignoreCase = true)) zipFileName else "$zipFileName.zip")
+        val zipFile = File(parent, sanitized)
+        if (!isSafePath(base, parent) || !isSafePath(base, zipFile)) return false
+
+        return try {
+            ZipOutputStream(zipFile.outputStream().buffered()).use { zos ->
+                for (name in fileNames) {
+                    val item = File(parent, name)
+                    if (!item.exists() || !isSafePath(base, item) || item == zipFile) continue
+                    if (item.isDirectory) {
+                        item.walkTopDown().forEach { sub ->
+                            if (sub.isFile && sub != zipFile) {
+                                val relPath = sub.relativeTo(parent).path
+                                val entry = ZipEntry(relPath)
+                                zos.putNextEntry(entry)
+                                sub.inputStream().use { it.copyTo(zos) }
+                                zos.closeEntry()
+                            }
+                        }
+                    } else {
+                        val entry = ZipEntry(item.name)
+                        zos.putNextEntry(entry)
+                        item.inputStream().use { it.copyTo(zos) }
+                        zos.closeEntry()
+                    }
+                }
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /**
+     * Extract a ZIP file to an explicit destination directory with overwrite toggle.
+     */
+    fun unzipFileTo(
+        websiteName: String,
+        zipRelativePath: String,
+        destinationRelativePath: String,
+        overwrite: Boolean
+    ): Pair<Boolean, String> {
+        val base = getWebsiteDirectory(websiteName)
+        val zipFile = File(base, zipRelativePath)
+        if (!isSafePath(base, zipFile) || !zipFile.exists() || !zipFile.name.endsWith(".zip", ignoreCase = true)) {
+            return Pair(false, "Berkas ZIP tidak ditemukan atau tidak valid.")
+        }
+
+        val destDir = if (destinationRelativePath.isEmpty()) base else File(base, destinationRelativePath)
+        if (!isSafePath(base, destDir)) {
+            return Pair(false, "Folder tujuan ekstraksi tidak valid.")
+        }
+        destDir.mkdirs()
+
+        var count = 0
+        var skipped = 0
+        return try {
+            ZipInputStream(zipFile.inputStream().buffered()).use { zis ->
+                var entry = zis.nextEntry
+                while (entry != null) {
+                    val newFile = File(destDir, entry.name)
+                    if (!isSafePath(destDir, newFile)) {
+                        return Pair(false, "Deteksi keamanan: Path traversal berbahaya terdeteksi di dalam ZIP.")
+                    }
+                    if (entry.isDirectory) {
+                        newFile.mkdirs()
+                    } else {
+                        newFile.parentFile?.mkdirs()
+                        if (newFile.exists() && !overwrite) {
+                            skipped++
+                        } else {
+                            newFile.outputStream().use { zis.copyTo(it) }
+                            count++
+                        }
+                    }
+                    zis.closeEntry()
+                    entry = zis.nextEntry
+                }
+            }
+            val msg = if (skipped > 0) {
+                "Berhasil mengekstrak $count berkas ($skipped dilewati karena sudah ada)."
+            } else {
+                "Berhasil mengekstrak $count berkas ke ${destDir.name}."
+            }
+            Pair(true, msg)
+        } catch (e: Exception) {
+            Pair(false, "Gagal mengekstrak ZIP: ${e.message}")
+        }
+    }
+
     fun isSafePath(base: File, target: File): Boolean {
         val canonicalBase = base.canonicalPath
         val canonicalTarget = target.canonicalPath

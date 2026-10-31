@@ -18,10 +18,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Refresh
@@ -52,10 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.CustomDomainItem
 import com.example.data.DomainManager
+import com.example.ui.theme.SfrButtonColors
 import com.example.ui.theme.SfrPrimaryBlue
-import com.example.ui.theme.SfrSecondaryOrange
-import com.example.ui.theme.StatusOfflineRed
-import com.example.ui.theme.StatusOnlineGreen
 import kotlinx.coroutines.launch
 
 data class DnsRecordItem(
@@ -78,13 +74,17 @@ fun DnsManagementScreen(
     var testResult by remember { mutableStateOf<String?>(null) }
     var isTestingDns by remember { mutableStateOf(false) }
 
-    val sampleRecords = remember(domains) {
+    val sampleRecords = remember(domains, gatewayHost) {
         val list = mutableListOf<DnsRecordItem>()
+        val defaultTunnelTarget = if (gatewayHost.isNotBlank()) gatewayHost else "tunnel-id-anda.cfargotunnel.com"
+
         domains.forEach { d ->
-            val target = "${d.domain}.cdn.cloudflare.net"
-            list.add(DnsRecordItem("CNAME", d.domain, target, "Proxied (DNS + WAF)"))
-            list.add(DnsRecordItem("CNAME", "www.${d.domain}", target, "Proxied (DNS + WAF)"))
-            list.add(DnsRecordItem("TXT", "_sfrhost-verify.${d.domain}", d.verificationToken, "DNS Only"))
+            val tunnelTarget = if (d.resolvedCname != null) d.resolvedCname else defaultTunnelTarget
+            list.add(DnsRecordItem("CNAME", d.domain, tunnelTarget, "Cloudflare Edge Tunnel"))
+            list.add(DnsRecordItem("CNAME", "www.${d.domain}", tunnelTarget, "Cloudflare Edge Tunnel"))
+            if (d.verificationToken.isNotEmpty()) {
+                list.add(DnsRecordItem("TXT", "_sfrhost-verify.${d.domain}", "sfrhost-verify=${d.verificationToken}", "DNS Verification"))
+            }
         }
         list
     }
@@ -106,7 +106,7 @@ fun DnsManagementScreen(
                     color = SfrPrimaryBlue
                 )
                 Text(
-                    text = "Verifikasi Rekaman CNAME, TXT, dan Propagasi DNS menggunakan Cloudflare DoH Resmi",
+                    text = "Verifikasi Rekaman CNAME, TXT, dan Propagasi DNS menggunakan Cloudflare DoH Resmi (1.1.1.1)",
                     style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.outline)
                 )
             }
@@ -135,7 +135,7 @@ fun DnsManagementScreen(
                     OutlinedTextField(
                         value = testDomainInput,
                         onValueChange = { testDomainInput = it },
-                        label = { Text("Nama Domain (misal: septianfr.web.id)") },
+                        label = { Text("Nama Domain") },
                         placeholder = { Text("domainanda.com") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
@@ -153,23 +153,23 @@ fun DnsManagementScreen(
                                             "CNAME: ${report.actualCname ?: "Tidak ditemukan"}\n" +
                                             "TXT: ${report.actualTxt ?: "Tidak ditemukan"}\n" +
                                             "IP (A Record): ${if (report.actualIps.isEmpty()) "Tidak ditemukan" else report.actualIps.joinToString(", ")}\n" +
-                                            "HTTPS Terhubung: ${if (report.isHttpsWorking) "YA (SSL Aktif)" else "TIDAK"}\n" +
+                                            "HTTPS Terhubung: ${if (report.isHttpsWorking) "YA (TLS Handshake Valid)" else "TIDAK"}\n" +
                                             "Diagnostik: ${report.detailMessage}"
                                     isTestingDns = false
                                 }
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = SfrPrimaryBlue),
+                        colors = ButtonDefaults.buttonColors(containerColor = SfrButtonColors.PrimaryBlue),
                         enabled = !isTestingDns
                     ) {
                         if (isTestingDns) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Memeriksa DoH...")
+                            Text("Memeriksa DoH...", color = Color.White)
                         } else {
-                            Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Cek DoH Cloudflare")
+                            Text("Cek DoH Cloudflare", color = Color.White)
                         }
                     }
 
@@ -263,7 +263,7 @@ fun DnsRecordRowCard(record: DnsRecordItem) {
                 cm.setPrimaryClip(ClipData.newPlainText("DNS Target", record.target))
                 Toast.makeText(context, "Target disalin ke clipboard", Toast.LENGTH_SHORT).show()
             }) {
-                Icon(Icons.Default.ContentCopy, contentDescription = "Salin", tint = SfrPrimaryBlue, modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.ContentCopy, contentDescription = "Salin", tint = SfrButtonColors.PrimaryBlue, modifier = Modifier.size(16.dp))
             }
         }
     }

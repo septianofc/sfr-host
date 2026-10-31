@@ -17,19 +17,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -40,8 +41,10 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,9 +56,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.CustomDomainItem
+import com.example.data.DomainManager
+import com.example.ui.theme.SfrButtonColors
 import com.example.ui.theme.SfrPrimaryBlue
-import com.example.ui.theme.SfrSecondaryOrange
+import com.example.ui.theme.StatusOfflineRed
 import com.example.ui.theme.StatusOnlineGreen
+import com.example.ui.theme.StatusWarningAmber
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.net.URL
+import javax.net.ssl.HttpsURLConnection
 
 @Composable
 fun SslTlsScreen(
@@ -64,7 +75,14 @@ fun SslTlsScreen(
     onToggleForceHttpsGlobal: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val domainManager = remember { DomainManager(context) }
     var selectedEncryptionMode by remember { mutableStateOf("FULL") }
+
+    val testingDomains = remember { mutableStateMapOf<String, Boolean>() }
+    val tlsResults = remember { mutableStateMapOf<String, String>() }
+
+    val activeSslCount = domains.count { it.sslActive }
 
     LazyColumn(
         modifier = Modifier
@@ -79,10 +97,11 @@ fun SslTlsScreen(
             Column {
                 Text(
                     text = "SSL / TLS Encryption Management",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = SfrPrimaryBlue
                 )
                 Text(
-                    text = "Konfigurasi keamanan HTTPS dan sertifikat enkripsi domain",
+                    text = "Status TLS Handshake & Sertifikat Domain Aktif ($activeSslCount/${domains.size} Terenkripsi)",
                     style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.outline)
                 )
             }
@@ -90,6 +109,7 @@ fun SslTlsScreen(
 
         // SSL Status Hero
         item {
+            val isAnySslActive = activeSslCount > 0
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp),
@@ -106,19 +126,27 @@ fun SslTlsScreen(
                                 modifier = Modifier
                                     .size(44.dp)
                                     .clip(CircleShape)
-                                    .background(StatusOnlineGreen.copy(alpha = 0.15f)),
+                                    .background(if (isAnySslActive) StatusOnlineGreen.copy(alpha = 0.15f) else StatusWarningAmber.copy(alpha = 0.15f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(imageVector = Icons.Default.Lock, contentDescription = null, tint = StatusOnlineGreen, modifier = Modifier.size(24.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = null,
+                                    tint = if (isAnySslActive) StatusOnlineGreen else StatusWarningAmber,
+                                    modifier = Modifier.size(24.dp)
+                                )
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "HTTPS Encryption Active",
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = StatusOnlineGreen)
+                                    text = if (isAnySslActive) "HTTPS Encryption Active" else "HTTPS Menunggu Setup Domain",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isAnySslActive) StatusOnlineGreen else StatusWarningAmber
+                                    )
                                 )
                                 Text(
-                                    text = "Let's Encrypt / Cloudflare Edge TLS",
+                                    text = "Let's Encrypt / Cloudflare Edge TLS 1.3",
                                     style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.outline)
                                 )
                             }
@@ -127,11 +155,11 @@ fun SslTlsScreen(
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(StatusOnlineGreen)
+                                .background(if (isAnySslActive) StatusOnlineGreen else StatusWarningAmber)
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = "SECURE",
+                                text = if (isAnySslActive) "SECURE" else "PENDING",
                                 style = MaterialTheme.typography.labelSmall.copy(color = Color.White, fontWeight = FontWeight.Bold)
                             )
                         }
@@ -212,7 +240,10 @@ fun SslTlsScreen(
                     Switch(
                         checked = forceHttpsGlobal,
                         onCheckedChange = onToggleForceHttpsGlobal,
-                        colors = SwitchDefaults.colors(checkedThumbColor = SfrPrimaryBlue)
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = SfrButtonColors.PrimaryBlue
+                        )
                     )
                 }
             }
@@ -221,7 +252,7 @@ fun SslTlsScreen(
         // Registered Domains SSL Status
         item {
             Text(
-                text = "Status Sertifikat Domain Aktif",
+                text = "Status Sertifikat Domain Aktif (${domains.size})",
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
             )
         }
@@ -234,50 +265,113 @@ fun SslTlsScreen(
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                 ) {
                     Text(
-                        text = "Belum ada domain terdaftar. Tambahkan domain di menu Custom Domains.",
+                        text = "Belum ada domain terdaftar. Tambahkan domain di menu 'Domains' terlebih dahulu.",
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.outline)
                     )
                 }
             }
         } else {
-            items(domains.size) { index ->
-                val dom = domains[index]
+            items(domains) { dom ->
+                val isChecking = testingDomains[dom.domain] == true
+                val checkResult = tlsResults[dom.domain]
+
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(imageVector = Icons.Default.CheckCircle, contentDescription = null, tint = StatusOnlineGreen, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column {
-                                Text(dom.domain, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace))
-                                Text("TLS 1.3 • Auto Renewal", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.outline))
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                Icon(
+                                    imageVector = if (dom.sslActive) Icons.Default.CheckCircle else Icons.Default.Error,
+                                    contentDescription = null,
+                                    tint = if (dom.sslActive) StatusOnlineGreen else StatusWarningAmber,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        text = dom.domain,
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontFamily = FontFamily.Monospace
+                                        )
+                                    )
+                                    Text(
+                                        text = if (dom.sslActive) "TLS 1.3 Terverifikasi • Auto Renewal" else "Menunggu Verifikasi TLS / DNS",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            color = if (dom.sslActive) StatusOnlineGreen else StatusWarningAmber,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                    )
+                                }
+                            }
+
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Button(
+                                    onClick = {
+                                        testingDomains[dom.domain] = true
+                                        scope.launch {
+                                            val result = testTlsHandshake(dom.domain)
+                                            tlsResults[dom.domain] = result.second
+                                            val updated = dom.copy(sslActive = result.first)
+                                            domainManager.updateDomain(updated)
+                                            testingDomains[dom.domain] = false
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = if (dom.sslActive) SfrButtonColors.ActiveGreen else SfrButtonColors.PrimaryBlue
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.height(34.dp),
+                                    enabled = !isChecking
+                                ) {
+                                    if (isChecking) {
+                                        CircularProgressIndicator(modifier = Modifier.size(12.dp), color = Color.White, strokeWidth = 2.dp)
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("Uji...", fontSize = 11.sp, color = Color.White)
+                                    } else {
+                                        Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(14.dp), tint = Color.White)
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("Uji TLS", fontSize = 11.sp, color = Color.White)
+                                    }
+                                }
+
+                                if (dom.sslActive) {
+                                    OutlinedButton(
+                                        onClick = {
+                                            try {
+                                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://${dom.domain}"))
+                                                context.startActivity(intent)
+                                            } catch (e: Exception) {
+                                                Toast.makeText(context, "Gagal membuka HTTPS link", Toast.LENGTH_SHORT).show()
+                                            }
+                                        },
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.height(34.dp)
+                                    ) {
+                                        Icon(imageVector = Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(14.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("Buka", fontSize = 11.sp)
+                                    }
+                                }
                             }
                         }
 
-                        OutlinedButton(
-                            onClick = {
-                                try {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://${dom.domain}"))
-                                    context.startActivity(intent)
-                                } catch (e: Exception) {
-                                    Toast.makeText(context, "Gagal membuka HTTPS link", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Icon(imageVector = Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Buka HTTPS", fontSize = 11.sp)
+                        if (!checkResult.isNullOrEmpty()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = checkResult,
+                                fontSize = 11.sp,
+                                fontFamily = FontFamily.Monospace,
+                                color = if (dom.sslActive) StatusOnlineGreen else StatusOfflineRed
+                            )
                         }
                     }
                 }
@@ -312,6 +406,26 @@ fun SslModeOption(
         Column {
             Text(title, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold))
             Text(desc, style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.outline))
+        }
+    }
+}
+
+suspend fun testTlsHandshake(domain: String): Pair<Boolean, String> {
+    return withContext(Dispatchers.IO) {
+        try {
+            val url = URL("https://$domain")
+            val conn = url.openConnection() as HttpsURLConnection
+            conn.connectTimeout = 5000
+            conn.readTimeout = 5000
+            conn.requestMethod = "HEAD"
+            conn.instanceFollowRedirects = true
+            conn.connect()
+            val code = conn.responseCode
+            val cipherSuite = conn.cipherSuite
+            conn.disconnect()
+            Pair(true, "✓ TLS Handshake Sukses (HTTP $code, Cipher: $cipherSuite)")
+        } catch (e: Exception) {
+            Pair(false, "✗ TLS Gagal: ${e.message ?: "Koneksi ditolak atau sertifikat tidak valid"}")
         }
     }
 }

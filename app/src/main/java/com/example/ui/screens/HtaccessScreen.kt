@@ -328,7 +328,7 @@ fun HtaccessScreen(
                             Text("• Status HTTP $previewStatusCode dengan warna aksen sesuai tingkat error", color = Color(0xFFCBD5E1), fontSize = 12.sp)
                             Text("• Deskripsi berbahasa Indonesia & istilah teknis standar", color = Color(0xFFCBD5E1), fontSize = 12.sp)
                             Text("• Tombol 'Kembali ke Beranda' untuk pengunjung", color = Color(0xFFCBD5E1), fontSize = 12.sp)
-                            Text("• Footer rapi: Powered by SFR Host • Unduh di https://sfrhost.septianfr.web.id/download", color = Color(0xFF94A3B8), fontSize = 12.sp)
+                            Text("• Footer rapi: Powered by SFR Host • Repositori resmi di https://github.com/septianofc/sfr-host", color = Color(0xFF94A3B8), fontSize = 12.sp)
                         }
                     }
                 }

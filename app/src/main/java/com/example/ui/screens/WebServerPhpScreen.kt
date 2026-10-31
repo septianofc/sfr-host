@@ -33,8 +33,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,9 +53,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.data.DataStoreManager
 import com.example.files.FileManager
 import com.example.server.php.PhpExecutionEngine
 import com.example.server.php.PhpExecutionResult
+import com.example.ui.theme.SfrButtonColors
 import com.example.ui.theme.SfrPrimaryBlue
 import com.example.ui.theme.SfrSecondaryOrange
 import kotlinx.coroutines.Dispatchers
@@ -67,14 +74,30 @@ fun WebServerPhpScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val dataStore = remember { DataStoreManager(context) }
     val fileManager = remember { FileManager(context) }
     val websiteDir = remember(activeWebsite) { fileManager.getWebsiteDirectory(activeWebsite) }
-    val phpEngine = remember(websiteDir) { PhpExecutionEngine(documentRoot = File(websiteDir, "public_html")) }
+
+    val currentPhpVersion by dataStore.phpVersionProfile.collectAsState(initial = "8.2")
+    val currentMemoryLimit by dataStore.phpMemoryLimit.collectAsState(initial = "256M")
+    val currentUploadMax by dataStore.phpUploadMax.collectAsState(initial = "64M")
+    val currentDisplayErrors by dataStore.phpDisplayErrors.collectAsState(initial = false)
+
+    val phpEngine = remember(websiteDir, currentPhpVersion, currentMemoryLimit, currentUploadMax, currentDisplayErrors) {
+        PhpExecutionEngine(
+            documentRoot = File(websiteDir, "public_html"),
+            versionProfile = currentPhpVersion,
+            memoryLimit = currentMemoryLimit,
+            uploadMaxFilesize = currentUploadMax,
+            displayErrors = currentDisplayErrors
+        )
+    }
 
     var phpTestCode by remember {
         mutableStateOf("""<?php
 echo "<h1>SFR Host PHP Berhasil!</h1>";
 echo "<p>PHP Version: " . PHP_VERSION . "</p>";
+echo "<p>memory_limit: " . ini_get('memory_limit') . "</p>";
 echo "<p>Server Time: " . date("Y-m-d H:i:s") . "</p>";
 ?>""")
     }
@@ -102,7 +125,7 @@ echo "<p>Server Time: " . date("Y-m-d H:i:s") . "</p>";
                     color = SfrPrimaryBlue
                 )
                 Text(
-                    text = "Status Runtime Server HP & Eksekusi Skrip PHP 8",
+                    text = "Status Runtime Server HP & Eksekusi Skrip PHP Native",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -131,7 +154,7 @@ echo "<p>Server Time: " . date("Y-m-d H:i:s") . "</p>";
                     Box(
                         modifier = Modifier
                             .background(
-                                color = if (isServerOnline) Color(0xFF2E7D32) else Color(0xFFC62828),
+                                color = if (isServerOnline) SfrButtonColors.ActiveGreen else SfrButtonColors.DangerRed,
                                 shape = RoundedCornerShape(6.dp)
                             )
                             .padding(horizontal = 8.dp, vertical = 4.dp)
@@ -176,7 +199,7 @@ echo "<p>Server Time: " . date("Y-m-d H:i:s") . "</p>";
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // PHP Runtime Information Card
+        // PHP Runtime Information & php.ini Configuration Card
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -186,17 +209,144 @@ echo "<p>Server Time: " . date("Y-m-d H:i:s") . "</p>";
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Code, contentDescription = null, tint = SfrSecondaryOrange)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Informasi PHP Runtime", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text("PHP Runtime & Profil php.ini", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))
                 Divider()
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Versi PHP", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
-                    Text("PHP 8.2.14", fontWeight = FontWeight.Bold, color = SfrPrimaryBlue, fontSize = 13.sp)
+                // PHP Version Profile Selector
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("Versi Profil PHP", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                        Text("Pilih dialek versi runtime PHP", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                    }
+
+                    var versionMenuExpanded by remember { mutableStateOf(false) }
+                    Box {
+                        Button(
+                            onClick = { versionMenuExpanded = true },
+                            colors = ButtonDefaults.buttonColors(containerColor = SfrButtonColors.PrimaryBlue),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.height(34.dp)
+                        ) {
+                            Text("PHP $currentPhpVersion", fontSize = 12.sp, color = Color.White)
+                        }
+
+                        DropdownMenu(
+                            expanded = versionMenuExpanded,
+                            onDismissRequest = { versionMenuExpanded = false }
+                        ) {
+                            listOf("7.4", "8.0", "8.1", "8.2", "8.3").forEach { ver ->
+                                DropdownMenuItem(
+                                    text = { Text("PHP $ver") },
+                                    onClick = {
+                                        scope.launch { dataStore.setPhpVersionProfile(ver) }
+                                        versionMenuExpanded = false
+                                        Toast.makeText(context, "Profil PHP diatur ke $ver", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Memory Limit
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("memory_limit", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
+                    var memMenuExpanded by remember { mutableStateOf(false) }
+                    Box {
+                        OutlinedButton(
+                            onClick = { memMenuExpanded = true },
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Text(currentMemoryLimit, fontSize = 11.sp)
+                        }
+                        DropdownMenu(
+                            expanded = memMenuExpanded,
+                            onDismissRequest = { memMenuExpanded = false }
+                        ) {
+                            listOf("128M", "256M", "512M", "1024M").forEach { limit ->
+                                DropdownMenuItem(
+                                    text = { Text(limit) },
+                                    onClick = {
+                                        scope.launch { dataStore.setPhpMemoryLimit(limit) }
+                                        memMenuExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Upload Max Filesize
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("upload_max_filesize", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
+                    var uploadMenuExpanded by remember { mutableStateOf(false) }
+                    Box {
+                        OutlinedButton(
+                            onClick = { uploadMenuExpanded = true },
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Text(currentUploadMax, fontSize = 11.sp)
+                        }
+                        DropdownMenu(
+                            expanded = uploadMenuExpanded,
+                            onDismissRequest = { uploadMenuExpanded = false }
+                        ) {
+                            listOf("16M", "32M", "64M", "128M", "256M").forEach { up ->
+                                DropdownMenuItem(
+                                    text = { Text(up) },
+                                    onClick = {
+                                        scope.launch { dataStore.setPhpUploadMax(up) }
+                                        uploadMenuExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                // Display Errors
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("display_errors", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
+                        Text("Tampilkan error sintaks ke output", fontSize = 10.sp, color = MaterialTheme.colorScheme.outline)
+                    }
+                    Switch(
+                        checked = currentDisplayErrors,
+                        onCheckedChange = { checked ->
+                            scope.launch { dataStore.setPhpDisplayErrors(checked) }
+                        },
+                        colors = SwitchDefaults.colors(checkedThumbColor = SfrButtonColors.PrimaryBlue)
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -212,12 +362,6 @@ echo "<p>Server Time: " . date("Y-m-d H:i:s") . "</p>";
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("Ekstensi Aktif", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
                     Text("SQLite3, PDO_SQLite, JSON, Date, Hash, Core", fontWeight = FontWeight.Normal, fontSize = 12.sp)
-                }
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Batas Upload", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
-                    Text("10 MB (post_max_size)", fontWeight = FontWeight.Normal, fontSize = 12.sp)
                 }
             }
         }
@@ -276,12 +420,12 @@ echo "<p>Server Time: " . date("Y-m-d H:i:s") . "</p>";
                             isExecuting = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = SfrPrimaryBlue),
+                    colors = ButtonDefaults.buttonColors(containerColor = SfrButtonColors.PrimaryBlue),
                     enabled = !isExecuting
                 ) {
                     Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(if (isExecuting) "Mengeksekusi..." else "Jalankan PHP Test")
+                    Text(if (isExecuting) "Mengeksekusi..." else "Jalankan PHP Test", color = Color.White)
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
