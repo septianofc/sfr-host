@@ -197,11 +197,44 @@ class FileManager(private val context: Context) {
                 }
             """.trimIndent()
 
-            // Save in both public_html and root
+            val phpIndexContent = """
+                <?php
+                echo "<h1>SFR Host PHP Berhasil!</h1>";
+                echo "<p>PHP Version: " . PHP_VERSION . "</p>";
+                echo "<p>Server Time: " . date("Y-m-d H:i:s") . "</p>";
+                ?>
+            """.trimIndent()
+
+            val dollar = "$"
+            val phpTestContent = "<?php\n" +
+                    "echo \"<h2>SFR Host - PHP Runtime Test</h2>\";\n" +
+                    "echo \"<p>Server Software: \" . " + dollar + "_SERVER['SERVER_SOFTWARE'] . \"</p>\";\n" +
+                    "echo \"<p>Document Root: \" . " + dollar + "_SERVER['DOCUMENT_ROOT'] . \"</p>\";\n" +
+                    "echo \"<p>Client IP: \" . " + dollar + "_SERVER['REMOTE_ADDR'] . \"</p>\";\n" +
+                    "echo \"<p>Method: \" . " + dollar + "_SERVER['REQUEST_METHOD'] . \"</p>\";\n" +
+                    "?>"
+
+            val htaccessContent = """
+                # SFR Host Apache .htaccess
+                DirectoryIndex index.php index.html index.htm
+                Options -Indexes
+                ErrorDocument 400 /400.html
+                ErrorDocument 403 /403.html
+                ErrorDocument 404 /404.html
+                ErrorDocument 500 /500.html
+            """.trimIndent()
+
+            // Save in public_html and root
+            File(publicHtml, "index.php").writeText(phpIndexContent)
+            File(publicHtml, "test.php").writeText(phpTestContent)
+            File(publicHtml, ".htaccess").writeText(htaccessContent)
             File(publicHtml, "index.html").writeText(indexContent)
             File(publicHtml, "style.css").writeText(styleContent)
             File(publicHtml, "script.js").writeText(scriptContent)
 
+            File(w1, "index.php").writeText(phpIndexContent)
+            File(w1, "test.php").writeText(phpTestContent)
+            File(w1, ".htaccess").writeText(htaccessContent)
             File(w1, "index.html").writeText(indexContent)
             File(w1, "style.css").writeText(styleContent)
             File(w1, "script.js").writeText(scriptContent)

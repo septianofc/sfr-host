@@ -23,8 +23,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -33,7 +36,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Language
@@ -43,6 +48,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -85,9 +91,11 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.example.data.CustomDomainItem
 import com.example.data.DataStoreManager
+import com.example.data.DatabaseManager
 import com.example.data.DomainManager
 import com.example.files.FileManager
 import com.example.notification.NotificationRepository
+import com.example.security.AppLockManager
 import com.example.server.HttpRequestLog
 import com.example.server.SfrServerService
 import com.example.tunnel.TunnelManager
@@ -97,13 +105,18 @@ import com.example.ui.screens.AccessLogsScreen
 import com.example.ui.screens.AnalyticsScreen
 import com.example.ui.screens.CustomDomainsScreen
 import com.example.ui.screens.DashboardScreen
+import com.example.ui.screens.DatabasesScreen
+import com.example.ui.screens.DeveloperScreen
 import com.example.ui.screens.DnsManagementScreen
+import com.example.ui.screens.HtaccessScreen
 import com.example.ui.screens.NotificationsScreen
 import com.example.ui.screens.OnboardingBottomSheet
+import com.example.ui.screens.SecurityLockScreen
 import com.example.ui.screens.SecurityScreen
 import com.example.ui.screens.SettingsScreen
 import com.example.ui.screens.SslTlsScreen
 import com.example.ui.screens.TunnelScreen
+import com.example.ui.screens.WebServerPhpScreen
 import com.example.ui.screens.WebsitesScreen
 import com.example.ui.theme.SfrHostTheme
 import com.example.ui.theme.SfrPrimaryBlue
@@ -116,8 +129,11 @@ import kotlinx.coroutines.launch
 enum class Screen(val title: String, val icon: ImageVector) {
     OVERVIEW("Dashboard", Icons.Default.Dashboard),
     WEBSITES("Hosting", Icons.Default.Language),
-    FILE_MANAGER("Files", Icons.Default.Folder),
     CUSTOM_DOMAINS("Domains", Icons.Default.Dns),
+    FILE_MANAGER("Files", Icons.Default.Folder),
+    DATABASES("Databases", Icons.Default.Storage),
+    WEB_SERVER_PHP("Server & PHP", Icons.Default.Code),
+    HTACCESS_ERRORS(".htaccess & Errors", Icons.Default.Description),
     TUNNEL("Tunnel", Icons.Default.Cloud),
     DNS_MANAGER("DNS", Icons.Default.Dns),
     SSL_TLS("SSL/TLS", Icons.Default.Lock),
@@ -162,10 +178,26 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
 
     val dataStore = remember { DataStoreManager(context) }
     val domainManager = remember { DomainManager(context) }
+    val databaseManager = remember { DatabaseManager(context) }
+    val appLockManager = remember { AppLockManager(context) }
     val notifRepo = remember { NotificationRepository.getInstance(context) }
     val fileManager = remember { FileManager(context) }
 
     var currentScreen by remember { mutableStateOf(initialScreen) }
+    var isUnlockedSession by remember { mutableStateOf(false) }
+
+    // App Lock Security Gate
+    val isLockEnabled by appLockManager.isLockEnabled.collectAsState(initial = false)
+    val isBiometricEnabled by appLockManager.isBiometricEnabled.collectAsState(initial = false)
+
+    if (isLockEnabled && !isUnlockedSession) {
+        SecurityLockScreen(
+            appLockManager = appLockManager,
+            useBiometric = isBiometricEnabled,
+            onUnlocked = { isUnlockedSession = true }
+        )
+        return
+    }
 
     // Persistent Settings State
     val serverPort by dataStore.serverPort.collectAsState(initial = 8080)
@@ -238,12 +270,12 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
         }
 
         // Check if user needs onboarding guide
-        val hasOnboarded = dataStore.hasCompletedOnboarding.first()
-        if (!hasOnboarded) {
+        val completed = dataStore.hasCompletedOnboarding.first()
+        if (!completed) {
             showOnboardingSheet = true
         }
 
-        // Auto start server if configured
+        // Auto start server if enabled in settings
         val autoStart = dataStore.autoStartServer.first()
         if (autoStart && !isServerRunning) {
             val port = dataStore.serverPort.first()
@@ -270,7 +302,7 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
 
     Scaffold(
         topBar = {
-            Column {
+            Column(modifier = Modifier.statusBarsPadding()) {
                 SfrTopBar(
                     isServerOnline = isServerRunning,
                     activeWebsite = activeWebsite
@@ -306,13 +338,14 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
         bottomBar = {
             NavigationBar(
                 containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.navigationBarsPadding()
             ) {
                 val primaryNavScreens = listOf(
                     Screen.OVERVIEW,
                     Screen.WEBSITES,
                     Screen.FILE_MANAGER,
-                    Screen.TUNNEL,
+                    Screen.DATABASES,
                     Screen.SERVER_SETTINGS
                 )
 
@@ -401,8 +434,7 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
                         activeTunnelManager.startTunnel(
                             localPort = serverPort,
                             cloudflareToken = cloudflareToken,
-                            customDomainInput = customDomain,
-                            autoReconnect = autoReconnectTunnel
+                            customDomainInput = customDomain
                         )
                     },
                     onStopTunnel = {
@@ -411,22 +443,23 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
                     onOpenPreview = { url ->
                         previewUrlToOpen = url
                     },
+                    onNavigateMenu = { menuName ->
+                        when (menuName) {
+                            "hosting" -> currentScreen = Screen.WEBSITES
+                            "files" -> currentScreen = Screen.FILE_MANAGER
+                            "domains" -> currentScreen = Screen.CUSTOM_DOMAINS
+                            "databases" -> currentScreen = Screen.DATABASES
+                            "server_php" -> currentScreen = Screen.WEB_SERVER_PHP
+                            "htaccess" -> currentScreen = Screen.HTACCESS_ERRORS
+                            "tunnel" -> currentScreen = Screen.TUNNEL
+                            "security" -> currentScreen = Screen.SECURITY
+                            "logs" -> currentScreen = Screen.ACCESS_LOGS
+                            "settings" -> currentScreen = Screen.SERVER_SETTINGS
+                            else -> {}
+                        }
+                    },
                     onOpenOnboarding = {
                         showOnboardingSheet = true
-                    },
-                    onNavigateMenu = { menuTag ->
-                        currentScreen = when (menuTag) {
-                            "WEBSITES" -> Screen.WEBSITES
-                            "FILES" -> Screen.FILE_MANAGER
-                            "DOMAINS" -> Screen.CUSTOM_DOMAINS
-                            "TUNNEL" -> Screen.TUNNEL
-                            "DNS" -> Screen.DNS_MANAGER
-                            "SSL" -> Screen.SSL_TLS
-                            "SECURITY" -> Screen.SECURITY
-                            "LOGS" -> Screen.ACCESS_LOGS
-                            "ANALYTICS" -> Screen.ANALYTICS
-                            else -> Screen.OVERVIEW
-                        }
                     }
                 )
 
@@ -434,19 +467,22 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
                     activeWebsiteName = activeWebsite,
                     serverPort = serverPort,
                     isServerOnline = isServerRunning,
-                    onSetActiveWebsite = { newWebsite ->
+                    onSetActiveWebsite = { newWeb ->
                         scope.launch {
-                            dataStore.setActiveWebsite(newWebsite)
+                            dataStore.setActiveWebsite(newWeb)
                             if (isServerRunning) {
-                                val serviceIntent = Intent(context, SfrServerService::class.java).apply {
+                                val restartIntent = Intent(context, SfrServerService::class.java).apply {
                                     action = SfrServerService.ACTION_START
                                     putExtra(SfrServerService.EXTRA_PORT, serverPort)
-                                    putExtra(SfrServerService.EXTRA_WEBSITE, newWebsite)
+                                    putExtra(SfrServerService.EXTRA_WEBSITE, newWeb)
+                                    putExtra(SfrServerService.EXTRA_START_TUNNEL, autoStartTunnel)
+                                    putExtra(SfrServerService.EXTRA_CLOUDFLARE_TOKEN, cloudflareToken)
+                                    putExtra(SfrServerService.EXTRA_CUSTOM_DOMAIN, customDomain)
                                 }
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                    context.startForegroundService(serviceIntent)
+                                    context.startForegroundService(restartIntent)
                                 } else {
-                                    context.startService(serviceIntent)
+                                    context.startService(restartIntent)
                                 }
                             }
                         }
@@ -457,35 +493,69 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
                     domains = customDomainsList,
                     websites = websitesList,
                     gatewayHost = gatewayEndpoint,
-                    onAddDomain = { dom, web ->
-                        scope.launch { domainManager.addDomain(dom, web) }
+                    onAddDomain = { domain, type, mode, targetWeb ->
+                        scope.launch {
+                            domainManager.addDomain(domain, type, mode, targetWeb)
+                        }
                     },
-                    onRemoveDomain = { dom ->
-                        scope.launch { domainManager.removeDomain(dom) }
+                    onRemoveDomain = { domain ->
+                        scope.launch { domainManager.removeDomain(domain) }
                     },
-                    onVerifyDns = { dom ->
-                        scope.launch { domainManager.verifyDns(dom, gatewayEndpoint) }
+                    onVerifyDns = { domain ->
+                        scope.launch { domainManager.verifyDns(domain) }
                     },
                     onToggleHttps = { item ->
                         scope.launch { domainManager.updateDomain(item.copy(forceHttps = !item.forceHttps)) }
                     }
                 )
 
+                Screen.DATABASES -> DatabasesScreen(
+                    databaseManager = databaseManager
+                )
+
+                Screen.WEB_SERVER_PHP -> WebServerPhpScreen(
+                    isServerOnline = isServerRunning,
+                    serverPort = serverPort,
+                    activeWebsite = activeWebsite,
+                    onRestartServer = {
+                        val stopIntent = Intent(context, SfrServerService::class.java).apply {
+                            action = SfrServerService.ACTION_STOP
+                        }
+                        context.startService(stopIntent)
+                        scope.launch {
+                            delay(400)
+                            val serviceIntent = Intent(context, SfrServerService::class.java).apply {
+                                action = SfrServerService.ACTION_START
+                                putExtra(SfrServerService.EXTRA_PORT, serverPort)
+                                putExtra(SfrServerService.EXTRA_WEBSITE, activeWebsite)
+                            }
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                context.startForegroundService(serviceIntent)
+                            } else {
+                                context.startService(serviceIntent)
+                            }
+                        }
+                    }
+                )
+
+                Screen.HTACCESS_ERRORS -> HtaccessScreen(
+                    activeWebsite = activeWebsite
+                )
+
                 Screen.TUNNEL -> TunnelScreen(
                     tunnelState = tunnelState,
-                    publicUrl = if (customDomainsList.isNotEmpty()) "https://${customDomainsList.first().domain}" else "Menunggu Custom Domain",
+                    publicUrl = if (tunnelState == TunnelState.CONNECTED) gatewayEndpoint.ifEmpty { "https://$customDomain" } else null,
                     customDomain = customDomain,
                     cloudflareToken = cloudflareToken,
                     autoReconnect = autoReconnectTunnel,
-                    onSaveToken = { token -> scope.launch { dataStore.setCloudflareToken(token) } },
-                    onSaveCustomDomain = { domain -> scope.launch { dataStore.setCustomDomain(domain) } },
-                    onToggleAutoReconnect = { enabled -> scope.launch { dataStore.setAutoReconnectTunnel(enabled) } },
+                    onSaveToken = { scope.launch { dataStore.setCloudflareToken(it) } },
+                    onSaveCustomDomain = { scope.launch { dataStore.setCustomDomain(it) } },
+                    onToggleAutoReconnect = { scope.launch { dataStore.setAutoReconnectTunnel(it) } },
                     onStartTunnel = {
                         activeTunnelManager.startTunnel(
                             localPort = serverPort,
                             cloudflareToken = cloudflareToken,
-                            customDomainInput = customDomain,
-                            autoReconnect = autoReconnectTunnel
+                            customDomainInput = customDomain
                         )
                     },
                     onStopTunnel = {
@@ -501,13 +571,18 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
                 Screen.SSL_TLS -> SslTlsScreen(
                     domains = customDomainsList,
                     forceHttpsGlobal = forceHttpsGlobal,
-                    onToggleForceHttpsGlobal = { enabled -> scope.launch { dataStore.setForceHttps(enabled) } }
+                    onToggleForceHttpsGlobal = {
+                        scope.launch { dataStore.setForceHttps(it) }
+                    }
                 )
 
                 Screen.SECURITY -> SecurityScreen(
                     tunnelId = tunnelId,
                     authToken = tunnelAuthToken,
-                    onRotateToken = { newToken -> scope.launch { dataStore.setTunnelAuthToken(newToken) } }
+                    appLockManager = appLockManager,
+                    onRotateToken = { newToken ->
+                        scope.launch { dataStore.setTunnelAuthToken(newToken) }
+                    }
                 )
 
                 Screen.ACCESS_LOGS -> AccessLogsScreen(
@@ -519,25 +594,13 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
                     totalRequests = sessionLogs.size.toLong(),
                     trafficIn = trafficIn,
                     trafficOut = trafficOut,
-                    ramUsage = NetworkUtils.getRamUsageString(),
+                    ramUsage = "38 MB",
                     uptimeMillis = SfrServerService.currentServerInstance?.uptimeMillis ?: 0L,
                     activeConnections = activeConnections,
                     requestLogs = sessionLogs
                 )
 
-                Screen.NOTIFICATIONS -> NotificationsScreen(
-                    notifications = notifications,
-                    isRefreshing = isRefreshingNotifs,
-                    latestUpdate = latestUpdate,
-                    onRefresh = {
-                        scope.launch { notifRepo.fetchRemoteNotifications(showSystemNotificationOnNew = true) }
-                    },
-                    onMarkAsRead = { id -> notifRepo.markAsRead(id) },
-                    onMarkAllAsRead = { notifRepo.markAllAsRead() },
-                    onClearHistory = { notifRepo.deleteLocalHistory() }
-                )
-
-                Screen.SERVER_SETTINGS, Screen.DEVELOPER_INFO -> SettingsScreen(
+                Screen.SERVER_SETTINGS -> SettingsScreen(
                     serverPort = serverPort,
                     autoStartServer = autoStartServer,
                     autoStartTunnel = autoStartTunnel,
@@ -546,58 +609,68 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
                     notifCheckOnBoot = notifCheckOnBoot,
                     fcmToken = fcmToken,
                     gatewayEndpoint = gatewayEndpoint,
-                    onSaveServerPort = { port -> scope.launch { dataStore.setServerPort(port) } },
-                    onToggleAutoStartServer = { enabled -> scope.launch { dataStore.setAutoStartServer(enabled) } },
-                    onToggleAutoStartTunnel = { enabled -> scope.launch { dataStore.setAutoStartTunnel(enabled) } },
-                    onToggleAutoReconnectTunnel = { enabled -> scope.launch { dataStore.setAutoReconnectTunnel(enabled) } },
-                    onToggleNotifSound = { enabled -> scope.launch { dataStore.setNotifSoundEnabled(enabled) } },
-                    onToggleNotifCheckOnBoot = { enabled -> scope.launch { dataStore.setNotifCheckOnBoot(enabled) } },
-                    onSaveGatewayEndpoint = { gw -> scope.launch { dataStore.setGatewayEndpoint(gw) } }
+                    onSaveServerPort = { scope.launch { dataStore.setServerPort(it) } },
+                    onToggleAutoStartServer = { scope.launch { dataStore.setAutoStartServer(it) } },
+                    onToggleAutoStartTunnel = { scope.launch { dataStore.setAutoStartTunnel(it) } },
+                    onToggleAutoReconnectTunnel = { scope.launch { dataStore.setAutoReconnectTunnel(it) } },
+                    onToggleNotifSound = { scope.launch { dataStore.setNotifSoundEnabled(it) } },
+                    onToggleNotifCheckOnBoot = { scope.launch { dataStore.setNotifCheckOnBoot(it) } },
+                    onSaveGatewayEndpoint = { scope.launch { dataStore.setGatewayEndpoint(it) } }
                 )
+
+                Screen.NOTIFICATIONS -> NotificationsScreen(
+                    notifications = notifications,
+                    isRefreshing = isRefreshingNotifs,
+                    latestUpdate = latestUpdate,
+                    onRefresh = { scope.launch { notifRepo.fetchRemoteNotifications() } },
+                    onMarkAsRead = { id -> notifRepo.markAsRead(id) },
+                    onMarkAllAsRead = { notifRepo.markAllAsRead() },
+                    onClearHistory = { notifRepo.deleteLocalHistory() }
+                )
+
+                Screen.DEVELOPER_INFO -> DeveloperScreen()
             }
         }
     }
 
-    // In-App Web Preview Sheet
+    // In-App Preview Sheet
     previewUrlToOpen?.let { url ->
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        var webViewRef by remember { mutableStateOf<WebView?>(null) }
+        val previewSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        var webViewInstance by remember { mutableStateOf<WebView?>(null) }
 
         ModalBottomSheet(
             onDismissRequest = { previewUrlToOpen = null },
-            sheetState = sheetState,
+            sheetState = previewSheetState,
             dragHandle = null
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.surface)
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "In-App Browser Preview",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
+                        Text("Pratinjau Server", fontWeight = FontWeight.Bold, fontSize = 15.sp)
                         Text(
                             text = url,
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = MaterialTheme.colorScheme.outline,
-                                fontFamily = FontFamily.Monospace
-                            ),
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.outline,
+                            fontFamily = FontFamily.Monospace,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                     }
 
                     Row {
-                        IconButton(onClick = { webViewRef?.reload() }) {
+                        IconButton(onClick = { webViewInstance?.reload() }) {
                             Icon(imageVector = Icons.Default.Refresh, contentDescription = "Muat Ulang")
                         }
                         IconButton(onClick = { previewUrlToOpen = null }) {
@@ -614,7 +687,7 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
                             settings.allowFileAccess = true
                             webViewClient = WebViewClient()
                             loadUrl(url)
-                            webViewRef = this
+                            webViewInstance = this
                         }
                     },
                     modifier = Modifier.fillMaxSize()
@@ -623,11 +696,14 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
         }
     }
 
+    // Onboarding Bottom Sheet
     if (showOnboardingSheet) {
         OnboardingBottomSheet(
             onDismiss = {
-                showOnboardingSheet = false
-                scope.launch { dataStore.setCompletedOnboarding(true) }
+                scope.launch {
+                    dataStore.setCompletedOnboarding(true)
+                    showOnboardingSheet = false
+                }
             }
         )
     }

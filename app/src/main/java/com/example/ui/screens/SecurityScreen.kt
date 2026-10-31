@@ -22,24 +22,30 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Password
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,6 +60,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.security.AppLockManager
 import com.example.ui.theme.SfrPrimaryBlue
 import com.example.ui.theme.SfrSecondaryOrange
 import com.example.ui.theme.StatusOnlineGreen
@@ -64,9 +71,21 @@ import java.util.UUID
 fun SecurityScreen(
     tunnelId: String,
     authToken: String,
+    appLockManager: AppLockManager,
     onRotateToken: (String) -> Unit
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val isLockEnabled by appLockManager.isLockEnabled.collectAsState(initial = false)
+    val isBiometricEnabled by appLockManager.isBiometricEnabled.collectAsState(initial = false)
+    val hasPinSet by appLockManager.hasPinSet.collectAsState(initial = false)
+
+    var showSetPinDialog by remember { mutableStateOf(false) }
+    var newPinInput by remember { mutableStateOf("") }
+    var confirmPinInput by remember { mutableStateOf("") }
+    var pinError by remember { mutableStateOf<String?>(null) }
+
     var rateLimitEnabled by remember { mutableStateOf(true) }
     var traversalGuardEnabled by remember { mutableStateOf(true) }
 
@@ -82,128 +101,102 @@ fun SecurityScreen(
         item {
             Column {
                 Text(
-                    text = "Security & Protection Panel",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    text = "Security & App Lock Panel",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = SfrPrimaryBlue
                 )
                 Text(
-                    text = "Proteksi origin server HP, autentikasi tunnel, dan pertahanan serangan siber",
+                    text = "Kunci Aplikasi PIN/Sidik Jari, proteksi server HP, dan pertahanan keamanan",
                     style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.outline)
                 )
             }
         }
 
-        // Security Status Banner
+        // App Lock Section
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(StatusOnlineGreen.copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(imageVector = Icons.Default.Shield, contentDescription = null, tint = StatusOnlineGreen, modifier = Modifier.size(24.dp))
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            text = "Origin Server Shielded",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold, color = StatusOnlineGreen)
-                        )
-                        Text(
-                            text = "IP HP terlindungi di belakang Gateway dan Cloudflare",
-                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.outline)
-                        )
-                    }
-                }
-            }
-        }
-
-        // Tunnel Authentication & Token Rotation Card
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(imageVector = Icons.Default.Key, contentDescription = null, tint = SfrSecondaryOrange)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Kredensial Tunnel & Token Rotasi",
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Lock, contentDescription = null, tint = SfrPrimaryBlue)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text("Kunci Aplikasi (App Lock)", fontWeight = FontWeight.Bold)
+                                Text(
+                                    if (isLockEnabled) "Aktif (PIN/Biometrik Terproteksi)" else "Nonaktif",
+                                    fontSize = 11.sp,
+                                    color = if (isLockEnabled) StatusOnlineGreen else MaterialTheme.colorScheme.outline
+                                )
+                            }
+                        }
+
+                        Switch(
+                            checked = isLockEnabled,
+                            onCheckedChange = { enabled ->
+                                if (enabled && !hasPinSet) {
+                                    showSetPinDialog = true
+                                } else {
+                                    scope.launch { appLockManager.setLockEnabled(enabled) }
+                                }
+                            },
+                            colors = SwitchDefaults.colors(checkedThumbColor = SfrPrimaryBlue)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    if (isLockEnabled || hasPinSet) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Divider()
+                        Spacer(modifier = Modifier.height(10.dp))
 
-                    Text("Tunnel ID:", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.outline))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                            .padding(10.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(tunnelId, style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold))
-                        IconButton(onClick = {
-                            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                            cm.setPrimaryClip(ClipData.newPlainText("Tunnel ID", tunnelId))
-                            Toast.makeText(context, "Tunnel ID disalin", Toast.LENGTH_SHORT).show()
-                        }, modifier = Modifier.size(28.dp)) {
-                            Icon(Icons.Default.ContentCopy, contentDescription = null, tint = SfrPrimaryBlue, modifier = Modifier.size(16.dp))
+                        // Change PIN Button
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text("PIN Keamanan (4 Digit)", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                                Text("Gunakan PIN saat sidik jari tidak tersedia", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                            }
+                            OutlinedButton(
+                                onClick = { showSetPinDialog = true },
+                                modifier = Modifier.height(36.dp)
+                            ) {
+                                Text(if (hasPinSet) "Ubah PIN" else "Buat PIN", fontSize = 12.sp)
+                            }
                         }
-                    }
 
-                    Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
-                    Text("Tunnel Auth Token:", style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.outline))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                            .padding(10.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(authToken.take(12) + "••••••••", style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace))
-                        IconButton(onClick = {
-                            val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                            cm.setPrimaryClip(ClipData.newPlainText("Auth Token", authToken))
-                            Toast.makeText(context, "Auth Token disalin", Toast.LENGTH_SHORT).show()
-                        }, modifier = Modifier.size(28.dp)) {
-                            Icon(Icons.Default.ContentCopy, contentDescription = null, tint = SfrPrimaryBlue, modifier = Modifier.size(16.dp))
+                        // Biometrics Toggle
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Fingerprint, contentDescription = null, tint = SfrSecondaryOrange, modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text("Sidik Jari (Biometrik)", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                                    Text("Buka cepat dengan sensor sidik jari HP", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                                }
+                            }
+                            Switch(
+                                checked = isBiometricEnabled,
+                                onCheckedChange = { scope.launch { appLockManager.setBiometricEnabled(it) } },
+                                colors = SwitchDefaults.colors(checkedThumbColor = SfrPrimaryBlue)
+                            )
                         }
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedButton(
-                        onClick = {
-                            val newToken = "sfr_sec_" + UUID.randomUUID().toString().replace("-", "").take(16)
-                            onRotateToken(newToken)
-                            Toast.makeText(context, "Token berhasil dirotasi!", Toast.LENGTH_SHORT).show()
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Icon(imageVector = Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Rotasi Token Baru")
                     }
                 }
             }
@@ -218,7 +211,7 @@ fun SecurityScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Fitur Proteksi Aktif",
+                        text = "Fitur Proteksi Server Aktif",
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                     )
                     Spacer(modifier = Modifier.height(10.dp))
@@ -228,6 +221,13 @@ fun SecurityScreen(
                         desc = "Memblokir serangan path ../ secara otomatis pada level ServerSocket",
                         active = traversalGuardEnabled,
                         onToggle = { traversalGuardEnabled = it }
+                    )
+
+                    SecurityFeatureRow(
+                        title = "Blokir File Rahasia (.env & .git)",
+                        desc = "File rahasia .env, .git, .sqlite, .db, .htaccess otomatis ditolak (HTTP 403)",
+                        active = true,
+                        isStatic = true
                     )
 
                     SecurityFeatureRow(
@@ -248,6 +248,79 @@ fun SecurityScreen(
         }
 
         item { Spacer(modifier = Modifier.height(24.dp)) }
+    }
+
+    // Set PIN Dialog
+    if (showSetPinDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showSetPinDialog = false
+                newPinInput = ""
+                confirmPinInput = ""
+                pinError = null
+            },
+            title = { Text("Atur PIN Aplikasi SFR Host") },
+            text = {
+                Column {
+                    Text("Masukkan 4 digit angka PIN pengaman:", fontSize = 13.sp)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedTextField(
+                        value = newPinInput,
+                        onValueChange = { if (it.length <= 4 && it.all { c -> c.isDigit() }) newPinInput = it },
+                        label = { Text("PIN Baru (4 Digit)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = confirmPinInput,
+                        onValueChange = { if (it.length <= 4 && it.all { c -> c.isDigit() }) confirmPinInput = it },
+                        label = { Text("Konfirmasi PIN") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    pinError?.let { err ->
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(text = err, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (newPinInput.length != 4) {
+                            pinError = "PIN harus terdiri dari 4 digit angka."
+                        } else if (newPinInput != confirmPinInput) {
+                            pinError = "Konfirmasi PIN tidak cocok."
+                        } else {
+                            scope.launch {
+                                appLockManager.setPin(newPinInput)
+                                appLockManager.setLockEnabled(true)
+                                Toast.makeText(context, "PIN berhasil disimpan dan App Lock diaktifkan!", Toast.LENGTH_SHORT).show()
+                                showSetPinDialog = false
+                                newPinInput = ""
+                                confirmPinInput = ""
+                                pinError = null
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = SfrPrimaryBlue)
+                ) {
+                    Text("Simpan PIN")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showSetPinDialog = false
+                    newPinInput = ""
+                    confirmPinInput = ""
+                    pinError = null
+                }) {
+                    Text("Batal")
+                }
+            }
+        )
     }
 }
 

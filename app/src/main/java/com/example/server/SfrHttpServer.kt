@@ -1,5 +1,6 @@
 package com.example.server
 
+import com.example.server.php.PhpExecutionEngine
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -49,6 +50,17 @@ class SfrHttpServer(
     val totalRequests: Long get() = requestCounter.get()
     val uptimeMillis: Long get() = if (isRunningFlag.get()) System.currentTimeMillis() - startedAt.get() else 0L
 
+    // PHP Engine initialized on web root
+    private val phpEngine: PhpExecutionEngine by lazy {
+        val docRoot = resolveDocumentRoot()
+        PhpExecutionEngine(documentRoot = docRoot)
+    }
+
+    private fun resolveDocumentRoot(): File {
+        val publicHtml = File(webRootDir, "public_html")
+        return if (publicHtml.isDirectory) publicHtml else webRootDir
+    }
+
     fun start(): Boolean {
         if (isRunningFlag.get()) return true
         return try {
@@ -91,10 +103,12 @@ class SfrHttpServer(
         var clientIp = socket.inetAddress?.hostAddress ?: "127.0.0.1"
         var requestMethod = "GET"
         var requestPath = "/"
+        val requestHeaders = mutableMapOf<String, String>()
+        val docRoot = resolveDocumentRoot()
 
         try {
-            socket.soTimeout = 10000
-            val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
+            socket.soTimeout = 15000
+            val reader = BufferedReader(InputStreamReader(socket.getInputStream(), Charsets.UTF_8))
             val out = BufferedOutputStream(socket.getOutputStream())
 
             val requestLine = reader.readLine()
@@ -110,41 +124,165 @@ class SfrHttpServer(
             }
 
             // Consume headers
+            var contentLength = 0
             var headerLine = reader.readLine()
             while (!headerLine.isNullOrEmpty()) {
-                if (headerLine.startsWith("X-Forwarded-For:", ignoreCase = true)) {
-                    val forwarded = headerLine.substringAfter(":").trim()
-                    if (forwarded.isNotEmpty()) clientIp = forwarded.split(",")[0].trim()
+                val colonIdx = headerLine.indexOf(':')
+                if (colonIdx != -1) {
+                    val k = headerLine.substring(0, colonIdx).trim()
+                    val v = headerLine.substring(colonIdx + 1).trim()
+                    requestHeaders[k] = v
+                    if (k.equals("Content-Length", ignoreCase = true)) {
+                        contentLength = v.toIntOrNull() ?: 0
+                    }
+                    if (k.equals("X-Forwarded-For", ignoreCase = true)) {
+                        val forwarded = v.split(",")[0].trim()
+                        if (forwarded.isNotEmpty()) clientIp = forwarded
+                    }
                 }
                 headerLine = reader.readLine()
             }
 
-            if (requestMethod != "GET" && requestMethod != "HEAD") {
+            // Read POST body if present (up to 10MB limit)
+            var postBody = ""
+            if (requestMethod == "POST" && contentLength > 0) {
+                val maxAllowed = 10 * 1024 * 1024 // 10MB
+                val toRead = contentLength.coerceAtMost(maxAllowed)
+                val bodyChars = CharArray(toRead)
+                var totalRead = 0
+                while (totalRead < toRead) {
+                    val read = reader.read(bodyChars, totalRead, toRead - totalRead)
+                    if (read == -1) break
+                    totalRead += read
+                }
+                postBody = String(bodyChars, 0, totalRead)
+            }
+
+            // Supported methods
+            if (requestMethod != "GET" && requestMethod != "POST" && requestMethod != "HEAD" && requestMethod != "OPTIONS") {
                 statusCode = 405
-                bytesSent = sendErrorResponse(out, 405, "Method Not Allowed", "Hanya HTTP GET dan HEAD yang didukung.", requestMethod)
-            } else {
-                val cleanPath = URLDecoder.decode(requestPath.substringBefore('?'), "UTF-8")
-                val targetFile = resolveFile(cleanPath)
+                bytesSent = sendBrandedError(out, 405, requestMethod, requestPath, requestHeaders)
+                out.flush()
+                return
+            }
 
-                if (targetFile == null) {
-                    // Forbidden directory traversal
-                    statusCode = 403
-                    bytesSent = sendErrorResponse(out, 403, "403 Forbidden", "Akses ditolak: Directory traversal terdeteksi.", requestMethod)
-                } else if (!targetFile.exists()) {
-                    statusCode = 404
-                    bytesSent = sendCustom404(out, cleanPath, requestMethod)
-                } else if (targetFile.isDirectory) {
-                    val indexFile = File(targetFile, "index.html").takeIf { it.exists() }
-                        ?: File(targetFile, "index.htm").takeIf { it.exists() }
+            if (requestMethod == "OPTIONS") {
+                statusCode = 200
+                bytesSent = sendOptionsResponse(out)
+                out.flush()
+                return
+            }
 
-                    if (indexFile != null) {
-                        statusCode = 200
-                        bytesSent = sendFileResponse(out, indexFile, requestMethod)
-                    } else {
-                        // Directory listing
-                        statusCode = 200
-                        bytesSent = sendDirectoryListing(out, targetFile, cleanPath, requestMethod)
+            // Parse URL path and query string
+            val rawPath = requestPath.substringBefore('?')
+            val queryString = if (requestPath.contains('?')) requestPath.substringAfter('?') else ""
+            var cleanPath = try {
+                URLDecoder.decode(rawPath, "UTF-8")
+            } catch (e: Exception) {
+                rawPath
+            }
+
+            // Parse .htaccess in docRoot
+            val htaccessFile = File(docRoot, ".htaccess")
+            val htaccessConfig = if (htaccessFile.exists()) HtaccessManager.parse(htaccessFile) else HtaccessConfig()
+
+            // Apply rewrite rules if any
+            for ((regex, replacement) in htaccessConfig.rewriteRules) {
+                val pathWithoutLeadingSlash = cleanPath.removePrefix("/")
+                if (regex.containsMatchIn(pathWithoutLeadingSlash)) {
+                    cleanPath = "/" + pathWithoutLeadingSlash.replace(regex, replacement)
+                    break
+                }
+            }
+
+            // Block access to sensitive and secret files
+            if (isSensitiveFile(cleanPath) || htaccessConfig.denyAll) {
+                statusCode = 403
+                bytesSent = sendBrandedError(out, 403, requestMethod, cleanPath, requestHeaders, customDoc = htaccessConfig.customErrorDocuments[403])
+                out.flush()
+                return
+            }
+
+            val targetFile = resolveFile(cleanPath, docRoot)
+            if (targetFile == null) {
+                // Directory traversal blocked
+                statusCode = 403
+                bytesSent = sendBrandedError(out, 403, requestMethod, cleanPath, requestHeaders, "Akses ditolak: Directory traversal terdeteksi.")
+                out.flush()
+                return
+            }
+
+            if (!targetFile.exists()) {
+                statusCode = 404
+                bytesSent = sendBrandedError(out, 404, requestMethod, cleanPath, requestHeaders, customDoc = htaccessConfig.customErrorDocuments[404])
+            } else if (targetFile.isDirectory) {
+                // Directory resolution with priority:
+                // 1) index.php
+                // 2) index.html
+                // 3) index.htm
+                val priorityList = htaccessConfig.directoryIndex.ifEmpty {
+                    listOf("index.php", "index.html", "index.htm")
+                }
+
+                var resolvedIndexFile: File? = null
+                for (name in priorityList) {
+                    val candidate = File(targetFile, name)
+                    if (candidate.exists() && candidate.isFile) {
+                        resolvedIndexFile = candidate
+                        break
                     }
+                }
+
+                if (resolvedIndexFile != null) {
+                    if (isPhpScript(resolvedIndexFile)) {
+                        // Execute PHP!
+                        val result = phpEngine.execute(
+                            phpFile = resolvedIndexFile,
+                            method = requestMethod,
+                            queryString = queryString,
+                            postBody = postBody,
+                            headers = requestHeaders,
+                            clientIp = clientIp,
+                            serverPort = port
+                        )
+                        statusCode = result.statusCode
+                        bytesSent = sendPhpResponse(out, result, requestMethod)
+                    } else {
+                        statusCode = 200
+                        bytesSent = sendFileResponse(out, resolvedIndexFile, requestMethod)
+                    }
+                } else {
+                    // No index file found -> Directory Listing
+                    if (htaccessConfig.allowDirectoryListing) {
+                        statusCode = 200
+                        val hostLabel = requestHeaders["Host"] ?: "127.0.0.1:$port"
+                        val listingHtml = DefaultWebPages.generateDirectoryListing(
+                            directory = targetFile,
+                            webRoot = docRoot,
+                            currentPath = cleanPath,
+                            domainOrHost = hostLabel
+                        )
+                        bytesSent = sendHtmlResponse(out, 200, "OK", listingHtml, requestMethod)
+                    } else {
+                        statusCode = 403
+                        bytesSent = sendBrandedError(out, 403, requestMethod, cleanPath, requestHeaders, "Directory listing dinonaktifkan oleh administrator.")
+                    }
+                }
+            } else {
+                // Target is a file
+                if (isPhpScript(targetFile)) {
+                    // NEVER return raw PHP script as file download! Execute it!
+                    val result = phpEngine.execute(
+                        phpFile = targetFile,
+                        method = requestMethod,
+                        queryString = queryString,
+                        postBody = postBody,
+                        headers = requestHeaders,
+                        clientIp = clientIp,
+                        serverPort = port
+                    )
+                    statusCode = result.statusCode
+                    bytesSent = sendPhpResponse(out, result, requestMethod)
                 } else {
                     statusCode = 200
                     bytesSent = sendFileResponse(out, targetFile, requestMethod)
@@ -174,29 +312,55 @@ class SfrHttpServer(
         }
     }
 
-    private fun resolveFile(path: String): File? {
+    private fun isPhpScript(file: File): Boolean {
+        val ext = file.extension.lowercase(Locale.ROOT)
+        return ext == "php" || ext == "phtml" || ext == "php8"
+    }
+
+    private fun isSensitiveFile(path: String): Boolean {
+        val lower = path.lowercase(Locale.ROOT)
+        return lower.endsWith("/.env") || lower == "/.env" ||
+               lower.contains("/.git") ||
+               lower.endsWith("/.htaccess") || lower == "/.htaccess" ||
+               lower.endsWith("/.htpasswd") ||
+               lower.endsWith(".sqlite") || lower.endsWith(".sqlite3") ||
+               lower.endsWith(".db") || lower.endsWith(".sql")
+    }
+
+    private fun resolveFile(path: String, docRoot: File): File? {
         val normalized = if (path.startsWith("/")) path.substring(1) else path
-
-        // Check public_html/ subdirectory first if present
-        val publicHtmlDir = File(webRootDir, "public_html")
-        if (publicHtmlDir.isDirectory) {
-            val candidateInPublicHtml = File(publicHtmlDir, normalized)
-            val canonicalPublicHtml = publicHtmlDir.canonicalPath
-            val canonicalCandidate = candidateInPublicHtml.canonicalPath
-            if (canonicalCandidate.startsWith(canonicalPublicHtml) && candidateInPublicHtml.exists()) {
-                return candidateInPublicHtml
-            }
-        }
-
-        val candidate = File(webRootDir, normalized)
-        val canonicalRoot = webRootDir.canonicalPath
+        val candidate = File(docRoot, normalized)
+        val canonicalRoot = docRoot.canonicalPath
         val canonicalCandidate = candidate.canonicalPath
 
-        // Directory traversal protection:
         if (!canonicalCandidate.startsWith(canonicalRoot)) {
-            return null
+            return null // Traversal attempt
         }
         return candidate
+    }
+
+    private fun sendPhpResponse(out: BufferedOutputStream, result: com.example.server.php.PhpExecutionResult, method: String): Long {
+        val bodyBytes = result.body.toByteArray(Charsets.UTF_8)
+        val headers = buildString {
+            append("HTTP/1.1 ${result.statusCode} ${getStatusText(result.statusCode)}\r\n")
+            append("Date: ${getHttpDate()}\r\n")
+            append("Server: SFR-Host-Engine/1.0 (Android Native; PHP 8.2)\r\n")
+            if (!result.headers.containsKey("Content-Type")) {
+                append("Content-Type: text/html; charset=UTF-8\r\n")
+            }
+            for ((k, v) in result.headers) {
+                append("$k: $v\r\n")
+            }
+            append("Content-Length: ${bodyBytes.size}\r\n")
+            append("Access-Control-Allow-Origin: *\r\n")
+            append("Connection: close\r\n\r\n")
+        }
+
+        out.write(headers.toByteArray(Charsets.UTF_8))
+        if (method != "HEAD") {
+            out.write(bodyBytes)
+        }
+        return bodyBytes.size.toLong()
     }
 
     private fun sendFileResponse(out: BufferedOutputStream, file: File, method: String): Long {
@@ -225,71 +389,15 @@ class SfrHttpServer(
         return length
     }
 
-    private fun sendCustom404(out: BufferedOutputStream, path: String, method: String): Long {
-        val html = """
-            <!DOCTYPE html>
-            <html lang="id">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>404 Halaman Tidak Ditemukan - SFR Host</title>
-                <style>
-                    body {
-                        background: #101418;
-                        color: #e1e2e5;
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        height: 100vh;
-                        margin: 0;
-                        padding: 20px;
-                        box-sizing: border-box;
-                    }
-                    .box {
-                        background: #181c20;
-                        border: 1px solid #242a30;
-                        border-radius: 16px;
-                        padding: 32px;
-                        max-width: 420px;
-                        text-align: center;
-                        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-                    }
-                    h1 { font-size: 64px; color: #FF9800; margin: 0 0 8px 0; }
-                    h2 { font-size: 20px; margin: 0 0 16px 0; color: #42A5F5; }
-                    p { color: #8c9199; font-size: 14px; line-height: 1.6; margin-bottom: 24px; word-break: break-all; }
-                    a {
-                        background: #42A5F5;
-                        color: #002244;
-                        text-decoration: none;
-                        padding: 10px 24px;
-                        border-radius: 20px;
-                        font-weight: bold;
-                        font-size: 14px;
-                        display: inline-block;
-                    }
-                    .footer { margin-top: 24px; font-size: 12px; color: #555; }
-                </style>
-            </head>
-            <body>
-                <div class="box">
-                    <h1>404</h1>
-                    <h2>Halaman Tidak Ditemukan</h2>
-                    <p>File atau path <code>${escapeHtml(path)}</code> tidak tersedia di server web ini.</p>
-                    <a href="/">Kembali ke Beranda</a>
-                    <div class="footer">SFR Host Embedded Server • Powered by Android</div>
-                </div>
-            </body>
-            </html>
-        """.trimIndent()
-
+    private fun sendHtmlResponse(out: BufferedOutputStream, statusCode: Int, statusText: String, html: String, method: String): Long {
         val bytes = html.toByteArray(Charsets.UTF_8)
         val headers = buildString {
-            append("HTTP/1.1 404 Not Found\r\n")
+            append("HTTP/1.1 $statusCode $statusText\r\n")
             append("Date: ${getHttpDate()}\r\n")
             append("Server: SFR-Host-Engine/1.0 (Android Native)\r\n")
-            append("Content-Type: text/html; charset=utf-8\r\n")
+            append("Content-Type: text/html; charset=UTF-8\r\n")
             append("Content-Length: ${bytes.size}\r\n")
+            append("Access-Control-Allow-Origin: *\r\n")
             append("Connection: close\r\n\r\n")
         }
         out.write(headers.toByteArray(Charsets.UTF_8))
@@ -299,74 +407,87 @@ class SfrHttpServer(
         return bytes.size.toLong()
     }
 
-    private fun sendErrorResponse(out: BufferedOutputStream, code: Int, title: String, message: String, method: String): Long {
-        val html = "<!DOCTYPE html><html><head><title>$code $title</title></head><body><h1>$code $title</h1><p>$message</p></body></html>"
-        val bytes = html.toByteArray(Charsets.UTF_8)
-        val headers = buildString {
-            append("HTTP/1.1 $code $title\r\n")
-            append("Date: ${getHttpDate()}\r\n")
-            append("Server: SFR-Host-Engine/1.0 (Android Native)\r\n")
-            append("Content-Type: text/html; charset=utf-8\r\n")
-            append("Content-Length: ${bytes.size}\r\n")
-            append("Connection: close\r\n\r\n")
-        }
-        out.write(headers.toByteArray(Charsets.UTF_8))
-        if (method != "HEAD") {
-            out.write(bytes)
-        }
-        return bytes.size.toLong()
-    }
-
-    private fun sendDirectoryListing(out: BufferedOutputStream, dir: File, requestPath: String, method: String): Long {
-        val files = dir.listFiles() ?: emptyArray()
-        val html = buildString {
-            append("<!DOCTYPE html><html><head><meta charset='utf-8'><title>Index of ${escapeHtml(requestPath)}</title>")
-            append("<style>body{font-family:sans-serif;padding:24px;background:#f5f7fa;}ul{list-style:none;padding:0;}li{padding:8px 0;border-bottom:1px solid #ddd;}a{text-decoration:none;color:#1e88e5;}</style></head>")
-            append("<body><h2>Index of ${escapeHtml(requestPath)}</h2><ul>")
-            append("<li><a href='../'>📁 .. (Parent Directory)</a></li>")
-            files.sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() })).forEach { f ->
-                val icon = if (f.isDirectory) "📁 " else "📄 "
-                val name = f.name + (if (f.isDirectory) "/" else "")
-                append("<li><a href='${escapeHtml(name)}'>$icon${escapeHtml(name)}</a> (${if (f.isDirectory) "-" else "${f.length()} bytes"})</li>")
+    private fun sendBrandedError(
+        out: BufferedOutputStream,
+        statusCode: Int,
+        method: String,
+        requestPath: String,
+        headers: Map<String, String>,
+        customMessage: String? = null,
+        customDoc: String? = null
+    ): Long {
+        val docRoot = resolveDocumentRoot()
+        // If custom document configured in .htaccess e.g. ErrorDocument 404 /404.html
+        if (customDoc != null) {
+            val customFile = resolveFile(customDoc, docRoot)
+            if (customFile != null && customFile.exists() && customFile.isFile) {
+                return sendFileResponse(out, customFile, method)
             }
-            append("</ul><hr><p><small>SFR Host Embedded HTTP Server</small></p></body></html>")
         }
-        val bytes = html.toByteArray(Charsets.UTF_8)
+
+        val html = DefaultWebPages.getErrorPage(statusCode, customMessage, requestPath)
+        return sendHtmlResponse(out, statusCode, getStatusText(statusCode), html, method)
+    }
+
+    private fun sendOptionsResponse(out: BufferedOutputStream): Long {
         val headers = buildString {
             append("HTTP/1.1 200 OK\r\n")
-            append("Date: ${getHttpDate()}\r\n")
-            append("Server: SFR-Host-Engine/1.0 (Android Native)\r\n")
-            append("Content-Type: text/html; charset=utf-8\r\n")
-            append("Content-Length: ${bytes.size}\r\n")
+            append("Allow: GET, POST, HEAD, OPTIONS\r\n")
+            append("Access-Control-Allow-Origin: *\r\n")
+            append("Access-Control-Allow-Methods: GET, POST, HEAD, OPTIONS\r\n")
+            append("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With\r\n")
+            append("Content-Length: 0\r\n")
             append("Connection: close\r\n\r\n")
         }
-        out.write(headers.toByteArray(Charsets.UTF_8))
-        if (method != "HEAD") {
-            out.write(bytes)
+        val bytes = headers.toByteArray(Charsets.UTF_8)
+        out.write(bytes)
+        return 0L
+    }
+
+    private fun getStatusText(code: Int): String {
+        return when (code) {
+            200 -> "OK"
+            400 -> "Bad Request"
+            401 -> "Unauthorized"
+            403 -> "Forbidden"
+            404 -> "Not Found"
+            405 -> "Method Not Allowed"
+            408 -> "Request Timeout"
+            413 -> "Payload Too Large"
+            429 -> "Too Many Requests"
+            500 -> "Internal Server Error"
+            502 -> "Bad Gateway"
+            503 -> "Service Unavailable"
+            504 -> "Gateway Timeout"
+            else -> "Error"
         }
-        return bytes.size.toLong()
     }
 
     private fun getMimeType(fileName: String): String {
         val ext = fileName.substringAfterLast('.', "").lowercase(Locale.ROOT)
         return when (ext) {
-            "html", "htm" -> "text/html; charset=utf-8"
-            "css" -> "text/css; charset=utf-8"
-            "js", "mjs" -> "application/javascript; charset=utf-8"
-            "json" -> "application/json; charset=utf-8"
+            "html", "htm" -> "text/html; charset=UTF-8"
+            "css" -> "text/css; charset=UTF-8"
+            "js", "mjs" -> "application/javascript; charset=UTF-8"
+            "json" -> "application/json; charset=UTF-8"
+            "xml" -> "application/xml; charset=UTF-8"
+            "txt", "log" -> "text/plain; charset=UTF-8"
             "png" -> "image/png"
             "jpg", "jpeg" -> "image/jpeg"
             "gif" -> "image/gif"
-            "svg" -> "image/svg+xml"
             "webp" -> "image/webp"
+            "svg" -> "image/svg+xml"
             "ico" -> "image/x-icon"
+            "avif" -> "image/avif"
+            "mp4" -> "video/mp4"
+            "webm" -> "video/webm"
+            "mp3" -> "audio/mpeg"
+            "wav" -> "audio/wav"
+            "ogg" -> "audio/ogg"
             "woff" -> "font/woff"
             "woff2" -> "font/woff2"
             "ttf" -> "font/ttf"
-            "txt" -> "text/plain; charset=utf-8"
-            "xml" -> "application/xml; charset=utf-8"
-            "mp4" -> "video/mp4"
-            "mp3" -> "audio/mpeg"
+            "otf" -> "font/otf"
             "pdf" -> "application/pdf"
             "zip" -> "application/zip"
             else -> "application/octet-stream"
@@ -374,16 +495,8 @@ class SfrHttpServer(
     }
 
     private fun getHttpDate(): String {
-        val fmt = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US)
-        fmt.timeZone = TimeZone.getTimeZone("GMT")
-        return fmt.format(Date())
-    }
-
-    private fun escapeHtml(text: String): String {
-        return text.replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("\"", "&quot;")
-            .replace("'", "&#39;")
+        val format = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US)
+        format.timeZone = TimeZone.getTimeZone("GMT")
+        return format.format(Date())
     }
 }

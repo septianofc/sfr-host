@@ -1,0 +1,1725 @@
+Emangnya Dihp Bisa Pakai Ektensi Apa AjaSih? Html, Dll, Sebutkan, PHP Bisa Gak? Bisa banget! HP Android yang dijadikan server hosting bisa menyimpan dan menjalankan berbagai jenis file website. Namun, perlu dibedakan antara file yang bisa disimpan dan file yang bisa dieksekusi oleh server.
+
+### 1\. Ekstensi file yang bisa digunakan
+
+Berikut daftar untuk SFR Host:
+
+### Website Frontend
+
+| Ekstensi     | Kegunaan                 |
+| ------------ | ------------------------ |
+| .html        | Struktur halaman website |
+| .htm         | HTML alternatif          |
+| .css         | Desain dan tampilan      |
+| .js          | JavaScript               |
+| .mjs         | JavaScript Module        |
+| .json        | Data konfigurasi         |
+| .xml         | Data XML                 |
+| .svg         | Gambar vektor            |
+| .webmanifest | Konfigurasi PWA          |
+| .map         | Source map               |
+
+### Backend dan Server
+
+Bisa dijalankan dengan runtime yang sesuai
+
+| Ekstensi | Teknologi        |
+| -------- | ---------------- |
+| .php     | PHP              |
+| .phtml   | PHP Template     |
+| .py      | Python           |
+| .js      | Node.js          |
+| .mjs     | Node.js Module   |
+| .cjs     | Node.js CommonJS |
+| .ts      | TypeScript       |
+| .go      | Golang           |
+| .rb      | Ruby             |
+| .pl      | Perl             |
+| .sh      | Shell Script     |
+| .cgi     | CGI Script       |
+
+### Database
+
+| Ekstensi | Kegunaan              |
+| -------- | --------------------- |
+| .db      | SQLite Database       |
+| .sqlite  | SQLite                |
+| .sqlite3 | SQLite                |
+| .sql     | SQL Database Backup   |
+| .json    | Penyimpanan data JSON |
+| .csv     | Data tabel            |
+
+### Gambar dan Media
+
+| Ekstensi | Kegunaan    |
+| -------- | ----------- |
+| .png     | Gambar      |
+| .jpg     | Foto        |
+| .jpeg    | Foto        |
+| .webp    | Gambar WebP |
+| .gif     | Animasi     |
+| .ico     | Favicon     |
+| .avif    | Gambar AVIF |
+| .mp4     | Video       |
+| .webm    | Video       |
+| .mp3     | Audio       |
+| .wav     | Audio       |
+| .ogg     | Audio       |
+
+### File Pendukung Website
+
+| Ekstensi  | Kegunaan              |
+| --------- | --------------------- |
+| .htaccess | Konfigurasi Apache    |
+| .conf     | Konfigurasi server    |
+| .env      | Environment variables |
+| .log      | Log server            |
+| .txt      | Teks                  |
+| .md       | Dokumentasi           |
+| .zip      | Arsip website         |
+| .tar.gz   | Arsip terkompresi     |
+| .wasm     | WebAssembly           |
+
+### 2\. Apakah PHP bisa berjalan di HP Android?
+
+BISA!
+
+PHP dapat dijalankan di Android menggunakan PHP Runtime yang kompatibel.
+
+Contoh arsitekturnya:
+
+HP Android
+
+SFR Host
+
+Web Server
+
+Nginx / Apache / PHP Built-in Server
+
+PHP Runtime
+
+SQLite / MariaDB
+
+Node.js Runtime
+
+Website publik
+
+Custom Domain + HTTPS + Tunnel
+
+Contoh file PHP:
+
+```php
+<?php
+echo "Halo dari SFR Host!";
+echo "<br>PHP Version: " . PHP_VERSION;
+?>
+```
+
+Ketika pengunjung membuka `https://domainkamu.com/index.php`, server HP akan mengeksekusi PHP dan mengirim hasil HTML ke pengunjung.
+
+PHP bukan sekadar ditampilkan sebagai teks.
+
+### 3\. Rekomendasi fitur untuk SFR Host
+
+Saya menyarankan SFR Host mendukung:
+
+* HTML, CSS, JavaScript.
+
+* PHP 8.x.
+
+* Node.js.
+
+* Python.
+
+* SQLite.
+
+* MariaDB (opsional).
+
+* File Manager.
+
+* ZIP Extractor.
+
+* Custom `.htaccess` jika memakai Apache.
+
+* Multiple Website.
+
+* Custom Domain.
+
+* SSL/HTTPS.
+
+Penting: jangan hanya menambahkan ekstensi ke daftar yang diizinkan. Setiap bahasa backend membutuhkan runtime dan konfigurasi server yang benar. Misalnya, Nginx tidak otomatis menjalankan PHP tanpa PHP-FPM atau handler PHP yang sesuai.
+
+### 4\. Contoh struktur hosting SFR Host
+
+```text
+SFR Host/
+│
+├── websites/
+│   ├── website1/
+│   │   └── public_html/
+│   │       ├── index.php
+│   │       ├── index.html
+│   │       ├── style.css
+│   │       ├── script.js
+│   │       └── assets/
+│   │
+│   └── website2/
+│       └── public_html/
+│           ├── index.html
+│           └── images/
+│
+├── runtime/
+│   ├── php/
+│   ├── nodejs/
+│   └── python/
+│
+├── databases/
+├── logs/
+└── backups/
+```
+
+Dengan sistem tersebut, satu HP bisa menjalankan beberapa website sekaligus, selama RAM, CPU, penyimpanan, dan jaringan mencukupi.
+
+Saran saya: jadikan PHP 8.x sebagai salah satu runtime utama SFR Host. Dengan begitu, pengguna bisa mengunggah CMS, website PHP, API, dan proyek web mereka sendiri tanpa harus menyewa hosting konvensional.
+, Tetapi DI local 182.0.1....:8080 File PHP Malah Didownload Njir Bukan Dibuka Dan Malah Kek Bukan File Utama Padahal index.php Yakali Hanya Bisa index.html, Nah, berarti masalahnya ada di konfigurasi Web Server SFR Host, bukan karena Android tidak mendukung PHP. 🗿
+
+Kalau ketika membuka `http://182.0.1.x:8080` file `index.php` malah ter-download, biasanya ada dua kemungkinan:
+
+* Web server belum dikonfigurasi untuk mengeksekusi PHP.
+
+* Web server belum mengatur `index.php` sebagai default index atau PHP handler belum terhubung.
+
+### 1\. Perilaku yang seharusnya
+
+Misalnya direktori website:
+
+```text
+public_html/
+├── index.php
+├── index.html
+├── style.css
+├── script.js
+└── config.php
+```
+
+Ketika pengunjung membuka:
+
+`http://IP-HP:8080/`
+
+Server seharusnya:
+
+* Mencari `index.php` terlebih dahulu.
+
+* Jika tidak ada, mencari `index.html`.
+
+* Mengeksekusi PHP menggunakan PHP Runtime.
+
+* Mengirim hasil HTML ke browser.
+
+* Tidak mengunduh file PHP mentah.
+
+### 2\. Konfigurasi yang diperlukan
+
+Jika SFR Host menggunakan Nginx, konfigurasi dasarnya perlu seperti ini:
+
+```nginx
+server {
+    listen 8080;
+    server_name _;
+
+    root /path/to/public_html;
+
+    index index.php index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass 127.0.0.1:9000;
+    }
+
+    location ~ /\. {
+        deny all;
+    }
+}
+```
+
+Namun, konfigurasi ini baru berfungsi jika PHP-FPM benar-benar berjalan di port `9000`. Jangan langsung memasangnya jika engine SFR Host menggunakan server berbeda.
+
+### 3\. Prompt perbaikan untuk Gemini Developer App
+
+Berikut instruksi yang bisa langsung kamu berikan:
+
+# PERBAIKAN SISTEM WEB SERVER DAN PHP RUNTIME — SFR HOST
+
+Perbaiki sistem web server pada aplikasi SFR Host karena saat pengguna membuka alamat lokal seperti `http://IP-HP:8080/`, file `index.php` justru terunduh oleh browser, bukan dieksekusi sebagai halaman website.
+
+Saya ingin SFR Host memiliki sistem hosting sungguhan yang mendukung PHP, bukan hanya HTML statis.
+
+## 1. PERBAIKAN DEFAULT INDEX
+
+Konfigurasikan document root agar mendukung urutan default index berikut:
+
+1. index.php
+2. index.html
+3. index.htm
+
+Ketika pengunjung membuka direktori website, server harus otomatis mencari file index sesuai urutan tersebut.
+
+Jika index.php tersedia, prioritaskan index.php daripada index.html.
+
+## 2. IMPLEMENTASI PHP RUNTIME
+
+Implementasikan PHP Runtime yang benar-benar berjalan di Android.
+
+Persyaratan:
+- PHP 8.x.
+- PHP CLI.
+- PHP Built-in Server atau PHP-FPM sesuai arsitektur web server.
+- PHP harus dapat mengeksekusi file .php.
+- Mendukung GET dan POST.
+- Mendukung session dan cookie.
+- Mendukung file upload.
+- Mendukung konfigurasi PHP.
+- Mendukung ekstensi PHP yang kompatibel dengan Android.
+- Mendukung koneksi database SQLite.
+- Menyediakan pengaturan PHP Runtime.
+
+Jangan hanya mengenali ekstensi .php atau mengirimkannya sebagai application/octet-stream.
+
+## 3. PERBAIKAN MIME TYPE DAN EKSEKUSI
+
+Pastikan:
+- .php dieksekusi oleh PHP Runtime.
+- .html ditampilkan sebagai text/html.
+- .css ditampilkan sebagai text/css.
+- .js ditampilkan sebagai application/javascript.
+- .json ditampilkan sebagai application/json.
+- .png, .jpg, .webp ditampilkan sebagai gambar.
+- File backend tidak pernah dikirim mentah ke browser.
+
+Jika PHP Runtime tidak tersedia atau gagal berjalan, tampilkan pesan error server yang jelas. Jangan pernah mengirim source code PHP kepada pengunjung.
+
+## 4. SISTEM ROUTING WEBSITE
+
+Implementasikan:
+- index.php sebagai prioritas utama.
+- index.html sebagai fallback.
+- Support URL rewrite.
+- Support query parameters.
+- Support URL tanpa ekstensi.
+- Support .htaccess jika menggunakan Apache.
+- Support konfigurasi routing jika menggunakan Nginx atau server alternatif.
+
+Pastikan konfigurasi sesuai dengan web server yang benar-benar digunakan oleh SFR Host.
+
+## 5. KEAMANAN
+
+- Blokir akses langsung ke file .env.
+- Blokir file konfigurasi sensitif.
+- Lindungi direktori runtime.
+- Cegah path traversal.
+- Jangan mengekspos source code PHP.
+- Pisahkan direktori website dengan direktori sistem aplikasi.
+
+## 6. PENGUJIAN WAJIB
+
+Buat website pengujian:
+
+public_html/index.php:
+
+<?php
+echo "<h1>SFR Host PHP Berhasil!</h1>";
+echo "<p>PHP Version: " . PHP_VERSION . "</p>";
+echo "<p>Server Time: " . date("Y-m-d H:i:s") . "</p>";
+?>
+
+Uji dengan membuka:
+
+http://IP-HP:8080/
+
+Hasil yang diharapkan adalah halaman HTML yang menampilkan pesan SFR Host PHP Berhasil beserta versi PHP dan waktu server.
+
+Uji juga:
+- /index.php
+- /test.php
+- /index.html
+- /style.css
+- /api/test.php
+
+## 7. PERSYARATAN IMPLEMENTASI
+
+Periksa source code proyek SFR Host terlebih dahulu untuk menemukan web server yang digunakan.
+
+Jangan mengganti seluruh arsitektur tanpa alasan teknis.
+
+Jangan membuat simulasi PHP.
+
+Jangan hanya memperbaiki MIME type karena MIME type tidak mengeksekusi PHP.
+
+Pastikan PHP Runtime benar-benar terhubung dengan HTTP server.
+
+Setelah selesai, berikan kode lengkap setiap file yang diubah, bukan hanya potongan kode atau contoh konfigurasi.
+
+### 4\. Satu hal yang perlu saya ketahui
+
+SFR Host sekarang menggunakan web server apa?
+
+* Nginx
+
+* Apache
+
+* NanoHTTPD
+
+* Ktor
+
+* PHP Built-in Server
+
+* Belum tahu
+
+Kalau belum tahu, kirim source code bagian yang menjalankan server port `8080`. Saya bisa bantu telusuri penyebab sebenarnya agar `index.php` bisa berjalan, bukan malah ter-download.
+, Dan Tambahan Pastikan konfigurasi Web Server SFR Host, Support Semua File, Database Mysql, Dll Seperti Cpanel, Dan Hapus Tombol Yang Mengarah Ke Halaman Yang Sama, Setiap Tombol Misal Hosting, Home, Dll harus Full Layar Full Page Bukan Ada Konfigurasi Lainya Atau Beda Tombol Tapi Sama Halaman, Tambahkan Fitur Kunci Apk Dengan Sidik Jari/Pin Jika Dibatalkan Atau Gagal Maka Keluar Apk Bukan Memanggil Sidik Jari/Pin Kembali, Halaman 404, 500, Dll Memakai Bawaan Host Apk Pastikan Desain Bagus Serta Jika Gakada index.html Atau File Utama Maka List File Nya Juga Bagus, Wajib Menampilkan Logo, Dan Nama Apk, Serta Tombol Download https://sfrhost.septianfr.web.id/download Padahal Halaman Yang Gak Terlalu Mengganggu Yak Sebagai Brand Dan Styles Apk Bagus Profesional, Simpel, Dll Warna Utama Tetap #42a5f5, Tombol Di Apk Jika Aktif Kok Biru Semua Kek Bukan Tombol Tau Gak, Sekalian Perbaikan Desain, Dll, Saat Preview, Dan Edit File, Dll Terlalu Keatas Jadi Kena Baru Bawaan Hp, Dll, Bisa Tambah Banyak Domain, Dan Bisa Buat Banyak Subdomain, Otomatis Buat Hosting Khusus Subdomain Atau Domain Tambahan Atau Bisa Ceklis Berbagi Host Dengan Host (Pilih), Bisa Juga Custom Kode Error 404,500, Dll Menggunakan .htaccess, Siap. Ini tambahan yang perlu digabungkan ke prompt pengembangan SFR Host. Saya susun agar AI Developer tidak sekadar mempercantik tampilan atau membuat tombol simulasi, tetapi benar-benar memeriksa dan mengimplementasikan fungsi pada project Android yang sudah ada.
+
+Ada beberapa hal teknis yang wajib diperhatikan: dukungan `.htaccess` membutuhkan Apache atau server yang kompatibel; MySQL membutuhkan database server sungguhan, bukan sekadar SQLite yang diberi label MySQL. Semua fitur harus disesuaikan dengan kemampuan runtime yang benar-benar dipasang.
+
+# PROMPT PENGEMBANGAN LANJUTAN SFR HOST — FULL HOSTING CONTROL PANEL
+
+Lanjutkan pengembangan project Android **SFR Host** yang sudah tersedia. Jangan membuat project baru dari nol dan jangan menghilangkan fitur yang sudah berfungsi.
+
+Identitas aplikasi:
+- Nama: SFR Host
+- Package: `com.sfrhostapp`
+- Developer: Septian Fathur Rohman
+- Warna utama: `#42a5f5`
+- Website: https://septianfr.web.id
+- Halaman download: https://sfrhost.septianfr.web.id/download
+
+Tujuan utama: menjadikan SFR Host sebagai aplikasi web hosting sungguhan yang menjadikan HP Android sebagai server hosting, dengan pengalaman pengelolaan menyerupai cPanel.
+
+## 1. Web Server dan dukungan hosting
+
+Periksa arsitektur server yang sudah digunakan. Tingkatkan menjadi web server yang benar-benar dapat menjalankan website, bukan simulator.
+
+Wajib mendukung:
+- HTML, HTM, CSS, JavaScript.
+- PHP 8.x dengan eksekusi PHP sungguhan.
+- JSON, XML, TXT, CSV, SVG, gambar, video, audio, font, ZIP, dan berbagai file statis lainnya.
+- URL rewrite dan routing.
+- MIME type yang sesuai.
+- File upload dan download.
+- HTTP dan HTTPS jika konfigurasi sertifikat tersedia.
+- Pengaturan document root.
+- Pengaturan port.
+- Pengaturan default index: `index.php`, `index.html`, `index.htm`.
+- Log akses dan error.
+- Restart, stop, dan start web server.
+- Pengaturan batas upload dan ukuran request.
+- Pengaturan permission file yang aman.
+
+Jangan menganggap semua file harus dieksekusi. File statis harus disajikan sebagai file, sedangkan file yang membutuhkan runtime harus diproses oleh runtime yang sesuai.
+
+PHP tidak boleh hanya diubah MIME type-nya. File `.php` harus benar-benar dieksekusi oleh PHP runtime. Jangan pernah mengirim source code PHP mentah kepada pengunjung.
+
+## 2. Database seperti cPanel
+
+Tambahkan halaman Database dengan kemampuan:
+- Membuat banyak database.
+- Menghapus database.
+- Membuat banyak user database.
+- Mengatur username dan password.
+- Mengatur hak akses user.
+- Menghubungkan user dengan database.
+- Melihat informasi koneksi database.
+- Mengimpor dan mengekspor SQL.
+- Mengelola tabel dan data.
+- Backup dan restore.
+- Menampilkan status database server.
+
+Utamakan kompatibilitas MySQL/MariaDB sesungguhnya, termasuk koneksi dari PHP melalui ekstensi yang sesuai.
+
+Jangan menyebut SQLite sebagai MySQL. Jika MySQL/MariaDB belum tersedia, implementasikan runtime database yang benar-benar dapat dijalankan di Android atau tampilkan status belum tersedia dengan penjelasan dan langkah pemasangan yang jelas.
+
+## 3. Domain dan Subdomain
+
+Pengguna harus dapat menambahkan banyak domain dan subdomain.
+
+Fitur:
+- Tambah domain utama.
+- Tambah domain tambahan (Addon Domain).
+- Tambah banyak subdomain.
+- Hapus dan edit domain.
+- Atur document root masing-masing domain.
+- Atur SSL masing-masing domain jika tersedia.
+- Cek status DNS dan konektivitas domain.
+- Tampilkan status konfigurasi domain.
+- Tampilkan alamat publik website.
+- Hubungkan domain ke tunnel yang aktif.
+
+Setiap domain atau subdomain harus bisa memiliki direktori hosting sendiri secara otomatis.
+
+Contoh:
+`hosting/websites/domain-utama/public_html/`
+`hosting/websites/domain-tambahan/public_html/`
+`hosting/websites/blog-subdomain/public_html/`
+
+Tambahkan pilihan saat membuat domain:
+
+1. **Hosting terpisah:** membuat direktori dan konfigurasi hosting sendiri.
+2. **Berbagi hosting:** menggunakan document root dari hosting lain yang dipilih pengguna.
+
+Jika memilih berbagi hosting, tampilkan pilihan hosting tujuan. Jangan otomatis menggabungkan seluruh file atau database.
+
+Pastikan setiap domain diarahkan ke document root yang benar dan tidak dapat mengakses direktori hosting domain lain tanpa izin.
+
+## 4. Halaman error bawaan SFR Host
+
+Buat halaman error profesional dan konsisten dengan identitas SFR Host:
+- 400 Bad Request.
+- 401 Unauthorized.
+- 403 Forbidden.
+- 404 Not Found.
+- 405 Method Not Allowed.
+- 408 Request Timeout.
+- 413 Payload Too Large.
+- 429 Too Many Requests.
+- 500 Internal Server Error.
+- 502 Bad Gateway.
+- 503 Service Unavailable.
+- 504 Gateway Timeout.
+
+Desain halaman error:
+- Menampilkan logo SFR Host.
+- Menampilkan nama SFR Host.
+- Menampilkan kode dan judul error.
+- Deskripsi singkat yang mudah dimengerti.
+- Tombol kembali ke halaman sebelumnya jika memungkinkan.
+- Tampilan responsif dan profesional.
+- Tidak terlalu mencolok atau mengganggu pengunjung.
+- Tidak menampilkan informasi sensitif, lokasi file server, stack trace, atau konfigurasi internal.
+
+Tambahkan pengaturan custom error page untuk setiap website.
+
+Pengguna dapat:
+- Menggunakan halaman error bawaan SFR Host.
+- Menggunakan halaman error custom milik website.
+- Mengatur file custom untuk masing-masing kode error.
+- Mengembalikan pengaturan ke bawaan SFR Host.
+
+Dukung konfigurasi `.htaccess` untuk custom error page jika server menggunakan Apache atau implementasi yang kompatibel.
+
+Contoh konfigurasi:
+`ErrorDocument 404 /404.html`
+`ErrorDocument 500 /500.html`
+
+Jika server bukan Apache, buat sistem konfigurasi ekuivalen yang benar-benar bekerja. Jangan mengklaim `.htaccess` didukung jika server tidak memprosesnya.
+
+## 5. File Manager dan Directory Listing
+
+Jika website tidak memiliki file utama seperti `index.php`, `index.html`, atau `index.htm`, tampilkan halaman directory listing bawaan SFR Host yang profesional.
+
+Directory listing harus:
+- Menampilkan logo SFR Host.
+- Menampilkan nama SFR Host.
+- Menampilkan nama domain atau subdomain.
+- Menampilkan breadcrumb direktori.
+- Menampilkan daftar folder dan file.
+- Menampilkan ukuran file.
+- Menampilkan tanggal modifikasi.
+- Memungkinkan navigasi ke folder.
+- Memungkinkan download file jika diizinkan.
+- Memiliki tampilan responsif.
+- Memiliki tombol download SFR Host menuju `https://sfrhost.septianfr.web.id/download`.
+
+Branding harus kecil, rapi, dan tidak mengganggu isi website. Jangan menampilkan informasi direktori internal Android.
+
+Pengguna juga harus dapat menonaktifkan directory listing melalui pengaturan hosting.
+
+Jangan pernah menampilkan file rahasia seperti `.env`, file konfigurasi, backup privat, credential, atau direktori internal server kepada pengunjung.
+
+## 6. Custom Error dan .htaccess
+
+Tambahkan editor konfigurasi `.htaccess` apabila server benar-benar kompatibel.
+
+Dukung fitur yang relevan:
+- URL rewrite.
+- Redirect.
+- Custom error document.
+- Directory index.
+- Proteksi direktori.
+- Pengaturan akses file.
+- Pencegahan directory listing.
+- Aturan HTTPS jika tersedia.
+
+Sediakan editor dengan:
+- Syntax highlighting.
+- Validasi konfigurasi.
+- Tombol simpan.
+- Tombol backup konfigurasi.
+- Tombol restore.
+- Tombol uji konfigurasi.
+
+Konfigurasi yang salah tidak boleh membuat seluruh server mati tanpa mekanisme pemulihan. Berikan validasi dan opsi rollback.
+
+Jangan menjalankan konfigurasi berbahaya atau mengizinkan akses ke direktori di luar document root.
+
+## 7. Kunci aplikasi menggunakan PIN dan sidik jari
+
+Tambahkan fitur App Lock pada pengaturan keamanan.
+
+Metode:
+- PIN aplikasi.
+- Sidik jari melalui Android BiometricPrompt.
+- Pilihan PIN saja atau sidik jari.
+- Pengaturan aktivasi dan penonaktifan.
+- Konfirmasi PIN sebelum mengganti pengaturan keamanan.
+- Penyimpanan PIN secara aman menggunakan mekanisme Android Keystore dan hash yang sesuai.
+
+Perilaku wajib:
+- Saat aplikasi dibuka, tampilkan layar kunci jika fitur aktif.
+- Jika autentikasi berhasil, masuk ke aplikasi.
+- Jika sidik jari gagal atau dibatalkan, jangan otomatis memanggil dialog sidik jari berulang kali.
+- Jika pengguna menekan tombol batal atau menutup dialog autentikasi, aplikasi harus keluar atau kembali ke luar aplikasi sesuai mekanisme Android yang benar.
+- Jika PIN salah, tampilkan pesan kesalahan dan berikan kesempatan mencoba kembali sesuai batas keamanan.
+- Jangan membuat loop autentikasi.
+- Jangan menyimpan PIN dalam bentuk teks biasa.
+- Jangan menganggap sidik jari tersedia pada perangkat yang tidak mendukungnya.
+
+## 8. Desain dan navigasi aplikasi
+
+Lakukan perbaikan UI/UX secara menyeluruh.
+
+Masalah yang wajib diperbaiki:
+- Ada beberapa tombol berbeda tetapi membuka halaman yang sama.
+- Tombol Home, Hosting, dan menu lain harus mempunyai halaman dan fungsi masing-masing.
+- Hapus tombol duplikat yang tidak memiliki fungsi berbeda.
+- Jangan membuat tombol hanya sebagai dekorasi.
+- Jangan membuat beberapa menu yang hanya mengganti judul tetapi kontennya sama.
+
+Setiap menu utama harus membuka halaman penuh (full page/full screen), bukan sekadar mengganti sebagian kecil konten sementara halaman konfigurasi lainnya tetap tampil.
+
+Contoh struktur menu:
+- Dashboard.
+- Hosting.
+- Domain.
+- Subdomain.
+- File Manager.
+- Database.
+- Web Server.
+- PHP Manager.
+- SSL/HTTPS.
+- Error Pages.
+- Logs.
+- Backup.
+- Security.
+- Settings.
+- Developer/About.
+
+Setiap halaman harus memiliki konten yang benar-benar relevan dengan fungsinya.
+
+Gunakan navigasi yang konsisten, tombol kembali yang berfungsi, dan state halaman yang benar.
+
+## 9. Perbaikan tombol dan warna
+
+Warna brand utama tetap `#42a5f5`, tetapi jangan membuat seluruh tombol aktif berwarna biru.
+
+Gunakan hierarki visual:
+- Primary: biru untuk aksi utama.
+- Secondary: warna netral.
+- Tertiary: tombol teks atau outline.
+- Destructive: merah untuk hapus atau tindakan berbahaya.
+- Success: hijau untuk status berhasil.
+- Disabled: warna redup dan tidak dapat diklik.
+
+Tombol aktif tidak boleh terlihat seperti semua tombol memiliki fungsi dan tingkat kepentingan yang sama.
+
+Gunakan desain profesional, simpel, modern, konsisten, dan nyaman digunakan di HP.
+
+## 10. Perbaikan posisi editor dan preview
+
+Saat membuka:
+- Preview website.
+- Editor file.
+- Editor HTML/PHP/CSS/JS.
+- Pengaturan domain.
+- Dialog konfigurasi.
+- Form tambah hosting.
+
+Pastikan konten tidak menempel ke bagian paling atas layar dan tidak tertutup status bar atau notch HP.
+
+Gunakan:
+- Window insets.
+- Status bar padding.
+- Navigation bar padding.
+- Safe drawing insets.
+- Scrollable content.
+- Keyboard-aware layout.
+- Padding yang konsisten.
+
+Editor harus nyaman digunakan ketika keyboard Android muncul. Tombol simpan dan toolbar tidak boleh tertutup keyboard.
+
+## 11. Branding SFR Host
+
+Branding harus konsisten dan profesional.
+
+Pada halaman directory listing dan error bawaan:
+- Logo SFR Host wajib ditampilkan.
+- Nama SFR Host wajib ditampilkan.
+- Link download: `https://sfrhost.septianfr.web.id/download`.
+
+Branding cukup sebagai footer atau bagian kecil di halaman, bukan banner besar yang mengganggu website pelanggan.
+
+Jangan mengubah logo secara sembarangan. Gunakan aset logo SFR Host yang sudah ada dalam repository.
+
+## 12. Backup, keamanan, dan isolasi hosting
+
+Pastikan:
+- Setiap website memiliki direktori sendiri.
+- Domain tidak bisa membaca file website lain.
+- File konfigurasi rahasia tidak dapat diakses melalui HTTP.
+- Upload memiliki validasi.
+- Backup dan restore bekerja.
+- Penghapusan file meminta konfirmasi.
+- Database credential tidak ditampilkan secara terbuka.
+- Log tidak membocorkan password atau token.
+- Tunnel tidak dapat digunakan untuk mengakses sembarang direktori.
+- Server memiliki mekanisme recovery setelah crash.
+- Penggunaan CPU, RAM, dan storage dapat dipantau.
+
+## 13. Pengujian wajib
+
+Jangan hanya menyatakan fitur selesai. Jalankan pengujian pada server Android sebenarnya.
+
+Uji:
+1. Membuka `index.php`.
+2. Membuka `index.html`.
+3. Mengakses PHP yang menjalankan `phpinfo()` secara lokal tanpa membocorkan informasi sensitif ke publik.
+4. Menjalankan PHP yang membaca dan menulis file dalam document root.
+5. Menghubungkan PHP ke database MySQL/MariaDB.
+6. Mengakses file CSS dan JavaScript.
+7. Mengakses gambar dan file unduhan.
+8. Menambahkan dua domain dengan document root berbeda.
+9. Membuat subdomain.
+10. Menguji pilihan berbagi hosting.
+11. Menguji halaman 404 dan 500.
+12. Menguji custom error page.
+13. Menguji rewrite URL.
+14. Menguji directory listing.
+15. Menguji App Lock dengan sidik jari berhasil, gagal, dan dibatalkan.
+16. Menguji editor ketika keyboard terbuka.
+17. Menguji server setelah aplikasi diminimalkan dan setelah HP melakukan pembatasan background.
+
+## 14. Ketentuan pengerjaan
+
+WAJIB:
+- Periksa seluruh repository sebelum mengubah kode.
+- Pertahankan fitur yang sudah berfungsi.
+- Jangan membuat halaman atau tombol palsu.
+- Jangan mengganti fungsi server sungguhan dengan simulator.
+- Jangan mengklaim dukungan teknologi yang belum diimplementasikan.
+- Jangan mengubah package name.
+- Jangan menghapus konfigurasi Firebase yang masih digunakan.
+- Jangan menghapus konfigurasi build yang dibutuhkan.
+- Jangan meninggalkan TODO sebagai pengganti implementasi.
+- Periksa kompatibilitas Android dan izin yang diperlukan.
+- Perhatikan konsumsi RAM, CPU, storage, dan baterai.
+- Pastikan server tetap berjalan melalui foreground service yang sesuai.
+
+Jika suatu fitur membutuhkan binary, runtime, service, atau dependency tambahan, implementasikan dan sertakan cara pemasangannya. Jika benar-benar tidak memungkinkan di Android, jelaskan batasannya dan berikan alternatif yang benar-benar dapat dijalankan.
+
+**HASIL AKHIR WAJIB:**
+1. Seluruh file yang diubah harus diberikan dalam bentuk kode lengkap, bukan potongan.
+2. Sertakan file baru yang diperlukan.
+3. Jelaskan perubahan setiap file.
+4. Sertakan daftar fitur yang sudah benar-benar berfungsi.
+5. Sertakan daftar fitur yang belum dapat diimplementasikan beserta alasannya.
+6. Sertakan hasil build Debug APK.
+7. Jangan menyatakan berhasil sebelum build dan pengujian yang relevan benar-benar lolos.
+
+Prioritas utama adalah SFR Host menjadi aplikasi hosting Android yang nyata, stabil, aman, dan profesional dengan pengalaman pengelolaan menyerupai cPanel.
+
+Catatan penting: jangan sampai AI Developer hanya membuat tampilan menu Database, PHP Manager, Domain, dan sebagainya tanpa backend. Untuk SFR Host, yang paling penting adalah setiap menu terhubung dengan konfigurasi server yang benar-benar berjalan. Khusus MySQL/MariaDB, PHP, dan `.htaccess`, wajib diuji dari browser menggunakan domain lokal maupun domain publik, bukan hanya dari preview aplikasi.
+, Coba Cek Dah Tuh Apk, Yakali Token Dan Url Cloudflare Tunnel Salah Malah Jadi Connection Berarti Koneksi Berhasil Padahal Salah Atau Gak Terkoneksi, Dan Verif Domain Dns Txt Atau Cname Gagal Mulu Padahal Seharusnya Cepet 1 Menitan Ini Gagal Mulu, Mungkin Ini Gak Ngecek Pakai Cloudflare Soalnya, Dan Cek Fitur Tidak Bekerja Atau Boongan Nya, Ini Keknya Fitur Tunnel Emang Hoax Gak Bekerja Aslinya Kah, Memproses selama 2m 5s
+
+Saya sudah memeriksa file SFR-Host-Debug.apk di dalam ZIP yang kamu kirim, bukan cuma melihat screenshot atau nama fiturnya.
+
+Temuan awal: Tunnel Cloudflare belum terbukti benar-benar bekerja
+
+Ada indikasi masalah yang cukup serius:
+
+* APK memang memiliki class `com.example.tunnel.TunnelManager` dan fungsi bernama `runCloudflareTunnel`.
+
+* Ada teks yang menyatakan token Cloudflare sedang diverifikasi dan tunnel aktif.
+
+* Namun, saya belum menemukan bukti adanya implementasi resmi Cloudflare Tunnel (`cloudflared`), endpoint API Cloudflare, atau executable Cloudflared di dalam APK.
+
+* Saya menemukan implementasi WebSocket khusus menuju Gateway VPS, termasuk autentikasi Gateway dan penerusan HTTP. Itu berbeda dengan Cloudflare Tunnel resmi.
+
+Artinya, nama fungsi dan status "Tunnel Aktif" saja tidak membuktikan koneksi ke Cloudflare berhasil. Ada kemungkinan status sukses hanya menggambarkan koneksi ke komponen lokal atau Gateway buatan aplikasi.
+
+### Hasil pemeriksaan lebih lanjut
+
+1\. Cloudflare Tunnel
+
+Belum terbukti sebagai Cloudflare Tunnel asli
+
+* Saya tidak menemukan executable `cloudflared` di dalam APK.
+
+* Tidak ditemukan library native Cloudflared.
+
+* Tidak ditemukan alamat API Cloudflare (`api.cloudflare.com`) atau endpoint koneksi Cloudflare Tunnel resmi.
+
+* Justru ditemukan implementasi WebSocket khusus `connectWebSocketGateway` dan `runCloudflareTunnel`.
+
+Kesimpulan: APK memiliki kode tunneling sendiri menuju Gateway VPS, tetapi belum ada bukti cukup bahwa token Cloudflare benar-benar digunakan untuk membuat koneksi Cloudflare Tunnel.
+
+2\. Verifikasi TXT dan DNS
+
+Ada indikasi placeholder
+
+Saya menemukan teks literal:
+
+```text
+_sfrhost-verify
+sfrhost-verify=a1b2c3d4
+```
+
+Nilai `a1b2c3d4` terlihat seperti token contoh, bukan token verifikasi unik yang dibuat untuk setiap domain.
+
+Saya juga menemukan penggunaan `InetAddress.getAllByName`, yang dapat melakukan resolusi alamat IP. Namun, itu saja tidak cukup untuk membuktikan bahwa aplikasi memeriksa record TXT dan CNAME dengan benar.
+
+Kesimpulan: Verifikasi TXT kemungkinan belum diimplementasikan dengan benar. Pemeriksaan DNS juga perlu diperiksa apakah benar-benar memeriksa tipe record yang diminta.
+
+3\. Status koneksi
+
+Berpotensi memberikan status sukses palsu
+
+Saya menemukan teks:
+
+```text
+Cloudflare Tunnel aktif & mendengarkan trafik Cloudflare Edge
+Autentikasi Gateway Berhasil
+```
+
+Namun, pesan tersebut tidak cukup membuktikan bahwa token valid, koneksi ke Cloudflare Edge berhasil, dan website dapat diakses dari internet.
+
+Ketiganya harus menjadi pemeriksaan terpisah.
+
+### Fitur yang belum bisa saya nyatakan berfungsi
+
+| Fitur                     | Hasil audit APK                                  |
+| ------------------------- | ------------------------------------------------ |
+| Web server lokal          | Ada indikasi implementasi                        |
+| WebSocket Gateway         | Ada implementasi                                 |
+| Cloudflare Tunnel resmi   | Belum terbukti                                   |
+| Validasi token Cloudflare | Belum terbukti                                   |
+| DNS TXT                   | Ada indikasi placeholder                         |
+| DNS CNAME                 | Belum terbukti valid                             |
+| Verifikasi domain publik  | Belum terbukti                                   |
+| PHP dan MySQL             | Perlu pengujian runtime                          |
+| Custom domain             | Ada implementasi UI dan manager, perlu pengujian |
+
+Catatan: Ini merupakan audit statis APK. Saya belum menjalankan APK pada HP dan belum menguji token, domain, maupun koneksi internetmu. Jadi saya tidak akan mengklaim semua fitur pasti palsu, tetapi ada masalah implementasi yang cukup kuat untuk ditindaklanjuti.
+
+### Perbaikan yang wajib dilakukan
+
+Menurut saya, jangan sekadar memperbaiki teks status. Perbaiki sistem validasinya:
+
+* Cloudflare token: validasi token melalui mekanisme Cloudflare yang benar. Token salah, kedaluwarsa, atau tidak memiliki izin harus menghasilkan status gagal.
+
+* Cloudflare Tunnel: gunakan `cloudflared` sungguhan yang kompatibel dengan Android/ARM, atau implementasikan protokol resmi yang didukung. Jangan menganggap WebSocket Gateway buatan sendiri sebagai Cloudflare Tunnel.
+
+* DNS TXT: buat token verifikasi acak dan unik untuk setiap domain, lalu periksa TXT record secara aktual.
+
+* DNS CNAME: periksa target CNAME sebenarnya, bukan sekadar apakah domain bisa di-resolve menjadi alamat IP.
+
+* Status koneksi: bedakan `Disconnected`, `Connecting`, `Authenticating`, `Connected`, dan `Error`.
+
+* Tes publik: lakukan HTTP request dari luar jaringan HP untuk membuktikan website benar-benar bisa diakses publik.
+
+### Prompt perbaikan berdasarkan hasil audit
+
+# AUDIT DAN PERBAIKAN TOTAL CLOUDFLARE TUNNEL & DNS SFR HOST
+
+Periksa dan perbaiki repository SFR Host berdasarkan hasil audit APK Debug.
+
+Ditemukan indikasi bahwa implementasi Cloudflare Tunnel belum menggunakan Cloudflared resmi, terdapat WebSocket Gateway buatan sendiri, serta token TXT verifikasi yang masih menggunakan nilai contoh `sfrhost-verify=a1b2c3d4`.
+
+Jangan hanya memperbaiki UI atau mengganti pesan status.
+
+## A. Cloudflare Tunnel sungguhan
+
+Implementasikan Cloudflare Named Tunnel menggunakan Cloudflared resmi yang kompatibel dengan arsitektur Android.
+
+Persyaratan:
+- Token Cloudflare harus benar-benar digunakan untuk autentikasi.
+- Jangan menganggap token tersimpan berarti token valid.
+- Jangan menganggap proses berhasil dimulai berarti tunnel sudah terhubung.
+- Pastikan koneksi benar-benar berhasil mencapai Cloudflare Edge.
+- Periksa proses Cloudflared, exit code, log, dan konektivitas.
+- Tangani token salah, token kedaluwarsa, konfigurasi salah, jaringan terputus, dan proses crash.
+- Pastikan origin mengarah ke web server HP yang benar.
+- Pastikan tunnel dapat meneruskan request HTTP/HTTPS ke origin lokal.
+- Sediakan stop, restart, reconnect, dan pemeriksaan kesehatan tunnel.
+
+Jika Cloudflared tidak tersedia, tampilkan fitur sebagai belum tersedia. Jangan membuat koneksi WebSocket Gateway sendiri lalu menamakannya Cloudflare Tunnel.
+
+## B. Validasi token
+
+Buat validasi yang benar-benar membedakan:
+- Token valid.
+- Token tidak valid.
+- Token tidak memiliki izin.
+- Token kedaluwarsa atau dicabut.
+- Tidak ada koneksi internet.
+- Cloudflare API tidak dapat dijangkau.
+
+Jangan pernah menampilkan Connected ketika validasi gagal.
+
+## C. DNS TXT
+
+Hapus seluruh token contoh seperti `a1b2c3d4`.
+
+Buat token verifikasi unik menggunakan generator kriptografis. Simpan token per domain dan periksa record TXT yang benar melalui DNS resolver yang mendukung pembacaan TXT.
+
+Pastikan:
+- Nama record benar.
+- Nilai TXT harus sama persis dengan token yang dibuat.
+- Domain yang diperiksa benar.
+- Hasil DNS kosong bukan berarti berhasil.
+- DNS timeout bukan berarti berhasil.
+- Record milik domain lain tidak boleh dianggap valid.
+
+Tampilkan hasil record yang ditemukan dan alasan kegagalan.
+
+## D. DNS CNAME
+
+Implementasikan pemeriksaan record CNAME sesungguhnya.
+
+Bedakan:
+- CNAME ditemukan dan target sesuai.
+- CNAME ditemukan tetapi target salah.
+- Record tidak ditemukan.
+- NXDOMAIN.
+- DNS timeout.
+- DNS resolver gagal.
+- Domain menggunakan A/AAAA.
+- Root domain menggunakan CNAME Flattening.
+
+Jangan menganggap hasil resolusi IP sebagai bukti bahwa CNAME sudah benar.
+
+## E. Status koneksi yang jujur
+
+Gunakan state:
+1. DISCONNECTED.
+2. CONNECTING.
+3. AUTHENTICATING.
+4. CONNECTED.
+5. DEGRADED.
+6. ERROR.
+
+Status CONNECTED hanya boleh diberikan setelah:
+- Autentikasi berhasil.
+- Proses tunnel aktif.
+- Koneksi ke Cloudflare Edge berhasil.
+- Heartbeat atau pemeriksaan koneksi berhasil.
+- Origin lokal dapat dijangkau.
+
+Status website publik harus diperiksa terpisah menggunakan request dari jaringan eksternal. Jangan menggunakan ping localhost sebagai bukti website sudah online untuk publik.
+
+## F. Uji otomatis
+
+Buat pengujian:
+- Token benar.
+- Token salah.
+- Token kosong.
+- Token tidak memiliki izin.
+- Internet mati.
+- Tunnel terputus.
+- Web server mati.
+- TXT benar.
+- TXT salah.
+- TXT belum dibuat.
+- CNAME benar.
+- CNAME salah.
+- DNS belum propagasi.
+- Domain tidak ditemukan.
+- Domain bisa diakses dari jaringan luar.
+
+## G. Laporan akhir
+
+Periksa seluruh source code dan berikan kode lengkap setiap file yang diubah.
+
+Jelaskan:
+- Implementasi lama yang salah.
+- Penyebab status koneksi palsu.
+- Penyebab TXT/CNAME gagal.
+- Implementasi baru.
+- Dependency dan binary yang diperlukan.
+- Hasil pengujian nyata.
+- Fitur yang belum tersedia.
+
+Jangan menyatakan Cloudflare Tunnel berhasil sebelum benar-benar berhasil terkoneksi ke Cloudflare Edge dan request website dapat diteruskan melalui tunnel.
+
+Saya perlu satu hal lagi untuk membedah penyebabnya sampai ke baris kode: kirim ZIP repository/source code SFR Host yang dipakai untuk membangun APK ini, bukan APK saja. APK sudah cukup untuk menemukan indikasi masalah, tetapi source code diperlukan untuk memastikan logika `TunnelManager.kt`, `DomainManager.kt`, dan `DnsManagementScreen.kt` serta memperbaikinya secara tepat.
+, Nih Cek File Yang Diimpor Dari Gemini Studio App https://github.com/septianofc/sfr-host, Memproses selama 18s
+
+Nah, sekarang saya sudah membuka repository asli yang diimpor dari Gemini Studio App, bukan hanya mengandalkan APK sebelumnya:
+
+[GitHub — septianofc/sfr-host](https://github.com/septianofc/sfr-host?utm_source=chatgpt.com)
+
+Ada temuan penting dari README repository: proyek ini sebenarnya mendokumentasikan dua metode tunnel yang berbeda:
+
+* Cloudflare Argo Tunnel menggunakan token Cloudflare.
+
+* Custom VPS Gateway menggunakan WebSocket reverse proxy milik project sendiri.
+
+README juga menyebut dependensi tunneling yang digunakan adalah OkHttp WebSocket. Ini memperkuat dugaan bahwa fitur yang kamu kira Cloudflare Tunnel mungkin justru menjalankan koneksi Gateway buatan sendiri. septianofc/sfr-host: SFR Host App · GitHub
+
+### Temuan dari konfigurasi project
+
+Arsitektur yang tertulis di repository
+
+| Komponen                | Implementasi yang didokumentasikan  |
+| ----------------------- | ----------------------------------- |
+| Web server              | Embedded ServerSocket               |
+| Tunnel client           | OkHttp WebSocket                    |
+| Background              | Android Foreground Service          |
+| Penyimpanan konfigurasi | DataStore                           |
+| Gateway VPS             | Folder /gateway/                    |
+| Cloudflare              | Panduan penggunaan token Cloudflare |
+
+Sumber: README repository, bagian identitas, dependensi, dan dokumentasi tunneling. septianofc/sfr-host: SFR Host App · GitHub
+
+### 1\. Masalah paling besar: Cloudflare dan VPS Gateway tercampur
+
+README menjelaskan Cloudflare dengan cara:
+
+* Membuat Named Tunnel di Cloudflare.
+
+* Menyalin Tunnel Token.
+
+* Memasukkan token ke SFR Host.
+
+* Mengatur Public Hostname secara manual di Cloudflare.
+
+* Menjalankan tunnel dari aplikasi.
+
+Tetapi dependensi yang didokumentasikan adalah OkHttp WebSocket, bukan Cloudflared.
+
+Sementara itu, metode VPS Gateway memang secara eksplisit menggunakan WebSocket reverse proxy sendiri. septianofc/sfr-host: SFR Host App · GitHub
+
+Ini membuat saya curiga implementasi tombol Cloudflare dan VPS Gateway menggunakan jalur koneksi yang sama atau salah satu hanya mengganti konfigurasi tanpa menjalankan Cloudflared.
+
+### 2\. Masalah verifikasi DNS
+
+README hanya mendokumentasikan konfigurasi CNAME menuju hostname tunnel atau domain Gateway VPS.
+
+Belum ada penjelasan implementasi verifikasi TXT, mekanisme pembuatan token verifikasi unik, ataupun pemeriksaan record TXT secara aktual. septianofc/sfr-host: SFR Host App · GitHub
+
+Jadi, klaim bahwa TXT dan CNAME sudah diverifikasi dengan benar belum dapat dibuktikan dari dokumentasi project.
+
+### 3\. Apakah saya sudah bisa memeriksa semua source code?
+
+Belum. Halaman utama dan README repository berhasil saya baca, tetapi GitHub membatasi pengambilan isi folder `app/` dan `gateway/` melalui akses yang tersedia di sini. Saya tidak mau mengarang hasil pemeriksaan file Kotlin yang belum berhasil saya baca.
+
+Butuh source ZIP untuk audit baris kode
+
+Tolong lakukan ini:
+
+* Buka [Repository SFR Host](https://github.com/septianofc/sfr-host?utm_source=chatgpt.com).
+
+* Tekan tombol Code.
+
+* Pilih Download ZIP.
+
+* Upload ZIP tersebut langsung ke chat ini.
+
+Pastikan ZIP berisi folder `app/`, `gateway/`, `gradle/`, serta file Gradle dan konfigurasi project. Jangan hanya mengirim APK.
+
+Setelah source tersedia, saya bisa membedah secara spesifik:
+
+* `TunnelManager` — apakah token Cloudflare benar-benar dipakai.
+
+* Gateway — apakah hanya menghubungkan WebSocket ke VPS.
+
+* Domain Manager — apakah TXT dan CNAME diperiksa secara nyata.
+
+* DNS resolver — apakah menggunakan pemeriksaan record yang tepat.
+
+* Status koneksi — apakah sukses palsu karena hanya memeriksa WebSocket.
+
+* Tombol dan menu — apakah benar menjalankan fungsi atau hanya mengubah tampilan.
+
+Kesimpulan sementara: Saya belum bisa menyebut seluruh fitur tunnel sebagai hoax, tetapi dokumentasi arsitekturnya menunjukkan Cloudflare Tunnel resmi belum terbukti diimplementasikan. Ada alasan kuat untuk mencurigai fitur tersebut hanya mengandalkan WebSocket Gateway., Nah, ZIP source code-nya sudah saya buka dan periksa. Sekarang saya bisa memastikan penyebab masalahnya, bahkan menemukan beberapa bug yang lebih serius daripada dugaan awal.
+
+TERKONFIRMASI — Cloudflare Tunnel belum diimplementasikan
+
+### Status CONNECTED palsu
+
+Fungsi Cloudflare di source code saat ini tidak membuat koneksi ke Cloudflare. Token yang kamu masukkan bahkan tidak digunakan untuk autentikasi.
+
+### 1\. Bukti utama: `TunnelManager.kt`
+
+Lokasi:
+
+`app/src/main/java/com/example/tunnel/TunnelManager.kt`
+
+Pada fungsi `runCloudflareTunnel()`, saya menemukan:
+
+```kotlin
+private suspend fun runCloudflareTunnel(
+    localPort: Int,
+    token: String
+) {
+    log("Memverifikasi token autentikasi Cloudflare Argo Tunnel...")
+    delay(600)
+
+    // Memeriksa server lokal
+    // ...
+
+    _tunnelState.value = TunnelState.CONNECTED
+    log("✓ Cloudflare Tunnel aktif & mendengarkan trafik Cloudflare Edge")
+
+    while (shouldRun.get()) {
+        delay(5000)
+    }
+}
+```
+
+Ini masalah fatal.
+
+* Tidak ada pemanggilan Cloudflared.
+
+* Tidak ada koneksi ke Cloudflare Edge.
+
+* Tidak ada validasi token.
+
+* Tidak ada autentikasi Cloudflare.
+
+* Tidak ada proses tunnel yang dijalankan.
+
+Bahkan parameter `token` tidak digunakan untuk membuat koneksi.
+
+Aplikasi hanya menunggu 600 milidetik, memeriksa server lokal, kemudian mengubah status menjadi `CONNECTED`.
+
+Jadi, token salah sekalipun bisa mendapatkan status sukses.
+
+### 2\. Bukti DNS TXT dan CNAME tidak benar
+
+Lokasi:
+
+`app/src/main/java/com/example/data/DomainManager.kt`
+
+Saya menemukan:
+
+```kotlin
+val addresses = InetAddress.getAllByName(domain)
+val resolvedIps = addresses.map { it.hostAddress }
+val isResolved = resolvedIps.isNotEmpty()
+```
+
+Kemudian:
+
+```kotlin
+dnsStatus = if (isResolved) "VERIFIED" else "FAILED",
+resolvedIp = resolvedIps.firstOrNull(),
+sslActive = isResolved
+```
+
+Ini bukan verifikasi DNS TXT atau CNAME.
+
+Yang dilakukan hanyalah mencari alamat IP domain melalui DNS.
+
+Akibatnya:
+
+* Domain yang punya A record bisa dinyatakan VERIFIED meskipun CNAME salah.
+
+* TXT record tidak pernah diperiksa.
+
+* Target CNAME tidak pernah dibandingkan.
+
+* `expectedGatewayHostOrIp` bahkan tidak digunakan.
+
+* Domain yang berhasil resolve dianggap memiliki SSL aktif, padahal tidak ada pemeriksaan sertifikat HTTPS.
+
+Status DNS dan SSL bisa salah.
+
+### 3\. Bukti token verifikasi contoh
+
+Lokasi:
+
+`app/src/main/java/com/example/ui/screens/DnsManagementScreen.kt`
+
+Saya menemukan:
+
+```kotlin
+list.add(
+    DnsRecordItem(
+        "TXT",
+        "_sfrhost-verify",
+        "sfrhost-verify=a1b2c3d4",
+        "DNS Only"
+    )
+)
+```
+
+Itu nilai contoh yang ditampilkan ketika belum ada domain.
+
+Sementara token sebenarnya dibuat di `DomainManager.kt`:
+
+```kotlin
+val token = "sfrhost-verify=" +
+    UUID.randomUUID().toString().take(8)
+```
+
+Token tersebut memang dibuat secara acak, tetapi belum ada mekanisme pemeriksaan TXT yang membandingkannya dengan DNS publik.
+
+Jadi, membuat token bukan berarti memverifikasi domain.
+
+### 4\. Gateway VPS juga memiliki masalah keamanan
+
+Lokasi:
+
+`gateway/server.js`
+
+Saya menemukan:
+
+```javascript
+const GATEWAY_SECRET =
+    process.env.GATEWAY_SECRET ||
+    'sfrhost_default_secret_2026';
+```
+
+Tetapi ketika koneksi WebSocket masuk, pemeriksaannya hanya:
+
+```javascript
+if (!tunnelId || !authToken) {
+    ws.close(4001, 'Autentikasi Tunnel Diperlukan');
+    return;
+}
+```
+
+Artinya, Gateway hanya memeriksa apakah token tidak kosong.
+
+Token tidak dibandingkan dengan secret atau kredensial yang valid.
+
+Akibatnya, seseorang berpotensi mendaftarkan koneksi tunnel dengan token sembarang jika endpoint Gateway dapat dijangkau.
+
+Ada juga masalah tambahan: token dikirim melalui query URL WebSocket dan URL tersebut dicatat di log Android. Token rahasia seharusnya tidak ditampilkan dalam log.
+
+### 5\. Hasil audit seluruh komponen terkait
+
+| Komponen                    | Hasil |
+| --------------------------- | ----- |
+| Cloudflare Tunnel           |       |
+| Validasi token Cloudflare   |       |
+| Status Cloudflare CONNECTED |       |
+| DNS TXT                     |       |
+| DNS CNAME                   |       |
+| SSL domain                  |       |
+| VPS WebSocket Gateway       |       |
+| Autentikasi Gateway         |       |
+| Penerusan HTTP ke HP        |       |
+| Heartbeat Gateway           |       |
+
+Catatan: Gateway WebSocket memang memiliki implementasi reverse proxy, jadi bukan berarti seluruh fitur tunnel tidak ada. Tetapi Cloudflare Tunnel resmi dan Gateway VPS adalah dua teknologi berbeda.
+
+### 6\. Rekomendasi perbaikan
+
+Saya menyarankan perbaikannya dilakukan dengan urutan berikut:
+
+* Cloudflare Tunnel asli
+
+    Integrasikan binary `cloudflared` untuk arsitektur Android yang didukung. Pastikan token benar-benar diuji dan proses tunnel benar-benar tersambung ke Edge.
+
+* Perbaiki status koneksi
+
+    `CONNECTED` hanya diberikan setelah Cloudflared terhubung dan health check tunnel berhasil. Jangan menggunakan delay sebagai bukti koneksi.
+
+* Perbaiki DNS
+
+    Gunakan pemeriksaan TXT, CNAME, A, dan AAAA sesuai jenis record yang diminta. Cocokkan target dengan konfigurasi yang diharapkan.
+
+* Perbaiki Gateway VPS
+
+    Terapkan autentikasi kredensial yang benar, validasi domain, pembatasan ukuran request, dan pengamanan token.
+
+* Tes dari internet eksternal
+
+    Buktikan domain benar-benar dapat mengakses website yang berjalan di HP, bukan hanya berhasil menghubungkan WebSocket.
+
+### 7\. Satu hal yang perlu kamu tentukan
+
+Untuk SFR Host, saya menyarankan kedua metode tetap tersedia dan dipisahkan dengan jelas.
+
+Bagaimana sistem tunnel yang ingin dipakai?
+
+Keduanya (rekomendasi)Cloudflare Tunnel resmi dan VPS Gateway milik sendiri, masing-masing punya status dan konfigurasi terpisah.
+
+Cloudflare Tunnel sajaFokus pada Cloudflared resmi, token, dan custom domain Cloudflare.
+
+VPS Gateway sajaFokus pada reverse WebSocket Gateway milik SFR Host.
+
+Pilih dan lanjutkan perbaikan
+
+Kesimpulan saya: dugaanmu benar. Fitur Cloudflare Tunnel pada APK ini saat ini hanya simulasi status koneksi, bukan Cloudflare Tunnel yang sesungguhnya. Dan masalah DNS-nya juga nyata, bukan sekadar DNS membutuhkan waktu propagasi.
+, Untuk perbaikan SFR Host, saya memilih: Cloudflare Tunnel resmi saja. Tolong lanjutkan audit dan berikan implementasi lengkap, bukan simulasi., Memproses selama 35s
+
+Siap. Berarti arsitektur SFR Host kita tetapkan menjadi Cloudflare Tunnel resmi saja. Mode Custom VPS Gateway/WebSocket akan dikeluarkan dari alur utama agar tidak ada dua sistem tunnel yang membingungkan.
+
+Yang paling penting: status CONNECTED hanya boleh muncul setelah proses `cloudflared` benar-benar berjalan, berhasil terhubung ke Cloudflare Edge, dan tunnel siap meneruskan trafik. Tidak boleh lagi mengubah status menjadi aktif hanya karena server lokal merespons.
+
+Dari audit sebelumnya, implementasi Cloudflare di `TunnelManager.kt` memang belum menjalankan `cloudflared` sama sekali. Fungsi tersebut hanya menunggu sebentar, mengubah status menjadi `CONNECTED`, lalu tidur berulang. Jadi itu harus diganti dengan proses tunnel sungguhan, bukan sekadar diperbaiki pada bagian tampilan.
+
+### Hasil audit lanjutan
+
+Saya menemukan beberapa masalah tambahan yang perlu dibereskan sebelum tunnel resmi bisa dianggap berfungsi:
+
+| Bagian             | Masalah pada source sekarang                                                          |
+| ------------------ | ------------------------------------------------------------------------------------- |
+| Cloudflare runtime | Tidak ada binary cloudflared di project maupun folder jniLibs                         |
+| Tunnel status      | Status CONNECTED dibuat sendiri oleh aplikasi, bukan berdasarkan koneksi Cloudflare   |
+| Pemilihan tunnel   | Masih ada fallback ke Gateway VPS/WebSocket                                           |
+| Token              | Token Cloudflare ditulis sebagian ke log; ini tetap tidak perlu dan harus dihilangkan |
+| Domain             | Pemeriksaan DNS hanya memakai InetAddress, bukan memeriksa target CNAME tunnel        |
+| SSL                | sslActive disamakan dengan DNS berhasil, padahal keduanya berbeda                     |
+| UI                 | Petunjuk DNS masih mencampur konsep gateway VPS dan Cloudflare                        |
+
+Ada satu hal penting dari dokumentasi resmi: token remotely-managed tunnel memang dapat digunakan untuk menjalankan `cloudflared`, tetapi token itu adalah kredensial sensitif—siapa pun yang memilikinya dapat menjalankan konektor tunnel tersebut. Cloudflare Docs +1
+
+### Arsitektur yang akan dipakai
+
+Pengunjung internet
+
+[https://domain-anda.com](https://domain-anda.com?utm_source=chatgpt.com)
+
+Cloudflare Edge
+
+DNS · HTTPS · WAF · jaringan Cloudflare
+
+Cloudflare Tunnel — `cloudflared` asli
+
+Koneksi keluar terenkripsi dari HP ke Cloudflare
+
+SFR Host di Android
+
+Web server lokal · port website · file hosting
+
+Cloudflare memang menggunakan koneksi keluar dari `cloudflared`; HP tidak perlu membuka port publik atau memiliki IP publik. Namun, hostname dan Published Application Route tetap harus dikonfigurasi di Cloudflare agar trafik diarahkan ke alamat lokal yang benar. Cloudflare Docs +1
+
+### Kendala teknis penting sebelum menulis kode final
+
+Saya mengecek distribusi resmi Cloudflare. Binary rilis yang disediakan mencakup Linux ARM64, ARM, dan x86-64, tetapi tidak menyediakan binary Android resmi. GitHub +1
+
+Artinya, kita tidak boleh asal memasukkan `cloudflared-linux-arm64` ke APK lalu menganggapnya pasti kompatibel dengan Android. Android menggunakan lingkungan sistem yang berbeda dari distribusi Linux biasa.
+
+Ada dua pendekatan:
+
+* Build `cloudflared` khusus Android dari source Cloudflare. Ini pendekatan yang akan saya prioritaskan. Kita perlu menghasilkan binary yang sesuai ABI Android, mengemasnya di APK, menjalankannya sebagai proses nyata, dan menguji koneksinya pada perangkat Android.
+
+* Menggunakan binary Linux melalui lingkungan kompatibilitas seperti Termux/proot. Ini bukan pilihan utama karena menambah ketergantungan dan tidak ideal untuk aplikasi hosting mandiri.
+
+### Implementasi yang harus masuk ke source
+
+Saya akan menggunakan rancangan berikut sebagai target perbaikan:
+
+| File/komponen             | Perubahan                                                                          |
+| ------------------------- | ---------------------------------------------------------------------------------- |
+| TunnelManager.kt          | Menghapus simulasi dan WebSocket Gateway; menjalankan proses cloudflared sungguhan |
+| CloudflareTunnelRunner.kt | Komponen baru untuk mengekstrak, menjalankan, memantau, dan menghentikan binary    |
+| SfrServerService.kt       | Mengelola proses tunnel selama foreground service aktif                            |
+| DataStoreManager.kt       | Menyimpan konfigurasi token dengan perlindungan yang lebih baik                    |
+| DomainManager.kt          | Memisahkan pemeriksaan DNS, CNAME, dan HTTPS                                       |
+| TunnelScreen.kt           | Menampilkan status berdasarkan proses dan koneksi aktual                           |
+| DnsManagementScreen.kt    | Menghilangkan contoh DNS palsu dan menampilkan instruksi Cloudflare yang benar     |
+| GitHub Actions            | Menyiapkan build binary Android dan memasukkannya ke APK                           |
+
+Aturan status tunnel:
+
+* `CONNECTING`: proses mulai dijalankan.
+
+* `CONNECTED`: `cloudflared` benar-benar berhasil tersambung ke Cloudflare.
+
+* `RECONNECTING`: koneksi terputus dan proses sedang mencoba kembali.
+
+* `ERROR`: binary tidak kompatibel, token salah, koneksi gagal, atau proses berhenti secara tidak terduga.
+
+* `DISCONNECTED`: proses sudah dihentikan.
+
+Pemeriksaan koneksi tunnel juga harus dibedakan dari pemeriksaan origin. Cloudflare menjelaskan bahwa tunnel berstatus Healthy belum tentu berarti web server lokal dapat dijangkau; kesalahan origin masih bisa menghasilkan 502. Cloudflare Docs +1
+
+### Satu keputusan yang perlu dipastikan
+
+Saya merekomendasikan binary Android dibangun dari source `cloudflared` dan disertakan langsung di APK, bukan mengandalkan Termux atau aplikasi tambahan.
+
+Apakah kamu setuju dengan pendekatan tersebut? Jika setuju, saya lanjutkan dengan perubahan source lengkap dan workflow GitHub Actions. Saya tidak akan menyebutnya berhasil sebelum binary berhasil dibangun dan pengujian koneksi nyata dilakukan.
+, Berikut prompt lengkap yang bisa langsung kamu berikan ke Gemini Developer App / AI coding agent untuk memperbaiki project SFR Host. Prompt ini mengarahkan AI mengubah source code yang sudah ada, bukan membuat simulasi atau proyek baru.
+
+# AUDIT DAN IMPLEMENTASI TOTAL CLOUDFLARE TUNNEL RESMI — SFR HOST
+
+Bertindaklah sebagai Senior Android Engineer, Kotlin Engineer, Cloudflare Tunnel Engineer, dan DevOps Engineer.
+
+Saya memiliki project Android bernama **SFR Host**, yaitu aplikasi hosting server berbasis HP Android. Saya ingin kamu melakukan audit menyeluruh dan memperbaiki implementasi tunneling agar menggunakan **Cloudflare Tunnel resmi saja**, bukan simulasi, bukan WebSocket Gateway buatan sendiri, dan bukan sekadar tampilan UI.
+
+## 1. Identitas Project
+
+- Nama aplikasi: SFR Host
+- Package name: `com.sfrhostapp`
+- Platform: Android
+- Bahasa: Kotlin
+- UI: Jetpack Compose
+- Warna utama: `#42A5F5`
+- Repository: https://github.com/septianofc/sfr-host
+
+Pertahankan identitas, struktur project, fitur hosting, desain utama, serta fitur lain yang masih berfungsi. Jangan membuat project baru dari nol jika project lama masih dapat diperbaiki.
+
+## 2. Tujuan Utama
+
+Implementasikan Cloudflare Tunnel resmi agar server website yang berjalan di HP Android dapat diakses publik melalui domain dan subdomain.
+
+Contoh arsitektur:
+
+Pengunjung internet
+→ Cloudflare DNS
+→ Cloudflare Edge
+→ Cloudflare Tunnel resmi
+→ Web server lokal Android
+→ Website pengguna.
+
+SFR Host harus benar-benar menjalankan proses tunnel yang dapat terhubung ke infrastruktur Cloudflare.
+
+**DILARANG:**
+- Mengubah status menjadi CONNECTED hanya dengan delay.
+- Membuat simulasi koneksi.
+- Menganggap token tersedia berarti tunnel aktif.
+- Menggunakan WebSocket Gateway VPS sebagai pengganti Cloudflare Tunnel.
+- Menampilkan DNS Verified tanpa pemeriksaan DNS yang benar.
+- Menampilkan SSL Active hanya karena domain berhasil di-resolve.
+- Membuat tombol atau menu yang hanya menjadi pajangan.
+
+## 3. Audit Source Code Sebelum Mengubah
+
+Periksa seluruh source code project, khususnya:
+
+- `TunnelManager.kt`
+- `DomainManager.kt`
+- `DnsManagementScreen.kt`
+- `TunnelScreen.kt`
+- `DashboardScreen.kt`
+- `SfrServerService.kt`
+- `AndroidManifest.xml`
+- `app/build.gradle.kts`
+- `settings.gradle.kts`
+- `gradle/libs.versions.toml` jika tersedia.
+- Folder `jniLibs`, `assets`, dan konfigurasi GitHub Actions.
+- Seluruh implementasi server, domain, DNS, dan background service.
+
+Temukan semua implementasi palsu, placeholder, fungsi tidak terpakai, konfigurasi yang salah, serta fitur yang belum benar-benar bekerja.
+
+Jangan menghapus fitur hosting yang tidak berkaitan dengan tunnel.
+
+## 4. Cloudflare Tunnel Runtime Asli
+
+Implementasikan runtime Cloudflare Tunnel menggunakan source resmi Cloudflare.
+
+Referensi:
+- https://github.com/cloudflare/cloudflared
+- https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/
+
+Persyaratan:
+
+1. Pelajari cara membangun `cloudflared` agar kompatibel dengan Android.
+2. Jangan menganggap binary Linux biasa otomatis kompatibel dengan Android.
+3. Bangun binary yang sesuai dengan ABI Android yang didukung project.
+4. Prioritaskan `arm64-v8a`, kemudian evaluasi `armeabi-v7a` dan `x86_64` jika memungkinkan.
+5. Gunakan Android NDK atau toolchain yang benar-benar sesuai.
+6. Pastikan binary dapat dieksekusi pada Android tanpa Termux, proot, atau aplikasi eksternal.
+7. Sertakan binary hasil build ke APK dengan struktur yang benar.
+8. Pastikan lisensi dan kewajiban distribusi source code dipatuhi.
+9. Jangan memasukkan binary palsu, file kosong, atau placeholder.
+
+Jika build native Android tidak memungkinkan menggunakan pendekatan yang dipilih, jelaskan hambatannya secara teknis dan berikan alternatif yang benar-benar dapat dijalankan. Jangan berpura-pura berhasil.
+
+## 5. Sistem Pengelolaan Proses Tunnel
+
+Buat komponen khusus, misalnya:
+
+`CloudflareTunnelRunner.kt`
+
+Tugasnya:
+
+- Mengekstrak binary ke lokasi internal aplikasi yang dapat dieksekusi.
+- Memeriksa ABI perangkat.
+- Memastikan izin eksekusi.
+- Menjalankan proses `cloudflared`.
+- Mengirim token dengan aman.
+- Memantau stdout dan stderr.
+- Mendeteksi autentikasi berhasil dan koneksi ke Cloudflare Edge.
+- Mendeteksi error token, jaringan, konfigurasi, dan proses.
+- Menangani reconnect.
+- Menghentikan proses dengan benar.
+- Membersihkan resource saat tunnel dihentikan.
+- Mencegah proses tunnel ganda.
+
+Gunakan proses asli melalui `ProcessBuilder` atau mekanisme Android yang sesuai.
+
+Jangan menggunakan `delay()` sebagai bukti bahwa tunnel berhasil terhubung.
+
+## 6. Autentikasi Cloudflare
+
+Gunakan token resmi Cloudflare Tunnel untuk remotely-managed tunnel.
+
+Ketentuan:
+
+- Pengguna dapat memasukkan token tunnel dari dashboard Cloudflare.
+- Token tidak boleh dicetak ke Logcat.
+- Token tidak boleh dimasukkan ke URL.
+- Token tidak boleh dimasukkan ke laporan error.
+- Jangan menyimpan token dalam SharedPreferences biasa.
+- Gunakan Android Keystore untuk melindungi data kredensial sesuai kebutuhan.
+- Jangan memasukkan token asli ke source code atau GitHub repository.
+- Jangan menggunakan token default atau secret statis.
+- Tampilkan pesan yang jelas jika token salah atau tidak valid.
+
+Pastikan format argumen sesuai dengan versi `cloudflared` yang benar-benar digunakan.
+
+## 7. Foreground Service dan Siklus Hidup Android
+
+Tunnel harus tetap berjalan ketika pengguna berpindah halaman atau aplikasi berada di background, selama Android mengizinkan.
+
+Implementasikan:
+
+- Foreground Service.
+- Persistent notification.
+- Notification channel.
+- Tombol notifikasi untuk membuka SFR Host.
+- Tombol untuk menghentikan tunnel jika sesuai.
+- Penanganan perubahan jaringan.
+- Reconnect ketika koneksi internet kembali.
+- Penghentian proses saat pengguna menekan Stop.
+- Pengelolaan lifecycle yang aman.
+- Penanganan pembatasan background Android.
+
+Periksa persyaratan foreground service berdasarkan target SDK project. Jangan meminta izin yang tidak diperlukan.
+
+## 8. Sistem Status Tunnel yang Akurat
+
+Gunakan status:
+
+- DISCONNECTED
+- CONNECTING
+- CONNECTED
+- RECONNECTING
+- ERROR
+
+Atur status berdasarkan kondisi nyata.
+
+CONNECTED hanya jika:
+- Proses cloudflared berjalan.
+- Autentikasi berhasil.
+- Koneksi ke Cloudflare Edge terdeteksi berdasarkan output atau mekanisme health check yang valid.
+- Tidak hanya berdasarkan proses yang masih hidup.
+
+Jika proses berhenti, status harus berubah secara otomatis.
+
+Tambahkan informasi:
+- Status tunnel.
+- Waktu mulai koneksi.
+- Lama koneksi.
+- ABI binary yang digunakan.
+- Pesan error terakhir.
+- Status server lokal.
+- Status koneksi internet.
+
+Pisahkan status koneksi tunnel dengan status kesehatan web server lokal.
+
+## 9. Sistem Domain dan DNS Cloudflare
+
+Perbaiki `DomainManager.kt`.
+
+Jangan lagi menggunakan `InetAddress.getAllByName()` untuk mengklaim bahwa TXT atau CNAME sudah benar.
+
+Implementasikan pemeriksaan DNS yang sesuai:
+
+- A record.
+- AAAA record.
+- CNAME record.
+- TXT record verifikasi.
+- Target hostname Cloudflare Tunnel.
+
+Gunakan library DNS yang mendukung record tersebut atau resolver DNS yang benar.
+
+Jika domain menggunakan Cloudflare Tunnel, arahkan hostname ke target tunnel sesuai konfigurasi resmi Cloudflare.
+
+Penting:
+- Jangan membuat DNS record palsu.
+- Jangan menganggap semua domain yang berhasil di-resolve sudah terhubung ke tunnel.
+- Jangan menganggap DNS berhasil berarti HTTPS aktif.
+- Bedakan status DNS, tunnel, origin, dan HTTPS.
+
+Jika pemeriksaan membutuhkan Cloudflare API, implementasikan autentikasi API dengan aman dan dokumentasikan izin token API yang dibutuhkan.
+
+## 10. Konfigurasi Hostname dan Published Application Routes
+
+Buat panduan konfigurasi yang benar untuk pengguna.
+
+Contoh:
+- `example.com`
+- `www.example.com`
+- `api.example.com`
+- `blog.example.com`
+
+Setiap hostname harus dapat diarahkan ke service lokal yang sesuai, misalnya:
+
+- `example.com` → `http://127.0.0.1:8080`
+- `api.example.com` → `http://127.0.0.1:8081`
+
+Pastikan konfigurasi hostname dan service lokal benar-benar diterapkan ke Cloudflare Tunnel.
+
+Jangan mengklaim pengguna dapat menambahkan domain secara otomatis jika aplikasi belum memiliki integrasi Cloudflare API yang diperlukan.
+
+Jika memakai Cloudflare API, buat fitur yang benar-benar bekerja untuk:
+- Menghubungkan akun Cloudflare.
+- Mengambil daftar zone yang diizinkan.
+- Mengelola hostname.
+- Mengelola DNS record yang diperlukan.
+- Mengatur Published Application Routes jika API mendukungnya.
+- Memvalidasi konfigurasi.
+
+Gunakan least-privilege API token.
+
+## 11. Perbaikan UI SFR Host
+
+Pertahankan desain utama SFR Host dan warna brand `#42A5F5`.
+
+Perbarui halaman tunnel agar memiliki:
+
+- Status koneksi yang jelas.
+- Input token Cloudflare.
+- Tombol tampil/sembunyikan token.
+- Tombol Simpan Token.
+- Tombol Hubungkan Tunnel.
+- Tombol Putuskan Tunnel.
+- Informasi hostname.
+- Informasi alamat origin lokal.
+- Log koneksi yang sudah disensor.
+- Pesan error yang mudah dipahami.
+
+Jangan menampilkan token dalam log.
+
+Hapus pilihan Custom VPS Gateway/WebSocket dari alur utama aplikasi. Jangan biarkan pengguna mengira fitur tersebut masih digunakan.
+
+Jangan menghilangkan fitur hosting lain yang tidak berkaitan.
+
+## 12. Keamanan
+
+Implementasikan:
+
+- Token tidak dicetak ke log.
+- Validasi input hostname.
+- Pembatasan akses konfigurasi sensitif.
+- Tidak menggunakan secret default.
+- Tidak mengekspos file internal aplikasi.
+- Tidak membuka server lokal tanpa kontrol.
+- Tidak mempercayai status dari UI.
+- Penghentian proses yang aman.
+- Penanganan crash dan restart.
+
+Pastikan tunnel hanya meneruskan trafik ke origin yang dikonfigurasi, bukan sembarang alamat yang dimasukkan pihak luar.
+
+## 13. GitHub Actions
+
+Perbaiki workflow GitHub Actions agar dapat:
+
+1. Mengambil source `cloudflared` resmi pada versi yang dipatok.
+2. Membangun binary untuk ABI Android yang ditargetkan.
+3. Memvalidasi file binary hasil build.
+4. Memasukkan binary ke struktur project Android.
+5. Menjalankan Gradle build.
+6. Menghasilkan APK release atau debug sesuai workflow.
+7. Mengunggah APK sebagai artifact.
+8. Menampilkan kegagalan build dengan log yang jelas.
+
+Jangan mengunduh binary Linux lalu mengganti nama filenya menjadi Android.
+
+Jangan menggunakan binary hasil build yang tidak kompatibel.
+
+Gunakan versi dependency dan toolchain yang dipatok agar build dapat direproduksi.
+
+## 14. Pengujian Wajib
+
+Buat checklist dan lakukan pengujian berikut:
+
+1. Instalasi APK pada perangkat Android.
+2. Pemeriksaan ABI.
+3. Pemeriksaan binary cloudflared.
+4. Menjalankan tunnel dengan token valid.
+5. Menguji token tidak valid.
+6. Memutuskan koneksi internet.
+7. Menghubungkan kembali internet.
+8. Menghentikan tunnel.
+9. Memulai ulang aplikasi.
+10. Membuka domain dari jaringan seluler lain.
+11. Menguji beberapa hostname.
+12. Menguji origin lokal yang tidak berjalan.
+13. Memastikan status UI tidak berbohong.
+14. Memastikan token tidak muncul di Logcat.
+15. Memastikan tidak ada proses tunnel ganda.
+
+Berikan hasil setiap pengujian secara jujur. Bedakan:
+- Berhasil diuji.
+- Berhasil dikompilasi tetapi belum diuji di perangkat.
+- Belum dapat diuji.
+- Gagal.
+
+## 15. Aturan Pengerjaan
+
+Saya menginginkan implementasi nyata, bukan hanya penjelasan atau contoh.
+
+Lakukan pekerjaan dengan urutan berikut:
+
+1. Audit seluruh project.
+2. Buat daftar masalah.
+3. Tentukan arsitektur runtime Android yang benar.
+4. Implementasikan binary Cloudflare Tunnel.
+5. Implementasikan process manager.
+6. Perbaiki service dan lifecycle Android.
+7. Perbaiki DNS dan domain.
+8. Perbaiki UI.
+9. Perbaiki GitHub Actions.
+10. Jalankan build dan pengujian.
+11. Perbaiki semua error yang ditemukan.
+12. Berikan daftar file yang diubah dan alasan perubahan.
+
+**WAJIB:**
+- Edit source code project yang sudah ada.
+- Berikan kode lengkap untuk setiap file yang diubah.
+- Jangan hanya memberikan potongan kode.
+- Jangan menghapus fitur yang masih berfungsi.
+- Jangan membuat UI yang tidak terhubung ke backend.
+- Jangan mengarang hasil build atau pengujian.
+- Jangan mengklaim Cloudflare Tunnel berhasil jika belum benar-benar terhubung.
+- Jika ada hambatan teknis, jelaskan dan selesaikan dengan pendekatan alternatif yang valid.
+
+## 16. Hasil Akhir
+
+Saya mengharapkan:
+
+- Source code SFR Host yang telah diperbaiki.
+- Cloudflare Tunnel resmi yang benar-benar berjalan di Android.
+- Binary yang kompatibel dengan ABI Android.
+- Sistem token yang aman.
+- Foreground Service yang stabil.
+- Sistem DNS dan domain yang akurat.
+- UI tunnel yang berfungsi.
+- GitHub Actions yang dapat membangun APK.
+- APK hasil build jika proses build berhasil.
+- Dokumentasi instalasi dan konfigurasi Cloudflare.
+- Daftar pengujian dan hasil sebenarnya.
+
+**PRIORITAS TERTINGGI: Cloudflare Tunnel harus benar-benar berjalan dari HP Android dan dapat membuat website lokal SFR Host diakses melalui domain publik. Jangan berhenti pada tampilan CONNECTED atau sekadar berhasil mengompilasi APK.**
+
+Catatan: Prompt ini sengaja meminta AI membangun dan memvalidasi binary Android dari source `cloudflared`. Keberhasilan build APK saja belum membuktikan tunnel dapat berjalan. Yang menjadi bukti akhir adalah website lokal benar-benar bisa dibuka dari perangkat lain melalui domain publik.

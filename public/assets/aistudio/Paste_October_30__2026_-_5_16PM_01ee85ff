@@ -1,0 +1,897 @@
+Emangnya Dihp Bisa Pakai Ektensi Apa AjaSih? Html, Dll, Sebutkan, PHP Bisa Gak? Bisa banget! HP Android yang dijadikan server hosting bisa menyimpan dan menjalankan berbagai jenis file website. Namun, perlu dibedakan antara file yang bisa disimpan dan file yang bisa dieksekusi oleh server.
+
+### 1\. Ekstensi file yang bisa digunakan
+
+Berikut daftar untuk SFR Host:
+
+### Website Frontend
+
+| Ekstensi     | Kegunaan                 |
+| ------------ | ------------------------ |
+| .html        | Struktur halaman website |
+| .htm         | HTML alternatif          |
+| .css         | Desain dan tampilan      |
+| .js          | JavaScript               |
+| .mjs         | JavaScript Module        |
+| .json        | Data konfigurasi         |
+| .xml         | Data XML                 |
+| .svg         | Gambar vektor            |
+| .webmanifest | Konfigurasi PWA          |
+| .map         | Source map               |
+
+### Backend dan Server
+
+Bisa dijalankan dengan runtime yang sesuai
+
+| Ekstensi | Teknologi        |
+| -------- | ---------------- |
+| .php     | PHP              |
+| .phtml   | PHP Template     |
+| .py      | Python           |
+| .js      | Node.js          |
+| .mjs     | Node.js Module   |
+| .cjs     | Node.js CommonJS |
+| .ts      | TypeScript       |
+| .go      | Golang           |
+| .rb      | Ruby             |
+| .pl      | Perl             |
+| .sh      | Shell Script     |
+| .cgi     | CGI Script       |
+
+### Database
+
+| Ekstensi | Kegunaan              |
+| -------- | --------------------- |
+| .db      | SQLite Database       |
+| .sqlite  | SQLite                |
+| .sqlite3 | SQLite                |
+| .sql     | SQL Database Backup   |
+| .json    | Penyimpanan data JSON |
+| .csv     | Data tabel            |
+
+### Gambar dan Media
+
+| Ekstensi | Kegunaan    |
+| -------- | ----------- |
+| .png     | Gambar      |
+| .jpg     | Foto        |
+| .jpeg    | Foto        |
+| .webp    | Gambar WebP |
+| .gif     | Animasi     |
+| .ico     | Favicon     |
+| .avif    | Gambar AVIF |
+| .mp4     | Video       |
+| .webm    | Video       |
+| .mp3     | Audio       |
+| .wav     | Audio       |
+| .ogg     | Audio       |
+
+### File Pendukung Website
+
+| Ekstensi  | Kegunaan              |
+| --------- | --------------------- |
+| .htaccess | Konfigurasi Apache    |
+| .conf     | Konfigurasi server    |
+| .env      | Environment variables |
+| .log      | Log server            |
+| .txt      | Teks                  |
+| .md       | Dokumentasi           |
+| .zip      | Arsip website         |
+| .tar.gz   | Arsip terkompresi     |
+| .wasm     | WebAssembly           |
+
+### 2\. Apakah PHP bisa berjalan di HP Android?
+
+BISA!
+
+PHP dapat dijalankan di Android menggunakan PHP Runtime yang kompatibel.
+
+Contoh arsitekturnya:
+
+HP Android
+
+SFR Host
+
+Web Server
+
+Nginx / Apache / PHP Built-in Server
+
+PHP Runtime
+
+SQLite / MariaDB
+
+Node.js Runtime
+
+Website publik
+
+Custom Domain + HTTPS + Tunnel
+
+Contoh file PHP:
+
+```php
+<?php
+echo "Halo dari SFR Host!";
+echo "<br>PHP Version: " . PHP_VERSION;
+?>
+```
+
+Ketika pengunjung membuka `https://domainkamu.com/index.php`, server HP akan mengeksekusi PHP dan mengirim hasil HTML ke pengunjung.
+
+PHP bukan sekadar ditampilkan sebagai teks.
+
+### 3\. Rekomendasi fitur untuk SFR Host
+
+Saya menyarankan SFR Host mendukung:
+
+* HTML, CSS, JavaScript.
+
+* PHP 8.x.
+
+* Node.js.
+
+* Python.
+
+* SQLite.
+
+* MariaDB (opsional).
+
+* File Manager.
+
+* ZIP Extractor.
+
+* Custom `.htaccess` jika memakai Apache.
+
+* Multiple Website.
+
+* Custom Domain.
+
+* SSL/HTTPS.
+
+Penting: jangan hanya menambahkan ekstensi ke daftar yang diizinkan. Setiap bahasa backend membutuhkan runtime dan konfigurasi server yang benar. Misalnya, Nginx tidak otomatis menjalankan PHP tanpa PHP-FPM atau handler PHP yang sesuai.
+
+### 4\. Contoh struktur hosting SFR Host
+
+```text
+SFR Host/
+│
+├── websites/
+│   ├── website1/
+│   │   └── public_html/
+│   │       ├── index.php
+│   │       ├── index.html
+│   │       ├── style.css
+│   │       ├── script.js
+│   │       └── assets/
+│   │
+│   └── website2/
+│       └── public_html/
+│           ├── index.html
+│           └── images/
+│
+├── runtime/
+│   ├── php/
+│   ├── nodejs/
+│   └── python/
+│
+├── databases/
+├── logs/
+└── backups/
+```
+
+Dengan sistem tersebut, satu HP bisa menjalankan beberapa website sekaligus, selama RAM, CPU, penyimpanan, dan jaringan mencukupi.
+
+Saran saya: jadikan PHP 8.x sebagai salah satu runtime utama SFR Host. Dengan begitu, pengguna bisa mengunggah CMS, website PHP, API, dan proyek web mereka sendiri tanpa harus menyewa hosting konvensional.
+, Tetapi DI local 182.0.1....:8080 File PHP Malah Didownload Njir Bukan Dibuka Dan Malah Kek Bukan File Utama Padahal index.php Yakali Hanya Bisa index.html, Nah, berarti masalahnya ada di konfigurasi Web Server SFR Host, bukan karena Android tidak mendukung PHP. 🗿
+
+Kalau ketika membuka `http://182.0.1.x:8080` file `index.php` malah ter-download, biasanya ada dua kemungkinan:
+
+* Web server belum dikonfigurasi untuk mengeksekusi PHP.
+
+* Web server belum mengatur `index.php` sebagai default index atau PHP handler belum terhubung.
+
+### 1\. Perilaku yang seharusnya
+
+Misalnya direktori website:
+
+```text
+public_html/
+├── index.php
+├── index.html
+├── style.css
+├── script.js
+└── config.php
+```
+
+Ketika pengunjung membuka:
+
+`http://IP-HP:8080/`
+
+Server seharusnya:
+
+* Mencari `index.php` terlebih dahulu.
+
+* Jika tidak ada, mencari `index.html`.
+
+* Mengeksekusi PHP menggunakan PHP Runtime.
+
+* Mengirim hasil HTML ke browser.
+
+* Tidak mengunduh file PHP mentah.
+
+### 2\. Konfigurasi yang diperlukan
+
+Jika SFR Host menggunakan Nginx, konfigurasi dasarnya perlu seperti ini:
+
+```nginx
+server {
+    listen 8080;
+    server_name _;
+
+    root /path/to/public_html;
+
+    index index.php index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass 127.0.0.1:9000;
+    }
+
+    location ~ /\. {
+        deny all;
+    }
+}
+```
+
+Namun, konfigurasi ini baru berfungsi jika PHP-FPM benar-benar berjalan di port `9000`. Jangan langsung memasangnya jika engine SFR Host menggunakan server berbeda.
+
+### 3\. Prompt perbaikan untuk Gemini Developer App
+
+Berikut instruksi yang bisa langsung kamu berikan:
+
+# PERBAIKAN SISTEM WEB SERVER DAN PHP RUNTIME — SFR HOST
+
+Perbaiki sistem web server pada aplikasi SFR Host karena saat pengguna membuka alamat lokal seperti `http://IP-HP:8080/`, file `index.php` justru terunduh oleh browser, bukan dieksekusi sebagai halaman website.
+
+Saya ingin SFR Host memiliki sistem hosting sungguhan yang mendukung PHP, bukan hanya HTML statis.
+
+## 1. PERBAIKAN DEFAULT INDEX
+
+Konfigurasikan document root agar mendukung urutan default index berikut:
+
+1. index.php
+2. index.html
+3. index.htm
+
+Ketika pengunjung membuka direktori website, server harus otomatis mencari file index sesuai urutan tersebut.
+
+Jika index.php tersedia, prioritaskan index.php daripada index.html.
+
+## 2. IMPLEMENTASI PHP RUNTIME
+
+Implementasikan PHP Runtime yang benar-benar berjalan di Android.
+
+Persyaratan:
+- PHP 8.x.
+- PHP CLI.
+- PHP Built-in Server atau PHP-FPM sesuai arsitektur web server.
+- PHP harus dapat mengeksekusi file .php.
+- Mendukung GET dan POST.
+- Mendukung session dan cookie.
+- Mendukung file upload.
+- Mendukung konfigurasi PHP.
+- Mendukung ekstensi PHP yang kompatibel dengan Android.
+- Mendukung koneksi database SQLite.
+- Menyediakan pengaturan PHP Runtime.
+
+Jangan hanya mengenali ekstensi .php atau mengirimkannya sebagai application/octet-stream.
+
+## 3. PERBAIKAN MIME TYPE DAN EKSEKUSI
+
+Pastikan:
+- .php dieksekusi oleh PHP Runtime.
+- .html ditampilkan sebagai text/html.
+- .css ditampilkan sebagai text/css.
+- .js ditampilkan sebagai application/javascript.
+- .json ditampilkan sebagai application/json.
+- .png, .jpg, .webp ditampilkan sebagai gambar.
+- File backend tidak pernah dikirim mentah ke browser.
+
+Jika PHP Runtime tidak tersedia atau gagal berjalan, tampilkan pesan error server yang jelas. Jangan pernah mengirim source code PHP kepada pengunjung.
+
+## 4. SISTEM ROUTING WEBSITE
+
+Implementasikan:
+- index.php sebagai prioritas utama.
+- index.html sebagai fallback.
+- Support URL rewrite.
+- Support query parameters.
+- Support URL tanpa ekstensi.
+- Support .htaccess jika menggunakan Apache.
+- Support konfigurasi routing jika menggunakan Nginx atau server alternatif.
+
+Pastikan konfigurasi sesuai dengan web server yang benar-benar digunakan oleh SFR Host.
+
+## 5. KEAMANAN
+
+- Blokir akses langsung ke file .env.
+- Blokir file konfigurasi sensitif.
+- Lindungi direktori runtime.
+- Cegah path traversal.
+- Jangan mengekspos source code PHP.
+- Pisahkan direktori website dengan direktori sistem aplikasi.
+
+## 6. PENGUJIAN WAJIB
+
+Buat website pengujian:
+
+public_html/index.php:
+
+<?php
+echo "<h1>SFR Host PHP Berhasil!</h1>";
+echo "<p>PHP Version: " . PHP_VERSION . "</p>";
+echo "<p>Server Time: " . date("Y-m-d H:i:s") . "</p>";
+?>
+
+Uji dengan membuka:
+
+http://IP-HP:8080/
+
+Hasil yang diharapkan adalah halaman HTML yang menampilkan pesan SFR Host PHP Berhasil beserta versi PHP dan waktu server.
+
+Uji juga:
+- /index.php
+- /test.php
+- /index.html
+- /style.css
+- /api/test.php
+
+## 7. PERSYARATAN IMPLEMENTASI
+
+Periksa source code proyek SFR Host terlebih dahulu untuk menemukan web server yang digunakan.
+
+Jangan mengganti seluruh arsitektur tanpa alasan teknis.
+
+Jangan membuat simulasi PHP.
+
+Jangan hanya memperbaiki MIME type karena MIME type tidak mengeksekusi PHP.
+
+Pastikan PHP Runtime benar-benar terhubung dengan HTTP server.
+
+Setelah selesai, berikan kode lengkap setiap file yang diubah, bukan hanya potongan kode atau contoh konfigurasi.
+
+### 4\. Satu hal yang perlu saya ketahui
+
+SFR Host sekarang menggunakan web server apa?
+
+* Nginx
+
+* Apache
+
+* NanoHTTPD
+
+* Ktor
+
+* PHP Built-in Server
+
+* Belum tahu
+
+Kalau belum tahu, kirim source code bagian yang menjalankan server port `8080`. Saya bisa bantu telusuri penyebab sebenarnya agar `index.php` bisa berjalan, bukan malah ter-download.
+, Dan Tambahan Pastikan konfigurasi Web Server SFR Host, Support Semua File, Database Mysql, Dll Seperti Cpanel, Dan Hapus Tombol Yang Mengarah Ke Halaman Yang Sama, Setiap Tombol Misal Hosting, Home, Dll harus Full Layar Full Page Bukan Ada Konfigurasi Lainya Atau Beda Tombol Tapi Sama Halaman, Tambahkan Fitur Kunci Apk Dengan Sidik Jari/Pin Jika Dibatalkan Atau Gagal Maka Keluar Apk Bukan Memanggil Sidik Jari/Pin Kembali, Halaman 404, 500, Dll Memakai Bawaan Host Apk Pastikan Desain Bagus Serta Jika Gakada index.html Atau File Utama Maka List File Nya Juga Bagus, Wajib Menampilkan Logo, Dan Nama Apk, Serta Tombol Download https://sfrhost.septianfr.web.id/download Padahal Halaman Yang Gak Terlalu Mengganggu Yak Sebagai Brand Dan Styles Apk Bagus Profesional, Simpel, Dll Warna Utama Tetap #42a5f5, Tombol Di Apk Jika Aktif Kok Biru Semua Kek Bukan Tombol Tau Gak, Sekalian Perbaikan Desain, Dll, Saat Preview, Dan Edit File, Dll Terlalu Keatas Jadi Kena Baru Bawaan Hp, Dll, Bisa Tambah Banyak Domain, Dan Bisa Buat Banyak Subdomain, Otomatis Buat Hosting Khusus Subdomain Atau Domain Tambahan Atau Bisa Ceklis Berbagi Host Dengan Host (Pilih), Bisa Juga Custom Kode Error 404,500, Dll Menggunakan .htaccess, Siap. Ini tambahan yang perlu digabungkan ke prompt pengembangan SFR Host. Saya susun agar AI Developer tidak sekadar mempercantik tampilan atau membuat tombol simulasi, tetapi benar-benar memeriksa dan mengimplementasikan fungsi pada project Android yang sudah ada.
+
+Ada beberapa hal teknis yang wajib diperhatikan: dukungan `.htaccess` membutuhkan Apache atau server yang kompatibel; MySQL membutuhkan database server sungguhan, bukan sekadar SQLite yang diberi label MySQL. Semua fitur harus disesuaikan dengan kemampuan runtime yang benar-benar dipasang.
+
+# PROMPT PENGEMBANGAN LANJUTAN SFR HOST — FULL HOSTING CONTROL PANEL
+
+Lanjutkan pengembangan project Android **SFR Host** yang sudah tersedia. Jangan membuat project baru dari nol dan jangan menghilangkan fitur yang sudah berfungsi.
+
+Identitas aplikasi:
+- Nama: SFR Host
+- Package: `com.sfrhostapp`
+- Developer: Septian Fathur Rohman
+- Warna utama: `#42a5f5`
+- Website: https://septianfr.web.id
+- Halaman download: https://sfrhost.septianfr.web.id/download
+
+Tujuan utama: menjadikan SFR Host sebagai aplikasi web hosting sungguhan yang menjadikan HP Android sebagai server hosting, dengan pengalaman pengelolaan menyerupai cPanel.
+
+## 1. Web Server dan dukungan hosting
+
+Periksa arsitektur server yang sudah digunakan. Tingkatkan menjadi web server yang benar-benar dapat menjalankan website, bukan simulator.
+
+Wajib mendukung:
+- HTML, HTM, CSS, JavaScript.
+- PHP 8.x dengan eksekusi PHP sungguhan.
+- JSON, XML, TXT, CSV, SVG, gambar, video, audio, font, ZIP, dan berbagai file statis lainnya.
+- URL rewrite dan routing.
+- MIME type yang sesuai.
+- File upload dan download.
+- HTTP dan HTTPS jika konfigurasi sertifikat tersedia.
+- Pengaturan document root.
+- Pengaturan port.
+- Pengaturan default index: `index.php`, `index.html`, `index.htm`.
+- Log akses dan error.
+- Restart, stop, dan start web server.
+- Pengaturan batas upload dan ukuran request.
+- Pengaturan permission file yang aman.
+
+Jangan menganggap semua file harus dieksekusi. File statis harus disajikan sebagai file, sedangkan file yang membutuhkan runtime harus diproses oleh runtime yang sesuai.
+
+PHP tidak boleh hanya diubah MIME type-nya. File `.php` harus benar-benar dieksekusi oleh PHP runtime. Jangan pernah mengirim source code PHP mentah kepada pengunjung.
+
+## 2. Database seperti cPanel
+
+Tambahkan halaman Database dengan kemampuan:
+- Membuat banyak database.
+- Menghapus database.
+- Membuat banyak user database.
+- Mengatur username dan password.
+- Mengatur hak akses user.
+- Menghubungkan user dengan database.
+- Melihat informasi koneksi database.
+- Mengimpor dan mengekspor SQL.
+- Mengelola tabel dan data.
+- Backup dan restore.
+- Menampilkan status database server.
+
+Utamakan kompatibilitas MySQL/MariaDB sesungguhnya, termasuk koneksi dari PHP melalui ekstensi yang sesuai.
+
+Jangan menyebut SQLite sebagai MySQL. Jika MySQL/MariaDB belum tersedia, implementasikan runtime database yang benar-benar dapat dijalankan di Android atau tampilkan status belum tersedia dengan penjelasan dan langkah pemasangan yang jelas.
+
+## 3. Domain dan Subdomain
+
+Pengguna harus dapat menambahkan banyak domain dan subdomain.
+
+Fitur:
+- Tambah domain utama.
+- Tambah domain tambahan (Addon Domain).
+- Tambah banyak subdomain.
+- Hapus dan edit domain.
+- Atur document root masing-masing domain.
+- Atur SSL masing-masing domain jika tersedia.
+- Cek status DNS dan konektivitas domain.
+- Tampilkan status konfigurasi domain.
+- Tampilkan alamat publik website.
+- Hubungkan domain ke tunnel yang aktif.
+
+Setiap domain atau subdomain harus bisa memiliki direktori hosting sendiri secara otomatis.
+
+Contoh:
+`hosting/websites/domain-utama/public_html/`
+`hosting/websites/domain-tambahan/public_html/`
+`hosting/websites/blog-subdomain/public_html/`
+
+Tambahkan pilihan saat membuat domain:
+
+1. **Hosting terpisah:** membuat direktori dan konfigurasi hosting sendiri.
+2. **Berbagi hosting:** menggunakan document root dari hosting lain yang dipilih pengguna.
+
+Jika memilih berbagi hosting, tampilkan pilihan hosting tujuan. Jangan otomatis menggabungkan seluruh file atau database.
+
+Pastikan setiap domain diarahkan ke document root yang benar dan tidak dapat mengakses direktori hosting domain lain tanpa izin.
+
+## 4. Halaman error bawaan SFR Host
+
+Buat halaman error profesional dan konsisten dengan identitas SFR Host:
+- 400 Bad Request.
+- 401 Unauthorized.
+- 403 Forbidden.
+- 404 Not Found.
+- 405 Method Not Allowed.
+- 408 Request Timeout.
+- 413 Payload Too Large.
+- 429 Too Many Requests.
+- 500 Internal Server Error.
+- 502 Bad Gateway.
+- 503 Service Unavailable.
+- 504 Gateway Timeout.
+
+Desain halaman error:
+- Menampilkan logo SFR Host.
+- Menampilkan nama SFR Host.
+- Menampilkan kode dan judul error.
+- Deskripsi singkat yang mudah dimengerti.
+- Tombol kembali ke halaman sebelumnya jika memungkinkan.
+- Tampilan responsif dan profesional.
+- Tidak terlalu mencolok atau mengganggu pengunjung.
+- Tidak menampilkan informasi sensitif, lokasi file server, stack trace, atau konfigurasi internal.
+
+Tambahkan pengaturan custom error page untuk setiap website.
+
+Pengguna dapat:
+- Menggunakan halaman error bawaan SFR Host.
+- Menggunakan halaman error custom milik website.
+- Mengatur file custom untuk masing-masing kode error.
+- Mengembalikan pengaturan ke bawaan SFR Host.
+
+Dukung konfigurasi `.htaccess` untuk custom error page jika server menggunakan Apache atau implementasi yang kompatibel.
+
+Contoh konfigurasi:
+`ErrorDocument 404 /404.html`
+`ErrorDocument 500 /500.html`
+
+Jika server bukan Apache, buat sistem konfigurasi ekuivalen yang benar-benar bekerja. Jangan mengklaim `.htaccess` didukung jika server tidak memprosesnya.
+
+## 5. File Manager dan Directory Listing
+
+Jika website tidak memiliki file utama seperti `index.php`, `index.html`, atau `index.htm`, tampilkan halaman directory listing bawaan SFR Host yang profesional.
+
+Directory listing harus:
+- Menampilkan logo SFR Host.
+- Menampilkan nama SFR Host.
+- Menampilkan nama domain atau subdomain.
+- Menampilkan breadcrumb direktori.
+- Menampilkan daftar folder dan file.
+- Menampilkan ukuran file.
+- Menampilkan tanggal modifikasi.
+- Memungkinkan navigasi ke folder.
+- Memungkinkan download file jika diizinkan.
+- Memiliki tampilan responsif.
+- Memiliki tombol download SFR Host menuju `https://sfrhost.septianfr.web.id/download`.
+
+Branding harus kecil, rapi, dan tidak mengganggu isi website. Jangan menampilkan informasi direktori internal Android.
+
+Pengguna juga harus dapat menonaktifkan directory listing melalui pengaturan hosting.
+
+Jangan pernah menampilkan file rahasia seperti `.env`, file konfigurasi, backup privat, credential, atau direktori internal server kepada pengunjung.
+
+## 6. Custom Error dan .htaccess
+
+Tambahkan editor konfigurasi `.htaccess` apabila server benar-benar kompatibel.
+
+Dukung fitur yang relevan:
+- URL rewrite.
+- Redirect.
+- Custom error document.
+- Directory index.
+- Proteksi direktori.
+- Pengaturan akses file.
+- Pencegahan directory listing.
+- Aturan HTTPS jika tersedia.
+
+Sediakan editor dengan:
+- Syntax highlighting.
+- Validasi konfigurasi.
+- Tombol simpan.
+- Tombol backup konfigurasi.
+- Tombol restore.
+- Tombol uji konfigurasi.
+
+Konfigurasi yang salah tidak boleh membuat seluruh server mati tanpa mekanisme pemulihan. Berikan validasi dan opsi rollback.
+
+Jangan menjalankan konfigurasi berbahaya atau mengizinkan akses ke direktori di luar document root.
+
+## 7. Kunci aplikasi menggunakan PIN dan sidik jari
+
+Tambahkan fitur App Lock pada pengaturan keamanan.
+
+Metode:
+- PIN aplikasi.
+- Sidik jari melalui Android BiometricPrompt.
+- Pilihan PIN saja atau sidik jari.
+- Pengaturan aktivasi dan penonaktifan.
+- Konfirmasi PIN sebelum mengganti pengaturan keamanan.
+- Penyimpanan PIN secara aman menggunakan mekanisme Android Keystore dan hash yang sesuai.
+
+Perilaku wajib:
+- Saat aplikasi dibuka, tampilkan layar kunci jika fitur aktif.
+- Jika autentikasi berhasil, masuk ke aplikasi.
+- Jika sidik jari gagal atau dibatalkan, jangan otomatis memanggil dialog sidik jari berulang kali.
+- Jika pengguna menekan tombol batal atau menutup dialog autentikasi, aplikasi harus keluar atau kembali ke luar aplikasi sesuai mekanisme Android yang benar.
+- Jika PIN salah, tampilkan pesan kesalahan dan berikan kesempatan mencoba kembali sesuai batas keamanan.
+- Jangan membuat loop autentikasi.
+- Jangan menyimpan PIN dalam bentuk teks biasa.
+- Jangan menganggap sidik jari tersedia pada perangkat yang tidak mendukungnya.
+
+## 8. Desain dan navigasi aplikasi
+
+Lakukan perbaikan UI/UX secara menyeluruh.
+
+Masalah yang wajib diperbaiki:
+- Ada beberapa tombol berbeda tetapi membuka halaman yang sama.
+- Tombol Home, Hosting, dan menu lain harus mempunyai halaman dan fungsi masing-masing.
+- Hapus tombol duplikat yang tidak memiliki fungsi berbeda.
+- Jangan membuat tombol hanya sebagai dekorasi.
+- Jangan membuat beberapa menu yang hanya mengganti judul tetapi kontennya sama.
+
+Setiap menu utama harus membuka halaman penuh (full page/full screen), bukan sekadar mengganti sebagian kecil konten sementara halaman konfigurasi lainnya tetap tampil.
+
+Contoh struktur menu:
+- Dashboard.
+- Hosting.
+- Domain.
+- Subdomain.
+- File Manager.
+- Database.
+- Web Server.
+- PHP Manager.
+- SSL/HTTPS.
+- Error Pages.
+- Logs.
+- Backup.
+- Security.
+- Settings.
+- Developer/About.
+
+Setiap halaman harus memiliki konten yang benar-benar relevan dengan fungsinya.
+
+Gunakan navigasi yang konsisten, tombol kembali yang berfungsi, dan state halaman yang benar.
+
+## 9. Perbaikan tombol dan warna
+
+Warna brand utama tetap `#42a5f5`, tetapi jangan membuat seluruh tombol aktif berwarna biru.
+
+Gunakan hierarki visual:
+- Primary: biru untuk aksi utama.
+- Secondary: warna netral.
+- Tertiary: tombol teks atau outline.
+- Destructive: merah untuk hapus atau tindakan berbahaya.
+- Success: hijau untuk status berhasil.
+- Disabled: warna redup dan tidak dapat diklik.
+
+Tombol aktif tidak boleh terlihat seperti semua tombol memiliki fungsi dan tingkat kepentingan yang sama.
+
+Gunakan desain profesional, simpel, modern, konsisten, dan nyaman digunakan di HP.
+
+## 10. Perbaikan posisi editor dan preview
+
+Saat membuka:
+- Preview website.
+- Editor file.
+- Editor HTML/PHP/CSS/JS.
+- Pengaturan domain.
+- Dialog konfigurasi.
+- Form tambah hosting.
+
+Pastikan konten tidak menempel ke bagian paling atas layar dan tidak tertutup status bar atau notch HP.
+
+Gunakan:
+- Window insets.
+- Status bar padding.
+- Navigation bar padding.
+- Safe drawing insets.
+- Scrollable content.
+- Keyboard-aware layout.
+- Padding yang konsisten.
+
+Editor harus nyaman digunakan ketika keyboard Android muncul. Tombol simpan dan toolbar tidak boleh tertutup keyboard.
+
+## 11. Branding SFR Host
+
+Branding harus konsisten dan profesional.
+
+Pada halaman directory listing dan error bawaan:
+- Logo SFR Host wajib ditampilkan.
+- Nama SFR Host wajib ditampilkan.
+- Link download: `https://sfrhost.septianfr.web.id/download`.
+
+Branding cukup sebagai footer atau bagian kecil di halaman, bukan banner besar yang mengganggu website pelanggan.
+
+Jangan mengubah logo secara sembarangan. Gunakan aset logo SFR Host yang sudah ada dalam repository.
+
+## 12. Backup, keamanan, dan isolasi hosting
+
+Pastikan:
+- Setiap website memiliki direktori sendiri.
+- Domain tidak bisa membaca file website lain.
+- File konfigurasi rahasia tidak dapat diakses melalui HTTP.
+- Upload memiliki validasi.
+- Backup dan restore bekerja.
+- Penghapusan file meminta konfirmasi.
+- Database credential tidak ditampilkan secara terbuka.
+- Log tidak membocorkan password atau token.
+- Tunnel tidak dapat digunakan untuk mengakses sembarang direktori.
+- Server memiliki mekanisme recovery setelah crash.
+- Penggunaan CPU, RAM, dan storage dapat dipantau.
+
+## 13. Pengujian wajib
+
+Jangan hanya menyatakan fitur selesai. Jalankan pengujian pada server Android sebenarnya.
+
+Uji:
+1. Membuka `index.php`.
+2. Membuka `index.html`.
+3. Mengakses PHP yang menjalankan `phpinfo()` secara lokal tanpa membocorkan informasi sensitif ke publik.
+4. Menjalankan PHP yang membaca dan menulis file dalam document root.
+5. Menghubungkan PHP ke database MySQL/MariaDB.
+6. Mengakses file CSS dan JavaScript.
+7. Mengakses gambar dan file unduhan.
+8. Menambahkan dua domain dengan document root berbeda.
+9. Membuat subdomain.
+10. Menguji pilihan berbagi hosting.
+11. Menguji halaman 404 dan 500.
+12. Menguji custom error page.
+13. Menguji rewrite URL.
+14. Menguji directory listing.
+15. Menguji App Lock dengan sidik jari berhasil, gagal, dan dibatalkan.
+16. Menguji editor ketika keyboard terbuka.
+17. Menguji server setelah aplikasi diminimalkan dan setelah HP melakukan pembatasan background.
+
+## 14. Ketentuan pengerjaan
+
+WAJIB:
+- Periksa seluruh repository sebelum mengubah kode.
+- Pertahankan fitur yang sudah berfungsi.
+- Jangan membuat halaman atau tombol palsu.
+- Jangan mengganti fungsi server sungguhan dengan simulator.
+- Jangan mengklaim dukungan teknologi yang belum diimplementasikan.
+- Jangan mengubah package name.
+- Jangan menghapus konfigurasi Firebase yang masih digunakan.
+- Jangan menghapus konfigurasi build yang dibutuhkan.
+- Jangan meninggalkan TODO sebagai pengganti implementasi.
+- Periksa kompatibilitas Android dan izin yang diperlukan.
+- Perhatikan konsumsi RAM, CPU, storage, dan baterai.
+- Pastikan server tetap berjalan melalui foreground service yang sesuai.
+
+Jika suatu fitur membutuhkan binary, runtime, service, atau dependency tambahan, implementasikan dan sertakan cara pemasangannya. Jika benar-benar tidak memungkinkan di Android, jelaskan batasannya dan berikan alternatif yang benar-benar dapat dijalankan.
+
+**HASIL AKHIR WAJIB:**
+1. Seluruh file yang diubah harus diberikan dalam bentuk kode lengkap, bukan potongan.
+2. Sertakan file baru yang diperlukan.
+3. Jelaskan perubahan setiap file.
+4. Sertakan daftar fitur yang sudah benar-benar berfungsi.
+5. Sertakan daftar fitur yang belum dapat diimplementasikan beserta alasannya.
+6. Sertakan hasil build Debug APK.
+7. Jangan menyatakan berhasil sebelum build dan pengujian yang relevan benar-benar lolos.
+
+Prioritas utama adalah SFR Host menjadi aplikasi hosting Android yang nyata, stabil, aman, dan profesional dengan pengalaman pengelolaan menyerupai cPanel.
+
+Catatan penting: jangan sampai AI Developer hanya membuat tampilan menu Database, PHP Manager, Domain, dan sebagainya tanpa backend. Untuk SFR Host, yang paling penting adalah setiap menu terhubung dengan konfigurasi server yang benar-benar berjalan. Khusus MySQL/MariaDB, PHP, dan `.htaccess`, wajib diuji dari browser menggunakan domain lokal maupun domain publik, bukan hanya dari preview aplikasi, ganti app/build.gradle.kts dengan kode ini: 
+import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
+
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.devtools.ksp)
+    alias(libs.plugins.secrets)
+    alias(libs.plugins.google.services)
+}
+
+android {
+    namespace = "com.example"
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
+
+    defaultConfig {
+        applicationId = "com.sfrhostapp"
+        minSdk = 26
+        targetSdk = 36
+        versionCode = 1
+        versionName = "SFRHOST-R-001"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystorePath = System.getenv("KEYSTORE_PATH")
+                ?: "${rootDir}/my-upload-key.jks"
+
+            storeFile = file(keystorePath)
+            storePassword = System.getenv("STORE_PASSWORD")
+            keyAlias = "upload"
+            keyPassword = System.getenv("KEY_PASSWORD")
+        }
+    }
+
+    buildTypes {
+        release {
+            isCrunchPngs = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+
+            signingConfig = signingConfigs.getByName("release")
+        }
+
+        debug {
+            isDebuggable = true
+            isMinifyEnabled = false
+            isShrinkResources = false
+
+            // Menggunakan debug signing bawaan Android Gradle Plugin.
+            // Tidak membutuhkan debug.keystore di repository.
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = true
+    }
+}
+
+// Secrets Gradle Plugin
+secrets {
+    propertiesFileName = ".env"
+    defaultPropertiesFileName = ".env.example"
+    ignoreList.add("FIREBASE_APPCHECK_DEBUG_TOKEN")
+}
+
+// Google Services
+googleServices {
+    missingGoogleServicesStrategy = MissingGoogleServicesStrategy.WARN
+}
+
+dependencies {
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(platform(libs.firebase.bom))
+
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.datastore.preferences)
+
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.work.runtime.ktx)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+    implementation(libs.firebase.ai)
+    implementation(libs.firebase.appcheck.recaptcha)
+    implementation(libs.firebase.appcheck.debug)
+
+    implementation(libs.converter.moshi)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.logging.interceptor)
+    implementation(libs.moshi.kotlin)
+    implementation(libs.okhttp)
+    implementation(libs.retrofit)
+
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.androidx.core)
+    testImplementation(libs.androidx.junit)
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.robolectric)
+
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.runner)
+
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
+    debugImplementation(libs.androidx.compose.ui.tooling)
+
+    ksp(libs.androidx.room.compiler)
+    ksp(libs.moshi.kotlin.codegen)
+}
