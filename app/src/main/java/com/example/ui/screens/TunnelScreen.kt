@@ -3,7 +3,10 @@ package com.example.ui.screens
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,17 +29,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -45,14 +49,17 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -73,6 +80,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.server.SfrServerService
 import com.example.tunnel.CloudflareTunnelRunner
+import com.example.tunnel.InstallStage
 import com.example.tunnel.TunnelLog
 import com.example.tunnel.TunnelState
 import com.example.ui.theme.SfrPrimaryBlue
@@ -81,6 +89,7 @@ import com.example.ui.theme.StatusOfflineRed
 import com.example.ui.theme.StatusOnlineGreen
 import com.example.ui.theme.StatusWarningAmber
 import kotlinx.coroutines.launch
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -105,16 +114,33 @@ fun TunnelScreen(
     var tokenInput by remember { mutableStateOf(cloudflareToken) }
     var domainInput by remember { mutableStateOf(customDomain ?: "") }
     var showTokenText by remember { mutableStateOf(false) }
-    var isInstallingBinary by remember { mutableStateOf(false) }
-    var binaryInstallMessage by remember { mutableStateOf<String?>(null) }
     var showSetupGuide by remember { mutableStateOf(false) }
 
+    val downloadProgress by runner.downloadProgress.collectAsState()
     val tunnelLogs = remember { mutableStateListOf<TunnelLog>() }
 
     LaunchedEffect(cloudflareToken) { tokenInput = cloudflareToken }
     LaunchedEffect(customDomain) { domainInput = customDomain ?: "" }
 
-    // Stream logs from runner
+    // Custom Binary Import Launcher
+    val binaryPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            scope.launch {
+                context.contentResolver.openInputStream(uri)?.use { stream ->
+                    val result = runner.importCustomBinary(stream)
+                    if (result.first) {
+                        Toast.makeText(context, "Binary kustom berhasil dipasang & terverifikasi!", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(context, "Gagal uji binary: ${result.second}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+    }
+
+    // Stream logs
     LaunchedEffect(Unit) {
         val tunnel = SfrServerService.currentTunnelInstance
         tunnel?.logs?.collect { log ->
@@ -128,18 +154,18 @@ fun TunnelScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 14.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        item { Spacer(modifier = Modifier.height(4.dp)) }
+        item { Spacer(modifier = Modifier.height(2.dp)) }
 
         // 1. Connection Status Card
         item {
             val (statusColor, statusText, statusDesc) = when (tunnelState) {
-                TunnelState.CONNECTED -> Triple(StatusOnlineGreen, "TERHUBUNG KE CLOUDFLARE EDGE", "Tunnel resmi cloudflared aktif. Trafik internet diteruskan langsung ke web server HP.")
+                TunnelState.CONNECTED -> Triple(StatusOnlineGreen, "TERHUBUNG KE CLOUDFLARE EDGE", "Tunnel resmi cloudflared aktif. Website HP kini dapat diakses publik melalui domain Cloudflare.")
                 TunnelState.CONNECTING -> Triple(StatusWarningAmber, "MENGHUBUNGKAN CLOUDFLARED...", "Memulai proses native cloudflared dan melakukan autentikasi ke Cloudflare Edge.")
                 TunnelState.RECONNECTING -> Triple(StatusWarningAmber, "RECONNECTING...", "Koneksi terputus, mencoba menyambung kembali ke Cloudflare Edge.")
-                TunnelState.ERROR -> Triple(StatusOfflineRed, "GAGAL / ERROR", "Koneksi tunnel gagal. Periksa validitas token Cloudflare atau log diagnostik.")
+                TunnelState.ERROR -> Triple(StatusOfflineRed, "GAGAL / ERROR", "Koneksi tunnel gagal. Periksa token Cloudflare atau uji kompatibilitas binary.")
                 TunnelState.DISCONNECTED -> Triple(MaterialTheme.colorScheme.outline, "TERPUTUS (OFFLINE)", "Cloudflare Tunnel belum dijalankan.")
             }
 
@@ -149,16 +175,16 @@ fun TunnelScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Column(modifier = Modifier.padding(18.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = "CLOUDFLARE ARGO TUNNEL",
-                                style = MaterialTheme.typography.labelMedium.copy(
+                                style = MaterialTheme.typography.labelSmall.copy(
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.outline,
                                     letterSpacing = 1.sp
@@ -183,16 +209,16 @@ fun TunnelScreen(
                             }
                         }
 
-                        // Start / Stop Button with clean visual hierarchy
+                        // Connect / Disconnect button with clear color hierarchy
                         if (isTunnelActive) {
                             Button(
                                 onClick = onStopTunnel,
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                colors = ButtonDefaults.buttonColors(containerColor = StatusOfflineRed),
                                 shape = RoundedCornerShape(10.dp)
                             ) {
                                 Icon(Icons.Default.Stop, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Putuskan")
+                                Text("Putuskan", fontSize = 12.sp)
                             }
                         } else {
                             Button(
@@ -202,7 +228,7 @@ fun TunnelScreen(
                             ) {
                                 Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Hubungkan")
+                                Text("Hubungkan", fontSize = 12.sp)
                             }
                         }
                     }
@@ -213,7 +239,6 @@ fun TunnelScreen(
                         style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                     )
 
-                    // Origin details
                     Spacer(modifier = Modifier.height(10.dp))
                     Divider()
                     Spacer(modifier = Modifier.height(10.dp))
@@ -236,60 +261,157 @@ fun TunnelScreen(
             }
         }
 
-        // 2. Binary Installation Card (If binary not installed or update requested)
+        // 2. Real Download & 9-Stage Installation Pipeline Card
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (runner.isBinaryInstalled) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                    else SfrSecondaryOrange.copy(alpha = 0.1f)
+                    containerColor = if (downloadProgress.isRunning) MaterialTheme.colorScheme.surface
+                    else if (runner.isBinaryInstalled) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)
+                    else SfrSecondaryOrange.copy(alpha = 0.08f)
                 ),
-                border = if (!runner.isBinaryInstalled) androidx.compose.foundation.BorderStroke(1.dp, SfrSecondaryOrange) else null
+                border = if (!runner.isBinaryInstalled && !downloadProgress.isRunning) {
+                    androidx.compose.foundation.BorderStroke(1.dp, SfrSecondaryOrange.copy(alpha = 0.6f))
+                } else null
             ) {
-                Column(modifier = Modifier.padding(14.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Engine Runtime Cloudflared", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            Text("Pemasangan Binary Cloudflare", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                             Text(
-                                "Binary resmi cloudflared untuk arsitektur ${runner.detectedAbi}",
+                                "Arsitektur terdeteksi: ${runner.detectedAbi}",
                                 fontSize = 11.sp,
                                 color = MaterialTheme.colorScheme.outline
                             )
                         }
 
-                        OutlinedButton(
-                            onClick = {
-                                isInstallingBinary = true
-                                scope.launch {
-                                    val success = runner.downloadOrInstallBinary { msg ->
-                                        binaryInstallMessage = msg
-                                    }
-                                    isInstallingBinary = false
-                                    if (success) {
-                                        Toast.makeText(context, "Binary cloudflared siap digunakan!", Toast.LENGTH_SHORT).show()
-                                    }
+                        if (!downloadProgress.isRunning) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                OutlinedButton(
+                                    onClick = { binaryPickerLauncher.launch("*/*") },
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.height(36.dp)
+                                ) {
+                                    Icon(Icons.Default.FileOpen, contentDescription = null, modifier = Modifier.size(14.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Impor", fontSize = 11.sp)
                                 }
-                            },
-                            enabled = !isInstallingBinary
-                        ) {
-                            if (isInstallingBinary) {
-                                CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
-                            } else {
-                                Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(14.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(if (runner.isBinaryInstalled) "Perbarui Binary" else "Pasang Binary", fontSize = 11.sp)
+
+                                Button(
+                                    onClick = {
+                                        scope.launch { runner.executeInstallPipeline() }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = SfrPrimaryBlue),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.height(36.dp)
+                                ) {
+                                    Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(14.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(if (runner.isBinaryInstalled) "Unduh Ulang" else "Pasang", fontSize = 11.sp)
+                                }
                             }
                         }
                     }
 
-                    binaryInstallMessage?.let { msg ->
+                    // Active Download & Pipeline Details
+                    if (downloadProgress.isRunning || downloadProgress.error != null || downloadProgress.isCompleted) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Divider()
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Stage Indicator
+                        Text(
+                            text = "Tahap ${downloadProgress.stage.stepNumber}/9: ${downloadProgress.stage.title}",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            color = SfrPrimaryBlue
+                        )
+
                         Spacer(modifier = Modifier.height(6.dp))
-                        Text(text = msg, fontSize = 11.sp, color = SfrPrimaryBlue)
+
+                        // Real Progress Bar
+                        if (downloadProgress.totalBytes > 0) {
+                            LinearProgressIndicator(
+                                progress = { downloadProgress.progressPercent / 100f },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .clip(RoundedCornerShape(4.dp)),
+                                color = SfrPrimaryBlue
+                            )
+                        } else if (downloadProgress.isRunning) {
+                            LinearProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .clip(RoundedCornerShape(4.dp)),
+                                color = SfrPrimaryBlue
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Real Download Stats: Progress %, Downloaded MB/Total MB, Speed MB/s, ETA
+                        val df = DecimalFormat("#.##")
+                        val speedMb = df.format(downloadProgress.speedBytesPerSec / (1024 * 1024))
+                        val downloadedMb = df.format(downloadProgress.bytesDownloaded.toDouble() / (1024 * 1024))
+                        val totalMb = if (downloadProgress.totalBytes > 0) df.format(downloadProgress.totalBytes.toDouble() / (1024 * 1024)) else "?"
+
+                        Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text("Progres: ${downloadProgress.progressPercent}%", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                Text("$downloadedMb MB / $totalMb MB", fontSize = 11.sp, fontFamily = FontFamily.Monospace)
+                            }
+                            if (downloadProgress.speedBytesPerSec > 0) {
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("Kecepatan: $speedMb MB/s", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                                    if (downloadProgress.etaSeconds > 0) {
+                                        Text("Estimasi: ${downloadProgress.etaSeconds} detik", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                                    }
+                                }
+                            }
+                        }
+
+                        downloadProgress.message.takeIf { it.isNotEmpty() }?.let { msg ->
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(text = msg, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+
+                        downloadProgress.error?.let { err ->
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(text = "Error: $err", fontSize = 11.sp, color = StatusOfflineRed, fontWeight = FontWeight.SemiBold)
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                OutlinedButton(
+                                    onClick = { scope.launch { runner.executeInstallPipeline() } },
+                                    modifier = Modifier.height(34.dp)
+                                ) {
+                                    Text("Coba Lagi", fontSize = 11.sp)
+                                }
+                                OutlinedButton(
+                                    onClick = { binaryPickerLauncher.launch("*/*") },
+                                    modifier = Modifier.height(34.dp)
+                                ) {
+                                    Text("Impor Binary Kompatibel", fontSize = 11.sp)
+                                }
+                            }
+                        }
+
+                        if (downloadProgress.isRunning) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedButton(
+                                onClick = { runner.cancelDownload() },
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = StatusOfflineRed),
+                                modifier = Modifier.height(32.dp)
+                            ) {
+                                Text("Batal Download", fontSize = 11.sp)
+                            }
+                        }
                     }
                 }
             }
@@ -302,33 +424,31 @@ fun TunnelScreen(
                 shape = RoundedCornerShape(18.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                Column(modifier = Modifier.padding(18.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = "Pengaturan Token Cloudflare Tunnel",
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
                     )
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                    // Cloudflare Tunnel Token
+                    // Cloudflare Tunnel Token Input
                     OutlinedTextField(
                         value = tokenInput,
-                        onValueChange = {
-                            tokenInput = it
-                        },
+                        onValueChange = { tokenInput = it },
                         label = { Text("Cloudflare Tunnel Token (Remotely-Managed)") },
                         placeholder = { Text("eyJh... (Token dari Cloudflare Zero Trust)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("cloudflare_token_input"),
+                        singleLine = false,
+                        maxLines = 3,
                         visualTransformation = if (showTokenText) VisualTransformation.None else PasswordVisualTransformation(),
-                        leadingIcon = {
-                            Icon(Icons.Default.Lock, contentDescription = null, tint = SfrSecondaryOrange)
-                        },
                         trailingIcon = {
                             IconButton(onClick = { showTokenText = !showTokenText }) {
                                 Icon(
                                     imageVector = if (showTokenText) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = null
+                                    contentDescription = if (showTokenText) "Sembunyikan Token" else "Tampilkan Token"
                                 )
                             }
                         }
@@ -336,31 +456,39 @@ fun TunnelScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Token dilindungi dan tidak ditampilkan di Logcat.",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.outline
-                        )
-
-                        Button(
-                            onClick = {
-                                onSaveToken(tokenInput.trim())
-                                Toast.makeText(context, "Token Cloudflare berhasil disimpan!", Toast.LENGTH_SHORT).show()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = SfrPrimaryBlue)
-                        ) {
-                            Text("Simpan Token", fontSize = 12.sp)
+                    // Validate Token helper
+                    val (isValidToken, tokenValidationMsg) = runner.validateToken(tokenInput)
+                    if (tokenInput.isNotBlank()) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = if (isValidToken) Icons.Default.CheckCircle else Icons.Default.Error,
+                                contentDescription = null,
+                                tint = if (isValidToken) StatusOnlineGreen else StatusOfflineRed,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = tokenValidationMsg,
+                                fontSize = 11.sp,
+                                color = if (isValidToken) StatusOnlineGreen else StatusOfflineRed
+                            )
                         }
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
 
+                    // Custom Domain Input
+                    OutlinedTextField(
+                        value = domainInput,
+                        onValueChange = { domainInput = it },
+                        label = { Text("Custom Domain Milik Anda (Opsional)") },
+                        placeholder = { Text("website-saya.com") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("custom_domain_input"),
+                        singleLine = true
+                    )
+
                     Spacer(modifier = Modifier.height(12.dp))
-                    Divider()
-                    Spacer(modifier = Modifier.height(10.dp))
 
                     // Auto Reconnect Switch
                     Row(
@@ -368,41 +496,60 @@ fun TunnelScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Auto Reconnect", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                            Text("Sambungkan ulang otomatis jika koneksi internet HP terputus", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                        Column {
+                            Text("Sambungkan Ulang Otomatis", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                            Text("Reconnect otomatis saat koneksi terputus", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
                         }
                         Switch(
                             checked = autoReconnect,
                             onCheckedChange = onToggleAutoReconnect,
-                            colors = SwitchDefaults.colors(checkedThumbColor = SfrPrimaryBlue)
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = SfrPrimaryBlue
+                            )
                         )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = {
+                            onSaveToken(tokenInput)
+                            onSaveCustomDomain(domainInput)
+                            Toast.makeText(context, "Konfigurasi token berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = SfrPrimaryBlue),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("Simpan Konfigurasi")
                     }
                 }
             }
         }
 
-        // 4. Live Tunnel Logs Card
+        // 4. Live Cloudflared Diagnostic Logs
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                Column(modifier = Modifier.padding(18.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Cloud, contentDescription = null, tint = SfrPrimaryBlue)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Log Koneksi Cloudflared", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        }
-                        IconButton(onClick = { tunnelLogs.clear() }) {
-                            Icon(Icons.Default.Refresh, contentDescription = "Bersihkan Log", modifier = Modifier.size(18.dp))
-                        }
+                        Text(
+                            text = "Live Cloudflared Output Log",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Text(
+                            text = "${tunnelLogs.size} baris",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.outline
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -411,25 +558,25 @@ fun TunnelScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(180.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFF0F172A))
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0xFF0F141C))
                             .padding(10.dp)
                     ) {
                         if (tunnelLogs.isEmpty()) {
                             Text(
-                                text = "Menunggu log koneksi dari cloudflared...\nKlik 'Hubungkan' setelah mengisi token untuk memulai.",
-                                color = Color(0xFF64748B),
+                                text = "Menunggu log proses cloudflared...",
+                                color = Color(0xFF6B7280),
                                 fontSize = 11.sp,
                                 fontFamily = FontFamily.Monospace
                             )
                         } else {
-                            LazyColumn {
-                                items(tunnelLogs) { log ->
+                            LazyColumn(reverseLayout = true) {
+                                items(tunnelLogs.reversed()) { log ->
                                     val time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date(log.timestamp))
                                     Text(
                                         text = "[$time] ${log.message}",
-                                        color = if (log.isError) Color(0xFFEF4444) else Color(0xFF38BDF8),
-                                        fontSize = 11.sp,
+                                        color = if (log.isError) Color(0xFFF87171) else Color(0xFF4ADE80),
+                                        fontSize = 10.sp,
                                         fontFamily = FontFamily.Monospace
                                     )
                                 }

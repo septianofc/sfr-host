@@ -1,10 +1,17 @@
 package com.example.data
 
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.os.Environment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.InputStream
+import java.net.InetSocketAddress
+import java.net.Socket
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -15,14 +22,26 @@ data class SfrDatabaseItem(
     val sizeBytes: Long,
     val lastModified: Long,
     val tableCount: Int,
-    val associatedUsers: List<String> = emptyList()
+    val engineType: String = "SQLite 3"
 )
 
-data class SfrDatabaseUser(
-    val username: String,
-    val passwordMasked: String,
-    val privileges: String = "ALL PRIVILEGES",
-    val assignedDatabases: List<String> = emptyList()
+data class MySqlConnectionConfig(
+    val id: String,
+    val name: String,
+    val host: String = "127.0.0.1",
+    val port: Int = 3306,
+    val database: String = "",
+    val username: String = "root",
+    val passwordMasked: String = "",
+    val isLocalTermux: Boolean = host == "127.0.0.1" || host == "localhost"
+)
+
+data class MySqlTestResult(
+    val isSuccess: Boolean,
+    val serverVersion: String = "",
+    val protocolVersion: Int = 0,
+    val latencyMs: Long = 0L,
+    val message: String = ""
 )
 
 data class SqlQueryResult(
@@ -34,6 +53,12 @@ data class SqlQueryResult(
     val executionTimeMs: Long = 0L
 )
 
+/**
+ * DatabaseManager handles:
+ * 1. Local SQLite 3 databases (honest naming, no false MySQL labeling).
+ * 2. Real Remote/Local MySQL & MariaDB server connections via TCP handshake.
+ * 3. SQL query execution, export/import dump.
+ */
 class DatabaseManager(private val context: Context) {
 
     val databaseBaseDir: File
@@ -81,7 +106,7 @@ class DatabaseManager(private val context: Context) {
 
                 db.execSQL("""
                     INSERT INTO articles (title, content, author) VALUES 
-                    ('Selamat Datang di SFR Host', 'Web server Android Anda kini mendukung database SQLite dan PHP 8.', 'Septian Fathur Rohman'),
+                    ('Selamat Datang di SFR Host', 'Web server Android Anda kini mendukung database SQLite 3 lokal dan koneksi MySQL/MariaDB riil.', 'Septian Fathur Rohman'),
                     ('Koneksi Database PHP', 'Gunakan new SQLite3() atau PDO untuk mengakses file database dari skrip PHP.', 'Admin SFR');
                 """.trimIndent())
                 db.close()
@@ -111,7 +136,8 @@ class DatabaseManager(private val context: Context) {
                 file = file,
                 sizeBytes = file.length(),
                 lastModified = file.lastModified(),
-                tableCount = tableCount
+                tableCount = tableCount,
+                engineType = "SQLite 3 (Lokal)"
             )
         }.sortedByDescending { it.lastModified }
     }
@@ -123,7 +149,7 @@ class DatabaseManager(private val context: Context) {
 
         return try {
             val db = SQLiteDatabase.openOrCreateDatabase(target, null)
-            db.execSQL("CREATE TABLE IF NOT EXISTS demo (id INTEGER PRIMARY KEY AUTOINCREMENT, note TEXT);")
+            db.execSQL("CREATE TABLE IF NOT EXISTS demo (id INTEGER PRIMARY KEY AUTOINCREMENT, catatan TEXT, dibuat_pada DATETIME DEFAULT CURRENT_TIMESTAMP);")
             db.close()
             true
         } catch (e: Exception) {
@@ -205,7 +231,7 @@ class DatabaseManager(private val context: Context) {
 
         val sb = StringBuilder()
         sb.append("-- ========================================================\n")
-        sb.append("-- SFR Host SQLite Database Dump\n")
+        sb.append("-- SFR Host SQLite 3 Database Dump\n")
         sb.append("-- Database: $dbFileName\n")
         sb.append("-- Tanggal: ${SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(Date())}\n")
         sb.append("-- Powered by SFR Host (Septian Fathur Rohman)\n")
@@ -221,7 +247,6 @@ class DatabaseManager(private val context: Context) {
                 sb.append("DROP TABLE IF EXISTS `$tableName`;\n")
                 sb.append("$createSql;\n\n")
 
-                // Export data
                 val dataCursor = db.rawQuery("SELECT * FROM `$tableName`", null)
                 val colCount = dataCursor.columnCount
                 while (dataCursor.moveToNext()) {
@@ -260,6 +285,95 @@ class DatabaseManager(private val context: Context) {
             Pair(true, "Berhasil mengimpor $executed perintah SQL ke dalam $dbFileName.")
         } catch (e: Exception) {
             Pair(false, "Gagal impor SQL: ${e.message}")
+        }
+    }
+
+    /**
+     * Real MySQL / MariaDB Initial Handshake Packet probe over TCP.
+     * Connects via raw socket, reads the MySQL Protocol Handshake packet sent by server:
+     * - [0..2]: Packet length (3 bytes)
+     * - [3]: Sequence ID (0x00)
+     * - [4]: Protocol Version (usually 0x0a)
+     * - [5..null]: Null-terminated server version string (e.g. "10.11.4-MariaDB" or "8.0.35")
+     */
+    suspend fun testMySqlConnection(host: String, port: Int): MySqlTestResult {
+        return withContext(Dispatchers.IO) {
+            val startTime = System.currentTimeMillis()
+            val socket = Socket()
+            try {
+                socket.connect(InetSocketAddress(host, port), 4000)
+                socket.soTimeout = 4000
+
+                val input = socket.getInputStream()
+                // Read 4 bytes header: 3 bytes payload length + 1 byte sequence id
+                val header = ByteArray(4)
+                var read = 0
+                while (read < 4) {
+                    val r = input.read(header, read, 4 - read)
+                    if (r == -1) break
+                    read += r
+                }
+
+                if (read < 4) {
+                    return@withContext MySqlTestResult(
+                        isSuccess = false,
+                        message = "Koneksi terhubung namun server menutup stream sebelum handshake."
+                    )
+                }
+
+                val payloadLength = (header[0].toInt() and 0xFF) or
+                        ((header[1].toInt() and 0xFF) shl 8) or
+                        ((header[2].toInt() and 0xFF) shl 16)
+
+                if (payloadLength <= 0 || payloadLength > 10000) {
+                    return@withContext MySqlTestResult(
+                        isSuccess = false,
+                        message = "Port $port terbuka namun bukan server MySQL/MariaDB standar (panjang paket handshake tidak valid)."
+                    )
+                }
+
+                val payload = ByteArray(payloadLength)
+                var pRead = 0
+                while (pRead < payloadLength) {
+                    val r = input.read(payload, pRead, payloadLength - pRead)
+                    if (r == -1) break
+                    pRead += r
+                }
+
+                if (pRead < 2) {
+                    return@withContext MySqlTestResult(
+                        isSuccess = false,
+                        message = "Payload handshake terlalu pendek."
+                    )
+                }
+
+                val protoVer = payload[0].toInt() and 0xFF
+                // Server version string is null-terminated starting at index 1
+                var nullIdx = 1
+                while (nullIdx < pRead && payload[nullIdx] != 0.toByte()) {
+                    nullIdx++
+                }
+                val serverVersion = String(payload, 1, nullIdx - 1, Charsets.UTF_8)
+                val latency = System.currentTimeMillis() - startTime
+
+                socket.close()
+
+                MySqlTestResult(
+                    isSuccess = true,
+                    serverVersion = serverVersion,
+                    protocolVersion = protoVer,
+                    latencyMs = latency,
+                    message = "✓ Terhubung ke MySQL/MariaDB server riil ($serverVersion, Latency: ${latency}ms)"
+                )
+            } catch (e: Exception) {
+                try { socket.close() } catch (ignored: Exception) {}
+                val latency = System.currentTimeMillis() - startTime
+                MySqlTestResult(
+                    isSuccess = false,
+                    latencyMs = latency,
+                    message = "Gagal terhubung ke $host:$port (${e.message})"
+                )
+            }
         }
     }
 }

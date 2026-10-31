@@ -108,6 +108,7 @@ import com.example.ui.screens.DashboardScreen
 import com.example.ui.screens.DatabasesScreen
 import com.example.ui.screens.DeveloperScreen
 import com.example.ui.screens.DnsManagementScreen
+import com.example.ui.screens.HostingAndFilesScreen
 import com.example.ui.screens.HtaccessScreen
 import com.example.ui.screens.NotificationsScreen
 import com.example.ui.screens.OnboardingBottomSheet
@@ -117,7 +118,6 @@ import com.example.ui.screens.SettingsScreen
 import com.example.ui.screens.SslTlsScreen
 import com.example.ui.screens.TunnelScreen
 import com.example.ui.screens.WebServerPhpScreen
-import com.example.ui.screens.WebsitesScreen
 import com.example.ui.theme.SfrHostTheme
 import com.example.ui.theme.SfrPrimaryBlue
 import com.example.ui.theme.SfrSecondaryOrange
@@ -128,9 +128,8 @@ import kotlinx.coroutines.launch
 
 enum class Screen(val title: String, val icon: ImageVector) {
     OVERVIEW("Dashboard", Icons.Default.Dashboard),
-    WEBSITES("Hosting", Icons.Default.Language),
+    HOSTING_AND_FILES("Hosting & File", Icons.Default.Language),
     CUSTOM_DOMAINS("Domains", Icons.Default.Dns),
-    FILE_MANAGER("Files", Icons.Default.Folder),
     DATABASES("Databases", Icons.Default.Storage),
     WEB_SERVER_PHP("Server & PHP", Icons.Default.Code),
     HTACCESS_ERRORS(".htaccess & Errors", Icons.Default.Description),
@@ -159,23 +158,17 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             SfrHostTheme {
-                MainApp(initialScreen = initialScreen)
+                MainContent(initialScreen = initialScreen)
             }
         }
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
+fun MainContent(initialScreen: Screen = Screen.OVERVIEW) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-
     val dataStore = remember { DataStoreManager(context) }
     val domainManager = remember { DomainManager(context) }
     val databaseManager = remember { DatabaseManager(context) }
@@ -186,14 +179,12 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
     var currentScreen by remember { mutableStateOf(initialScreen) }
     var isUnlockedSession by remember { mutableStateOf(false) }
 
-    // App Lock Security Gate
+    // App Lock Security Gate (Purely Android native device credential / biometric)
     val isLockEnabled by appLockManager.isLockEnabled.collectAsState(initial = false)
-    val isBiometricEnabled by appLockManager.isBiometricEnabled.collectAsState(initial = false)
 
     if (isLockEnabled && !isUnlockedSession) {
         SecurityLockScreen(
             appLockManager = appLockManager,
-            useBiometric = isBiometricEnabled,
             onUnlocked = { isUnlockedSession = true }
         )
         return
@@ -218,78 +209,63 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
     val forceHttpsGlobal by dataStore.forceHttps.collectAsState(initial = true)
 
     val customDomainsList by domainManager.customDomains.collectAsState(initial = emptyList())
-    val websitesList = remember { fileManager.getWebsites() }
 
-    // Server & Tunnel Runtime State
-    val isServerRunning by SfrServerService.isServerRunning.collectAsState()
-    val standaloneTunnelManager = remember { TunnelManager(context, scope) }
-
-    val activeTunnelManager = SfrServerService.currentTunnelInstance ?: standaloneTunnelManager
-    val tunnelState by activeTunnelManager.tunnelState.collectAsState()
-    val activeConnections by activeTunnelManager.activeConnections.collectAsState()
-
-    // Notification State
-    val notifications by notifRepo.notifications.collectAsState()
-    val isRefreshingNotifs by notifRepo.isRefreshing.collectAsState()
-    val latestUpdate by notifRepo.latestUpdateInfo.collectAsState()
-    val unreadNotifCount = notifications.count { !it.isRead }
-
-    // Request logs collector for Access Logs & Analytics
+    // Server & Service State
+    var isServerRunning by remember { mutableStateOf(false) }
+    var tunnelState by remember { mutableStateOf(TunnelState.DISCONNECTED) }
+    var activeConnections by remember { mutableStateOf(0) }
     val sessionLogs = remember { mutableStateListOf<HttpRequestLog>() }
-    LaunchedEffect(isServerRunning) {
-        val server = SfrServerService.currentServerInstance
-        server?.requestLogs?.collect { log ->
-            sessionLogs.add(0, log)
-            if (sessionLogs.size > 200) sessionLogs.removeLast()
-        }
-    }
-
-    // In-App Preview Sheet state
     var previewUrlToOpen by remember { mutableStateOf<String?>(null) }
     var showOnboardingSheet by remember { mutableStateOf(false) }
 
-    // Handle Back Press to return to OVERVIEW if on a sub-screen
-    BackHandler(enabled = currentScreen != Screen.OVERVIEW) {
-        currentScreen = Screen.OVERVIEW
+    // Notifications State
+    val notifications by notifRepo.notifications.collectAsState(initial = emptyList())
+    val unreadCount = notifications.count { !it.isRead }
+    val isRefreshingNotifs by notifRepo.isRefreshing.collectAsState(initial = false)
+    val latestUpdate by notifRepo.latestUpdateInfo.collectAsState(initial = null)
+
+    val websitesList = remember(activeWebsite) {
+        fileManager.getWebsites()
     }
 
-    // Notification Permission Request (Android 13+)
+    val activeTunnelManager = remember {
+        SfrServerService.currentTunnelInstance ?: TunnelManager(context, scope)
+    }
+
+    // Permission Launchers
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
-    ) { _ -> }
+    ) { isGranted ->
+        if (isGranted) {
+            scope.launch { notifRepo.fetchRemoteNotifications() }
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val hasPerm = ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-            if (!hasPerm) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
+        notifRepo.fetchRemoteNotifications()
+    }
 
-        // Check if user needs onboarding guide
-        val completed = dataStore.hasCompletedOnboarding.first()
-        if (!completed) {
-            showOnboardingSheet = true
-        }
+    // Auto-start features on launch if enabled
+    LaunchedEffect(Unit) {
+        val shouldAutoServer = dataStore.autoStartServer.first()
+        val shouldAutoTunnel = dataStore.autoStartTunnel.first()
+        val port = dataStore.serverPort.first()
+        val web = dataStore.activeWebsite.first()
+        val cfToken = dataStore.cloudflareToken.first()
+        val domain = dataStore.customDomain.first()
 
-        // Auto start server if enabled in settings
-        val autoStart = dataStore.autoStartServer.first()
-        if (autoStart && !isServerRunning) {
-            val port = dataStore.serverPort.first()
-            val website = dataStore.activeWebsite.first()
-            val startTunnel = dataStore.autoStartTunnel.first()
-            val token = dataStore.cloudflareToken.first()
-            val domain = dataStore.customDomain.first()
-
+        if (shouldAutoServer && !isServerRunning) {
             val serviceIntent = Intent(context, SfrServerService::class.java).apply {
                 action = SfrServerService.ACTION_START
                 putExtra(SfrServerService.EXTRA_PORT, port)
-                putExtra(SfrServerService.EXTRA_WEBSITE, website)
-                putExtra(SfrServerService.EXTRA_START_TUNNEL, startTunnel)
-                putExtra(SfrServerService.EXTRA_CLOUDFLARE_TOKEN, token)
+                putExtra(SfrServerService.EXTRA_WEBSITE, web)
+                putExtra(SfrServerService.EXTRA_START_TUNNEL, shouldAutoTunnel)
+                putExtra(SfrServerService.EXTRA_CLOUDFLARE_TOKEN, cfToken)
                 putExtra(SfrServerService.EXTRA_CUSTOM_DOMAIN, domain)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -298,6 +274,43 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
                 context.startService(serviceIntent)
             }
         }
+    }
+
+    // Polling / listening to SfrServerService instance
+    LaunchedEffect(Unit) {
+        while (true) {
+            val currentServer = SfrServerService.currentServerInstance
+            isServerRunning = currentServer != null && currentServer.isRunning
+
+            val currentTunnel = SfrServerService.currentTunnelInstance
+            if (currentTunnel != null) {
+                tunnelState = currentTunnel.tunnelState.value
+                activeConnections = currentTunnel.activeConnections.value
+            } else {
+                tunnelState = TunnelState.DISCONNECTED
+                activeConnections = 0
+            }
+
+            delay(1000)
+        }
+    }
+
+    // Collect HTTP Request Logs
+    LaunchedEffect(Unit) {
+        while (true) {
+            val server = SfrServerService.currentServerInstance
+            server?.let { s ->
+                s.requestLogs.collect { log ->
+                    sessionLogs.add(log)
+                    if (sessionLogs.size > 200) sessionLogs.removeAt(0)
+                }
+            }
+            delay(1500)
+        }
+    }
+
+    BackHandler(enabled = currentScreen != Screen.OVERVIEW) {
+        currentScreen = Screen.OVERVIEW
     }
 
     Scaffold(
@@ -343,8 +356,8 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
             ) {
                 val primaryNavScreens = listOf(
                     Screen.OVERVIEW,
-                    Screen.WEBSITES,
-                    Screen.FILE_MANAGER,
+                    Screen.HOSTING_AND_FILES,
+                    Screen.TUNNEL,
                     Screen.DATABASES,
                     Screen.SERVER_SETTINGS
                 )
@@ -445,8 +458,7 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
                     },
                     onNavigateMenu = { menuName ->
                         when (menuName) {
-                            "hosting" -> currentScreen = Screen.WEBSITES
-                            "files" -> currentScreen = Screen.FILE_MANAGER
+                            "hosting", "files" -> currentScreen = Screen.HOSTING_AND_FILES
                             "domains" -> currentScreen = Screen.CUSTOM_DOMAINS
                             "databases" -> currentScreen = Screen.DATABASES
                             "server_php" -> currentScreen = Screen.WEB_SERVER_PHP
@@ -463,7 +475,7 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
                     }
                 )
 
-                Screen.WEBSITES, Screen.FILE_MANAGER -> WebsitesScreen(
+                Screen.HOSTING_AND_FILES -> HostingAndFilesScreen(
                     activeWebsiteName = activeWebsite,
                     serverPort = serverPort,
                     isServerOnline = isServerRunning,
@@ -653,17 +665,21 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Pratinjau Server", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        Text(
+                            text = "Live Website Preview",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = SfrPrimaryBlue
+                        )
                         Text(
                             text = url,
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.outline,
-                            fontFamily = FontFamily.Monospace,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -671,40 +687,34 @@ fun MainApp(initialScreen: Screen = Screen.OVERVIEW) {
 
                     Row {
                         IconButton(onClick = { webViewInstance?.reload() }) {
-                            Icon(imageVector = Icons.Default.Refresh, contentDescription = "Muat Ulang")
+                            Icon(Icons.Default.Refresh, contentDescription = "Muat Ulang")
                         }
                         IconButton(onClick = { previewUrlToOpen = null }) {
-                            Icon(imageVector = Icons.Default.Close, contentDescription = "Tutup")
+                            Icon(Icons.Default.Close, contentDescription = "Tutup")
                         }
                     }
                 }
 
                 AndroidView(
+                    modifier = Modifier.fillMaxSize(),
                     factory = { ctx ->
                         WebView(ctx).apply {
+                            webViewClient = WebViewClient()
                             settings.javaScriptEnabled = true
                             settings.domStorageEnabled = true
-                            settings.allowFileAccess = true
-                            webViewClient = WebViewClient()
                             loadUrl(url)
                             webViewInstance = this
                         }
-                    },
-                    modifier = Modifier.fillMaxSize()
+                    }
                 )
             }
         }
     }
 
-    // Onboarding Bottom Sheet
+    // Onboarding Sheet
     if (showOnboardingSheet) {
         OnboardingBottomSheet(
-            onDismiss = {
-                scope.launch {
-                    dataStore.setCompletedOnboarding(true)
-                    showOnboardingSheet = false
-                }
-            }
+            onDismiss = { showOnboardingSheet = false }
         )
     }
 }

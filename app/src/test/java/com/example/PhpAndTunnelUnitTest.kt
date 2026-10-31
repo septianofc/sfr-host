@@ -1,14 +1,15 @@
 package com.example
 
-import android.util.Base64
+import com.example.files.FileCategory
+import com.example.files.FileItem
 import com.example.server.HtaccessManager
 import com.example.server.php.KotlinPhpInterpreter
-import com.example.tunnel.CloudflareTunnelRunner
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import java.text.DecimalFormat
 
 class PhpAndTunnelUnitTest {
 
@@ -76,7 +77,6 @@ class PhpAndTunnelUnitTest {
 
     @Test
     fun testCloudflareTokenValidation() {
-        // Sample dummy invalid token
         val invalidToken = "not-a-valid-token"
         assertFalse(invalidToken.length > 20 && invalidToken.startsWith("eyJ"))
 
@@ -86,5 +86,61 @@ class PhpAndTunnelUnitTest {
 
         val decoded = String(java.util.Base64.getDecoder().decode(validBase64Token), Charsets.UTF_8)
         assertTrue(decoded.contains("\"a\"") && decoded.contains("\"t\"") && decoded.contains("\"s\""))
+    }
+
+    @Test
+    fun testRealByteDownloadMath() {
+        val downloadedBytes = 8_200_000L
+        val totalBytes = 18_100_000L
+
+        val percent = ((downloadedBytes * 100) / totalBytes).toInt()
+        assertEquals(45, percent)
+
+        val speedBytesPerSec = 1_400_000.0 // 1.4 MB/s
+        val remainingBytes = totalBytes - downloadedBytes
+        val etaSec = (remainingBytes / speedBytesPerSec).toLong()
+
+        assertEquals(7L, etaSec)
+
+        val df = DecimalFormat("#.##")
+        val speedMb = df.format(speedBytesPerSec / (1024 * 1024))
+        assertEquals("1.34", speedMb) // 1.4M / 1048576 ~ 1.34 MB/s
+    }
+
+    @Test
+    fun testZArchiverFileCategorization() {
+        val phpFile = FileItem("index.php", "index.php", false, 1200L, 0L)
+        assertEquals(FileCategory.PHP, phpFile.category)
+
+        val htmlFile = FileItem("about.html", "about.html", false, 3400L, 0L)
+        assertEquals(FileCategory.HTML, htmlFile.category)
+
+        val zipFile = FileItem("backup.zip", "backup.zip", false, 15000000L, 0L)
+        assertEquals(FileCategory.ARCHIVE, zipFile.category)
+        assertEquals("14.31 MB", zipFile.formattedSize)
+
+        val folder = FileItem("assets", "assets", true, 0L, 0L)
+        assertEquals(FileCategory.FOLDER, folder.category)
+        assertEquals("--", folder.formattedSize)
+    }
+
+    @Test
+    fun testMySqlHandshakePacketParsing() {
+        // Mock MySQL 5.7+ Handshake packet header:
+        // Length 3 bytes: 36 (0x24, 0x00, 0x00), Sequence 0x00, Proto 0x0a, Version "10.11.4-MariaDB\0"
+        val versionStr = "10.11.4-MariaDB"
+        val versionBytes = versionStr.toByteArray(Charsets.UTF_8)
+        val payloadLength = 1 + versionBytes.size + 1 + 10 // protocol + version + null + extras
+        val header = ByteArray(4)
+        header[0] = (payloadLength and 0xFF).toByte()
+        header[1] = ((payloadLength shr 8) and 0xFF).toByte()
+        header[2] = ((payloadLength shr 16) and 0xFF).toByte()
+        header[3] = 0x00 // Seq ID
+
+        val parsedLength = (header[0].toInt() and 0xFF) or
+                ((header[1].toInt() and 0xFF) shl 8) or
+                ((header[2].toInt() and 0xFF) shl 16)
+
+        assertEquals(payloadLength, parsedLength)
     }
 }

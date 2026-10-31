@@ -507,13 +507,119 @@ fun DatabasesScreen(
             }
 
             3 -> {
-                // MariaDB / MySQL Setup Info
+                // MariaDB / MySQL Setup Info & Interactive Connection Test
+                var mysqlHostInput by remember { mutableStateOf("127.0.0.1") }
+                var mysqlPortInput by remember { mutableStateOf("3306") }
+                var mysqlTestResult by remember { mutableStateOf<com.example.data.MySqlTestResult?>(null) }
+                var isTestingMysql by remember { mutableStateOf(false) }
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
+                    // Interactive Real MySQL Probe
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Storage, contentDescription = null, tint = SfrPrimaryBlue)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Uji Koneksi Server MySQL / MariaDB Riil", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "Menghubungkan socket TCP ke server MySQL (lokal Termux atau remote cloud) dan membaca paket handshake protokol resmi:",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.outline
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                OutlinedTextField(
+                                    value = mysqlHostInput,
+                                    onValueChange = { mysqlHostInput = it },
+                                    label = { Text("Host") },
+                                    placeholder = { Text("127.0.0.1 / db.example.com") },
+                                    singleLine = true,
+                                    modifier = Modifier.weight(0.7f)
+                                )
+                                OutlinedTextField(
+                                    value = mysqlPortInput,
+                                    onValueChange = { mysqlPortInput = it },
+                                    label = { Text("Port") },
+                                    singleLine = true,
+                                    modifier = Modifier.weight(0.3f)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Button(
+                                onClick = {
+                                    val port = mysqlPortInput.toIntOrNull() ?: 3306
+                                    isTestingMysql = true
+                                    scope.launch {
+                                        mysqlTestResult = databaseManager.testMySqlConnection(mysqlHostInput.trim(), port)
+                                        isTestingMysql = false
+                                    }
+                                },
+                                enabled = !isTestingMysql,
+                                colors = ButtonDefaults.buttonColors(containerColor = SfrPrimaryBlue),
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                if (isTestingMysql) {
+                                    androidx.compose.material3.CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = Color.White)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Menguji Socket TCP...")
+                                } else {
+                                    Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Uji Koneksi Handshake")
+                                }
+                            }
+
+                            mysqlTestResult?.let { res ->
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Card(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = if (res.isSuccess) com.example.ui.theme.StatusOnlineGreen.copy(alpha = 0.12f)
+                                        else MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(10.dp)) {
+                                        Text(
+                                            text = res.message,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 12.sp,
+                                            color = if (res.isSuccess) com.example.ui.theme.StatusOnlineGreen else MaterialTheme.colorScheme.error
+                                        )
+                                        if (res.isSuccess) {
+                                            Text(
+                                                text = "Protokol Versi: ${res.protocolVersion} | Server: ${res.serverVersion}",
+                                                fontSize = 11.sp,
+                                                fontFamily = FontFamily.Monospace,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // MariaDB / MySQL Setup Info Card
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
@@ -548,7 +654,7 @@ fun DatabasesScreen(
                                 text = "Jika ingin menjalankan MySQL/MariaDB server sesungguhnya langsung di HP:\n" +
                                         "1. Buka Termux di HP\n" +
                                         "2. Jalankan perintah: pkg install mariadb\n" +
-                                        "3. Inisialisasi: mysql_install_db\n" +
+                                        "3. Inisialisasi: mariadb-install-db\n" +
                                         "4. Jalankan server: mysqld_safe &\n" +
                                         "5. Port 3306 akan aktif dan dapat diakses oleh PHP SFR Host di 127.0.0.1:3306.",
                                 fontSize = 12.sp,
