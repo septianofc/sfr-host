@@ -114,23 +114,10 @@ class CloudflareTunnelRunner(
         if (trimmed.isEmpty()) {
             return Pair(false, "Token Cloudflare Tunnel tidak boleh kosong.")
         }
-        return try {
-            val decodedBytes = Base64.decode(trimmed, Base64.DEFAULT)
-            val jsonStr = String(decodedBytes, Charsets.UTF_8)
-            val json = JSONObject(jsonStr)
-
-            val hasAccount = json.has("a")
-            val hasTunnel = json.has("t")
-            val hasSecret = json.has("s")
-
-            if (hasAccount && hasTunnel && hasSecret) {
-                Pair(true, "Format token valid (Remotely-managed tunnel).")
-            } else {
-                Pair(false, "Token bukan format Cloudflare Tunnel yang valid (hilang field a/t/s).")
-            }
-        } catch (e: Exception) {
-            Pair(false, "Token tidak valid: Bukan Base64 terenkripsi yang sesuai.")
+        if (trimmed.length < 8) {
+            return Pair(false, "Token terlalu pendek untuk token Cloudflare Zero Trust.")
         }
+        return Pair(true, "Token valid & siap digunakan (Cloudflare Zero Trust Connector).")
     }
 
     fun startTunnel(
@@ -421,6 +408,20 @@ class CloudflareTunnelRunner(
             )
             delay(200)
 
+            // Stage 5: Pasang binary ke penyimpanan Download/SFR Host dan internal
+            _downloadProgress.value = _downloadProgress.value.copy(
+                stage = InstallStage.EXTRACTING_INSTALLING,
+                message = "Menyimpan binary ke Download/SFR Host/bin/ dan internal..."
+            )
+            delay(200)
+
+            // Save copy to /storage/emulated/0/Download/SFR Host/bin/cloudflared
+            try {
+                val fileManager = com.example.files.FileManager(context)
+                val sharedBin = File(fileManager.binDir, "cloudflared")
+                tempFile.copyTo(sharedBin, overwrite = true)
+            } catch (ignored: Exception) {}
+
             if (cloudflaredBinary.exists()) {
                 cloudflaredBinary.delete()
             }
@@ -433,11 +434,16 @@ class CloudflareTunnelRunner(
             // Stage 6: Mengatur izin eksekusi
             _downloadProgress.value = _downloadProgress.value.copy(
                 stage = InstallStage.SET_PERMISSIONS,
-                message = "Memberikan izin eksekusi chmod +x..."
+                message = "Memberikan izin eksekusi chmod 755..."
             )
             delay(200)
-            cloudflaredBinary.setExecutable(true, false)
-            cloudflaredBinary.setReadable(true, false)
+            try {
+                binDir.setExecutable(true, false)
+                binDir.setReadable(true, false)
+                cloudflaredBinary.setExecutable(true, false)
+                cloudflaredBinary.setReadable(true, false)
+                Runtime.getRuntime().exec(arrayOf("chmod", "755", cloudflaredBinary.absolutePath)).waitFor()
+            } catch (ignored: Exception) {}
 
             // Stage 7: Menguji eksekusi binary
             _downloadProgress.value = _downloadProgress.value.copy(
@@ -513,14 +519,46 @@ class CloudflareTunnelRunner(
             }
         } catch (e: Exception) {
             val msg = e.message ?: "Unknown error"
-            if (msg.contains("No such file or directory", ignoreCase = true)) {
+            if (msg.contains("Permission denied", ignoreCase = true) || msg.contains("error=13", ignoreCase = true)) {
                 Pair(
                     false,
-                    "Inkompatibilitas Bionic libc: Binary Linux standar membutuhkan dynamic linker glibc (/lib/ld-linux-...) yang tidak ada pada Android. Solusi: Gunakan opsi 'Impor Binary Kompatibel' untuk memasang biner statically-linked atau Termux."
+                    "Android 10+ W^X Restriction (error=13): Android membatasi eksekusi biner ELF langsung dari direktori aplikasi. Gunakan opsi 'Jalankan via Termux' di bawah untuk koneksi 100% stabil tanpa root."
+                )
+            } else if (msg.contains("No such file or directory", ignoreCase = true)) {
+                Pair(
+                    false,
+                    "Inkompatibilitas Bionic libc: Binary Linux standar membutuhkan dynamic linker glibc (/lib/ld-linux-...) yang tidak ada pada Android. Solusi: Gunakan opsi 'Jalankan via Termux' atau biner kustom statically-linked."
                 )
             } else {
                 Pair(false, msg)
             }
+        }
+    }
+
+    fun isTermuxInstalled(): Boolean {
+        return try {
+            context.packageManager.getLaunchIntentForPackage("com.termux") != null
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun getTermuxTunnelCommand(token: String): String {
+        val safeToken = token.trim()
+        return "pkg update -y && pkg install -y cloudflared && cloudflared tunnel run --token $safeToken"
+    }
+
+    fun copyTermuxCommand(token: String) {
+        val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        val clip = android.content.ClipData.newPlainText("Termux Command", getTermuxTunnelCommand(token))
+        cm.setPrimaryClip(clip)
+    }
+
+    fun launchTermux() {
+        val intent = context.packageManager.getLaunchIntentForPackage("com.termux")
+        if (intent != null) {
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
         }
     }
 

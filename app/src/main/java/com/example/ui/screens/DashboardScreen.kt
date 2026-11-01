@@ -48,6 +48,8 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.Thermostat
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -57,9 +59,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import com.example.monitoring.DeviceThermalManager
+import com.example.monitoring.ThermalLevel
 import com.example.ui.theme.SfrButtonColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -113,6 +119,15 @@ fun DashboardScreen(
     onOpenOnboarding: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val thermalManager = remember { DeviceThermalManager(context) }
+    DisposableEffect(thermalManager) {
+        thermalManager.startMonitoring()
+        onDispose { thermalManager.stopMonitoring() }
+    }
+    val deviceTemperature by thermalManager.temperatureCelsius.collectAsState()
+    val deviceThermalLevel by thermalManager.thermalLevel.collectAsState()
+    val deviceThermalDesc by thermalManager.thermalStatusDescription.collectAsState()
+
     var localIp by remember { mutableStateOf(NetworkUtils.getLocalIpAddress()) }
     var ramUsage by remember { mutableStateOf(NetworkUtils.getRamUsageString()) }
     var uptimeMillis by remember { mutableLongStateOf(0L) }
@@ -213,6 +228,50 @@ fun DashboardScreen(
             )
         }
 
+        // 1.5. Thermal Protection Warning Banner (Only appears when hot/critical)
+        if (deviceThermalLevel == ThermalLevel.HOT || deviceThermalLevel == ThermalLevel.CRITICAL) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (deviceThermalLevel == ThermalLevel.CRITICAL) StatusOfflineRed.copy(alpha = 0.12f)
+                        else StatusWarningAmber.copy(alpha = 0.12f)
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(
+                        1.dp,
+                        if (deviceThermalLevel == ThermalLevel.CRITICAL) StatusOfflineRed else StatusWarningAmber
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = if (deviceThermalLevel == ThermalLevel.CRITICAL) StatusOfflineRed else StatusWarningAmber,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = if (deviceThermalLevel == ThermalLevel.CRITICAL) "Proteksi Darurat: Suhu HP Kritis!" else "Peringatan: Suhu HP Meningkat",
+                                style = MaterialTheme.typography.titleSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (deviceThermalLevel == ThermalLevel.CRITICAL) StatusOfflineRed else StatusWarningAmber
+                                )
+                            )
+                            Text(
+                                text = deviceThermalDesc,
+                                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         // 2. Connected Custom Domains Section
         item {
             ConnectedDomainsCard(
@@ -231,7 +290,7 @@ fun DashboardScreen(
             )
         }
 
-        // 3. Live Metrics Grid (Total Websites, Requests, Traffic In, Traffic Out, RAM, Connections)
+        // 3. Live Metrics Grid (Total Websites, Requests, Traffic In, Traffic Out, RAM, Connections, Temperature)
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(
@@ -261,6 +320,13 @@ fun DashboardScreen(
                     )
                 }
 
+                val thermalColor = when (deviceThermalLevel) {
+                    ThermalLevel.NORMAL -> StatusOnlineGreen
+                    ThermalLevel.WARM -> StatusWarningAmber
+                    ThermalLevel.HOT -> SfrSecondaryOrange
+                    ThermalLevel.CRITICAL -> StatusOfflineRed
+                }
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
@@ -273,17 +339,17 @@ fun DashboardScreen(
                         modifier = Modifier.weight(1f)
                     )
                     MetricTile(
+                        title = "Suhu HP",
+                        value = if (deviceTemperature > 0f) "${deviceTemperature}°C" else "Normal",
+                        icon = Icons.Default.Thermostat,
+                        color = thermalColor,
+                        modifier = Modifier.weight(1f)
+                    )
+                    MetricTile(
                         title = "Uptime HP",
                         value = if (isServerOnline) NetworkUtils.formatUptime(uptimeMillis) else "00:00:00",
                         icon = Icons.Default.Schedule,
                         color = SfrPrimaryBlue,
-                        modifier = Modifier.weight(1f)
-                    )
-                    MetricTile(
-                        title = "Koneksi Aktif",
-                        value = activeConnections.toString(),
-                        icon = Icons.Default.TrendingUp,
-                        color = if (activeConnections > 0) StatusOnlineGreen else MaterialTheme.colorScheme.outline,
                         modifier = Modifier.weight(1f)
                     )
                 }

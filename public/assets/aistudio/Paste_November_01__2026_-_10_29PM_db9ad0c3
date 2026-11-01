@@ -1,0 +1,1846 @@
+[Septianofc1@gmail.com](mailto:Septianofc1@gmail.com)'s Account[Account home](https://dash.cloudflare.com/0bdf0abda25b9f03e3c80189f50955f0/home)RecentsDomainsObservabilityBuildComputeAIStorage &amp; databasesImages &amp; StreamRealtimeProtect &amp; connectApplication securityZero TrustNetworking[Overview](https://dash.cloudflare.com/0bdf0abda25b9f03e3c80189f50955f0/magic-networks/overview)Insights[Tunnels](https://dash.cloudflare.com/0bdf0abda25b9f03e3c80189f50955f0/tunnels)[Mesh](https://dash.cloudflare.com/0bdf0abda25b9f03e3c80189f50955f0/mesh)[Routes](https://dash.cloudflare.com/0bdf0abda25b9f03e3c80189f50955f0/magic-networks/routes)IP addressesThreats &amp; defenseMonetizeDelivery &amp; performanceManage account
+[Tunnels](https://dash.cloudflare.com/0bdf0abda25b9f03e3c80189f50955f0/tunnels)hp-sfrhost[Support](https://dash.cloudflare.com/?to=/:account/support)[Overview](https://dash.cloudflare.com/0bdf0abda25b9f03e3c80189f50955f0/tunnels/8fc6760f-2022-4723-8599-4c1e18342870/overview)[Routes](https://dash.cloudflare.com/0bdf0abda25b9f03e3c80189f50955f0/tunnels/8fc6760f-2022-4723-8599-4c1e18342870/routes)[Live logsNew](https://dash.cloudflare.com/0bdf0abda25b9f03e3c80189f50955f0/tunnels/8fc6760f-2022-4723-8599-4c1e18342870/logs)MetricsActive replicas0Routes1StatusInactiveUptime-ReplicasInstall cloudflared connectorTo activate this tunnel, install the cloudflared connector on your server. Each connector creates a replica with 4 connections to Cloudflare's network for high availability.Select Operating SystemSelect Architecture1. Install cloudflared# Add cloudflare gpg key sudo mkdir -p --mode=0755 /usr/share/keyrings curl -fsSL https://pkg.cloudflare.com/cloudflare-main.gpg | sudo tee /usr/share/keyrings/cloudflare-main.gpg >/dev/null # Add this repo to your apt repositories echo 'deb &#91;signed-by=/usr/share/keyrings/cloudflare-main.gpg&#93; https://pkg.cloudflare.com/cloudflared any main' | sudo tee /etc/apt/sources.list.d/cloudflared.list # install cloudflared sudo apt-get update &amp;&amp; sudo apt-get install cloudflared2. Install as servicesudo cloudflared service install eyJhIjoi\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*bSJ93. Or, run tunnel (manual)cloudflared tunnel run --token eyJhIjoi\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*\*bSJ9Routes[View all](https://dash.cloudflare.com/0bdf0abda25b9f03e3c80189f50955f0/tunnels/8fc6760f-2022-4723-8599-4c1e18342870/routes)[sfrhost-test.septianfr.web.id](https://sfrhost-test.septianfr.web.id/)Published applicationAdd routehp-sfrhostTunnel detailsNamehp-sfrhostTunnel ID8fc6760f-2022-4723-8599-4c1e18342870TypecloudflaredRefresh tokenRefresh the tunnel token to invalidate the current token and generate a new one. This will require updating all replica instances with the new token.[Configure alertsSet up alerts to monitor your tunnel's health changes.](https://dash.cloudflare.com/0bdf0abda25b9f03e3c80189f50955f0/notifications/create/tunnel_health_event)[Support](https://support.cloudflare.com/)[System status](https://www.cloudflarestatus.com/)[Careers](https://www.cloudflare.com/careers/)[Terms of Use](https://www.cloudflare.com/website-terms/)[Report Security Issues](https://www.cloudflare.com/disclosure/)[Privacy Policy](https://www.cloudflare.com/privacypolicy/)Cookie Preferences© 2026 Cloudflare, Inc., Kata Temen Saya Pakai Linux Untuk Android Nih Gw Tanya:  Bang Lu Tau Gak Cara Sambungin Android Server Ke Cloudflare Tunnel Pakai Apa? Soalnya Rekomendasi Gemini Pakai arm64-v8a Dari Github 🗿
+ 
+Ya sambungin aja astaga pke token cl
+ 
+Pilih yg Debian
+ 
+Tp saran ku, itu apk mu tambahkan auto install requirement nya.. Nnti otomatis ng install cf nya
+ 
+Klo kita install sndiri cf nya di HP ya ngapain pke apk. Langsung aja pke termux
+ 
+debian
+ 
+Klo di termux kan sisa install cf, masukkan token, udh konek
+ 
+Pke nya itu cf zerotrust. Atau tunnel
+ 
+Namanya skrg zerotrust
+ 
+Klo dashboard cf mu versi lama, namanya tunnel. Di menu network
+ 
+Klo dashboard cf tampilan terbaru, namanya zerotrust
+ 
+Nnti ada tokennya disana
+ 
+Klo pke termux sisa ketik pkg install clouflared
+ 
+Nnti sisa konek pke token
+ 
+Ini config ku dulu
+ 
+Itu otomatis start hosting di hp
+ 
+Jadi saat HP hidup, smua sistem otomatis jalan
+ 
+Kyk mariadb, tunnel, dll.
+ 
+Ttyd itu untuk kyk ssh nya, yang Penyimpanan Download Binary Cloudflare Ubah Ke /storage/emulated/0/Download/SFR Host Aja Otomatis Buat Folder Host, Sebelum Mendownload Harus Izin Akses Dulu Atau Apake Biar Bisa Kesimpen Kayak Zachiver, Hosting Dan Domain Bisa Dinyalakan Barengan Asal Hp Kuat Aja, Tambahkan Fitur Jika HP Panas Otomatis Stop Hosting Yang Berjalan Menjadi 1 Saja, Jika Panas Berlebih Matikan Total (On/Off), Dan Ini Tunnel Token Bukan Base64 Yang Penting Terhubung Berarti Token Benar, Masa Token Benar Disalahin Njir, Dan Banyak Fitur Dummy Coba Cek  Semua Fitur Dan Solusinya, Dan Wajib Verifikasi, Nyala Matikan Pin/Sidik Jari Wajib Pin/Sidik Jari Baru Bisa Dinyalakan Dan Dimatikan Serta Fitur Anti Screenshot, Dan Masih Banyak Fitur Yang Gak Berguna Fungsi Dummy, Dan Banyak Fitur Yang Kurang Dan Masih Error, Cek Semua Tanpa Terkecuali, Siap, bro! 🗿🔥 Dari screenshot dan penjelasan yang lu kasih, masalahnya bukan cuma Cloudflare Tunnel gagal tersambung. Lu butuh **audit total aplikasi SFR Host Android**, mulai dari instalasi binary `cloudflared`, koneksi Cloudflare Zero Trust, pengelolaan hosting lokal, keamanan aplikasi, sampai fitur-fitur dummy yang kelihatannya berfungsi tetapi sebenarnya belum bekerja.
+ 
+Ada beberapa hal penting yang wajib diperhatikan sebelum menyusun prompt untuk AI Studio.
+ 
+### 🔍 Masalah utama yang harus diselesaikan
+ 
+
+|Masalah|Analisis awal|Solusi yang harus diterapkan|
+|---|---|---|
+|`Permission denied (error=13)`|Android gagal mengeksekusi binary dari direktori privat aplikasi. Penyebab pastinya perlu diperiksa.|Audit izin eksekusi, kompatibilitas binary, kebijakan Android, dan lokasi penyimpanan. Jangan hanya mengunduh ulang binary.|
+|Arsitektur `arm64-v8a`|Arsitektur tersebut sesuai untuk banyak HP Android 64-bit, tetapi belum menjamin binary dapat dijalankan.|Periksa ABI perangkat, format ELF, dependensi, dan kompatibilitas sistem.|
+|Token Cloudflare dianggap tidak valid|Validasi aplikasi kemungkinan mengasumsikan token harus berupa Base64.|Hapus asumsi format yang keliru. Validasi token melalui hasil autentikasi dan koneksi `cloudflared` yang sebenarnya.|
+|Binary Cloudflare|Proses pengunduhan dan pemasangan belum tentu berjalan dengan benar.|Unduh binary resmi yang sesuai, verifikasi integritasnya, lalu uji eksekusinya.|
+|Penyimpanan binary|Lu ingin file tersimpan di folder Download/SFR Host.|Terapkan pemilihan folder melalui Android Storage Access Framework dan minta izin akses yang sesuai.|
+|Hosting dan tunnel|Lu ingin beberapa layanan berjalan bersamaan.|Gunakan pengelola proses dan layanan dengan status aktual, pemantauan kesehatan, serta penghentian yang terkoordinasi.|
+|HP terlalu panas|Lu ingin mengurangi beban secara otomatis.|Pantau suhu yang tersedia dari Android, hentikan layanan secara bertahap, dan sediakan penghentian darurat jika diperlukan.|
+|PIN dan sidik jari|Pengaturan keamanan harus benar-benar melindungi tindakan penting.|Gunakan autentikasi Android yang nyata, bukan tombol verifikasi palsu.|
+|Anti-screenshot|Lu ingin layar sensitif tidak dapat ditangkap.|Terapkan `FLAG_SECURE` pada layar yang dilindungi dan periksa seluruh jalur pengambilan gambar yang relevan.|
+|Fitur dummy|Tombol atau pengaturan mungkin hanya mengubah tampilan.|Telusuri setiap fitur dari UI sampai implementasi, proses, penyimpanan, dan hasil aktualnya.|
+ 
+**Catatan penting:** Jangan langsung menyimpulkan token Cloudflare salah hanya karena pemeriksaan format Base64 gagal. Token tunnel harus diperlakukan sesuai mekanisme autentikasi Cloudflare. Pesan kesalahan yang tepat harus berasal dari proses yang benar-benar dijalankan.
+ 
+Selain itu, gw sudah memeriksa beberapa bagian dari ZIP proyek `sfr-host-main (3).zip`. Ada temuan konkret yang perlu dimasukkan ke prompt:
+ 
+- `CloudflareTunnelRunner.kt` memang memvalidasi token dengan mendekode Base64 dan mencari field JSON `a`, `t`, dan `s`. Validasi ini terlalu mengikat pada asumsi format token dan harus dirancang ulang.
+- Binary disimpan di `context.filesDir/bin/cloudflared`. Pemeriksaan `canExecute()` dan pemanggilan `setExecutable(true, false)` belum menjamin Android mengizinkan binary tersebut dieksekusi.
+- Aplikasi sudah memiliki `AppLockManager.kt`, tetapi implementasi autentikasi, alur pengaktifan dan penonaktifan, serta penerapannya di setiap fitur sensitif masih perlu diaudit.
+- `BootReceiver.kt` yang diperiksa menjadwalkan sinkronisasi notifikasi, bukan otomatis menyalakan hosting dan Cloudflare Tunnel. Perlu diperiksa apakah fungsi auto-start sudah benar-benar diimplementasikan di tempat lain.
+- Dokumentasi README menyebut sejumlah fitur yang harus dibuktikan implementasinya, bukan langsung dianggap sudah berfungsi.
+
+ 
+Sekarang, ini prompt lengkap yang bisa langsung lu tempel ke **Google AI Studio** bersama proyek ZIP tersebut. Gw susun supaya AI tidak sekadar mempercantik UI, melainkan mengaudit source code, memperbaiki implementasi, dan menguji hasilnya.
+ 
+## 🚀 PROMPT MASTER AI STUDIO — SFR HOST ANDROID FULL AUDIT &amp; REBUILD
+ 
+Salin seluruh prompt berikut.
+ 
+# MASTER PROMPT: SFR HOST ANDROID — COMPLETE SOURCE CODE AUDIT, DEBUGGING, SECURITY HARDENING, DAN FEATURE IMPLEMENTATION
+ 
+## 1. PERAN DAN TANGGUNG JAWAB
+ 
+Bertindaklah sebagai Senior Android Engineer, Kotlin Engineer, Linux/Android Runtime Engineer, DevOps Engineer, Cloudflare Tunnel Specialist, Application Security Engineer, QA Automation Engineer, dan Software Architect.
+ 
+Saya memberikan source code proyek Android bernama **SFR Host** dalam bentuk ZIP.
+ 
+Tugas Anda adalah melakukan audit menyeluruh terhadap proyek yang diberikan, mengidentifikasi seluruh bug dan implementasi yang belum lengkap, memperbaiki kesalahan nyata, mengimplementasikan fitur yang masih dummy, meningkatkan keamanan aplikasi, serta memastikan semua fitur terhubung ke implementasi yang benar.
+ 
+Jangan hanya memberikan saran, tutorial, contoh kode, atau potongan kode terpisah.
+ 
+Saya membutuhkan perubahan nyata pada source code proyek.
+ 
+Prioritas utama:
+ 
+1. Memperbaiki Cloudflare Tunnel agar dapat berjalan secara nyata di Android.
+2. Menghapus validasi token yang salah.
+3. Memperbaiki proses instalasi, penyimpanan, dan eksekusi binary cloudflared.
+4. Mengimplementasikan pengelolaan web hosting Android yang sebenarnya.
+5. Memungkinkan hosting dan Cloudflare Tunnel berjalan bersamaan.
+6. Mengimplementasikan monitoring suhu dan perlindungan perangkat.
+7. Memperbaiki sistem PIN, pola, sandi perangkat, dan biometrik.
+8. Mengimplementasikan perlindungan screenshot untuk layar sensitif.
+9. Mengaudit seluruh fitur dummy, tombol yang tidak berfungsi, data palsu, dan fungsi yang belum terhubung.
+10. Memastikan seluruh proyek dapat dibangun menjadi APK tanpa error.
+
+ 
+**Aturan utama: Jangan menyatakan suatu fitur berhasil sebelum implementasinya diperiksa dan hasilnya dapat dibuktikan.**
+ 
+Jangan mengarang hasil pengujian. Jika suatu pengujian tidak dapat dilakukan dalam lingkungan Anda, jelaskan keterbatasannya dan berikan langkah pengujian yang dapat direproduksi.
+ 
+***
+ 
+# 2. INFORMASI PROYEK
+ 
+Nama aplikasi: SFR Host.
+ 
+Application ID yang tercantum: com.sfrhostapp
+ 
+Namespace proyek: com.example
+ 
+Bahasa: Kotlin.
+ 
+UI: Jetpack Compose dan Material 3.
+ 
+Target penggunaan: Mengubah HP Android menjadi server hosting web yang dapat diakses dari jaringan publik menggunakan Cloudflare Tunnel.
+ 
+Fitur yang dituju meliputi:
+ 
+- Web server lokal.
+- PHP execution engine.
+- Pengelolaan file website.
+- Pengelolaan database.
+- Pengelolaan domain.
+- Cloudflare Tunnel.
+- Konfigurasi custom domain.
+- Pengaturan keamanan.
+- PIN dan autentikasi biometrik.
+- Auto reconnect.
+- Background service.
+- Monitoring resource perangkat.
+- Pengelolaan proses hosting.
+- Access logs.
+- Analytics.
+- DNS dan SSL/TLS management.
+- Notifikasi.
+- Pengaturan otomatisasi.
+- Developer tools.
+
+ 
+Source code sudah diberikan dalam arsip ZIP.
+ 
+Jangan mengasumsikan semua fitur dalam daftar tersebut sudah selesai. Periksa implementasi aktualnya.
+ 
+Jangan mengganti keseluruhan proyek dengan aplikasi contoh baru.
+ 
+Pertahankan identitas, arsitektur yang masih layak, fitur yang telah berfungsi, desain yang relevan, dan kompatibilitas antarkomponen.
+ 
+Lakukan refactoring jika diperlukan, tetapi hindari perubahan yang tidak berhubungan dengan perbaikan masalah.
+ 
+***
+ 
+# 3. MASALAH CLOUDflare TUNNEL YANG WAJIB DIPERBAIKI
+ 
+Saat ini aplikasi menampilkan error seperti berikut:
+ 
+Cannot run program "/data/user/0/com.sfrhostapp/files/bin/cloudflared": error=13, Permission denied
+ 
+Error terjadi saat aplikasi mencapai tahap pengujian eksekusi binary.
+ 
+Aplikasi juga menampilkan pesan:
+ 
+Token tidak valid: Bukan Base64 terenkripsi yang sesuai.
+ 
+Padahal token berasal dari dashboard Cloudflare Zero Trust.
+ 
+Pada dashboard Cloudflare, tunnel bernama hp-sfrhost telah dibuat dan memiliki public hostname:
+ 
+sfrhost-test.septianfr.web.id
+ 
+Tunnel tersebut menggunakan mode remotely managed dan memerlukan connector cloudflared yang berjalan pada perangkat Android.
+ 
+Tujuan akhirnya adalah menjalankan connector tersebut secara langsung di HP Android sehingga website yang di-host di HP dapat diakses melalui domain yang dikonfigurasi pada Cloudflare.
+ 
+Jangan menggunakan informasi dashboard di atas sebagai bukti bahwa connector telah berhasil terhubung. Status koneksi harus diperiksa secara nyata.
+ 
+## 3.1. Audit seluruh CloudflareTunnelRunner.kt
+ 
+Periksa seluruh implementasi:
+ 
+- validateToken().
+- startTunnel().
+- stopTunnel().
+- importCustomBinary().
+- Proses pengunduhan.
+- Verifikasi integritas.
+- Pengaturan permission.
+- Pengujian binary.
+- Pembacaan stdout dan stderr.
+- Parsing status koneksi.
+- Penanganan process exit.
+- Auto reconnect.
+- Pengelolaan coroutine.
+- Pembatalan proses.
+- Sanitasi log.
+- Penyimpanan token.
+- Penanganan error.
+- Status instalasi.
+- Status koneksi.
+
+ 
+Jangan hanya memperbaiki fungsi validateToken() lalu mengabaikan masalah eksekusi binary.
+ 
+## 3.2. Perbaiki validasi token Cloudflare
+ 
+Hapus asumsi bahwa setiap token Cloudflare harus melewati validasi Base64 yang dibuat oleh aplikasi.
+ 
+Implementasi saat ini mendekode token menjadi JSON dan memeriksa field a, t, dan s. Jika format token tidak sesuai dengan asumsi tersebut, aplikasi langsung menolaknya.
+ 
+Perilaku tersebut harus diperbaiki.
+ 
+Persyaratan:
+ 
+1. Token kosong boleh ditolak.
+2. Jangan mewajibkan token lolos parser Base64 buatan aplikasi sebagai syarat utama.
+3. Jangan mewajibkan token memiliki field JSON tertentu tanpa dasar dokumentasi resmi yang sesuai dengan jenis token yang digunakan.
+4. Terima token mentah dari dashboard Cloudflare Zero Trust sebagai input.
+5. Simpan token secara aman.
+6. Jangan menampilkan token lengkap dalam log.
+7. Jangan mengirim token ke layanan pihak ketiga yang tidak diperlukan.
+8. Jangan menganggap token valid hanya karena format input terlihat benar.
+9. Jangan menganggap token salah hanya karena format input tidak sesuai dengan asumsi aplikasi.
+10. Validasi autentikasi melalui proses cloudflared dan hasil koneksi yang sebenarnya.
+
+ 
+Jika token gagal digunakan, bedakan secara jelas:
+ 
+- Token kosong.
+- Token ditolak oleh Cloudflare.
+- Token kedaluwarsa atau telah dicabut, jika dapat dibuktikan.
+- Koneksi internet tidak tersedia.
+- DNS gagal.
+- Binary gagal dieksekusi.
+- Binary tidak kompatibel.
+- Koneksi ke Cloudflare Edge gagal.
+- Connector keluar secara tidak terduga.
+
+ 
+Jangan menyatakan token kedaluwarsa jika bukti yang tersedia hanya menunjukkan kegagalan koneksi.
+ 
+Gunakan dokumentasi resmi Cloudflare untuk memverifikasi mekanisme token remotely managed tunnel.
+ 
+Jangan menampilkan token asli pada laporan, screenshot, log, atau pesan debug.
+ 
+## 3.3. Audit arsitektur Android
+ 
+Aplikasi mendeteksi arsitektur:
+ 
+arm64-v8a
+ 
+Namun, arsitektur tersebut saja tidak menjamin binary kompatibel.
+ 
+Periksa:
+ 
+- Build.SUPPORTED\_ABIS.
+- Android CPU ABI.
+- Format ELF binary.
+- Bitness binary.
+- Interpreter dan dynamic linker.
+- Dependensi native.
+- Kompatibilitas libc.
+- Versi minimum Android.
+- Dukungan syscall.
+- Kebutuhan runtime tambahan.
+- Dukungan eksekusi dari lokasi penyimpanan.
+- Kebijakan keamanan Android.
+
+ 
+Jangan hanya menyimpulkan bahwa error permission denied disebabkan oleh arsitektur.
+ 
+Bedakan error:
+ 
+- Permission denied.
+- Exec format error.
+- No such file or directory.
+- Library not found.
+- Exit code 126.
+- Exit code 127.
+- Proses crash.
+- Kegagalan autentikasi Cloudflare.
+
+ 
+Setiap kategori harus memiliki penanganan dan pesan error yang sesuai.
+ 
+## 3.4. Audit lokasi binary dan kebijakan eksekusi
+ 
+Lokasi binary saat ini:
+ 
+context.filesDir/bin/cloudflared
+ 
+Periksa apakah aplikasi dapat mengeksekusi binary native dari lokasi tersebut pada perangkat dan versi Android yang ditargetkan.
+ 
+Jangan berasumsi bahwa File.canExecute() menjamin eksekusi berhasil.
+ 
+Jangan berasumsi bahwa File.setExecutable(true, false) selalu berhasil.
+ 
+Periksa nilai kembalian, kondisi filesystem, dan hasil pengujian eksekusi.
+ 
+Pertimbangkan bahwa Android dapat membatasi eksekusi file dari lokasi tertentu melalui kebijakan keamanan dan mount option.
+ 
+Jika penyebabnya adalah kebijakan eksekusi pada direktori tersebut, rancang solusi yang kompatibel dengan Android dan tidak bergantung pada root.
+ 
+Jangan meminta pengguna menonaktifkan SELinux, merusak kebijakan keamanan Android, atau melakukan root hanya untuk menjalankan aplikasi.
+ 
+Jangan mengunduh binary acak dari GitHub.
+ 
+Gunakan sumber resmi dan versi yang dapat diverifikasi.
+ 
+Jika binary Linux biasa tidak dapat berjalan pada Android, jelaskan penyebabnya dan pilih strategi implementasi yang benar-benar kompatibel.
+ 
+## 3.5. Pilihan runtime: native Android, Termux, atau Debian
+ 
+Evaluasi secara objektif tiga pendekatan berikut:
+ 
+A. Menjalankan cloudflared secara langsung melalui binary native yang kompatibel dengan Android.
+ 
+B. Menjalankan cloudflared melalui lingkungan Termux.
+ 
+C. Menjalankan cloudflared melalui lingkungan Debian/proot jika memang dibutuhkan.
+ 
+Jangan menganggap ketiganya memiliki perilaku yang sama.
+ 
+Periksa kebutuhan:
+ 
+- Dynamic linker.
+- Shared library.
+- Filesystem.
+- Process execution.
+- Izin aplikasi.
+- Lifecycle proses.
+- Background execution.
+- Kebutuhan root.
+- Kompatibilitas Android.
+- Penggunaan RAM dan penyimpanan.
+
+ 
+Utamakan solusi native yang dapat dipelihara dan berjalan tanpa root apabila memungkinkan.
+ 
+Jika harus menggunakan Termux atau lingkungan Linux lain, jelaskan bahwa integrasi tersebut memerlukan instalasi, konfigurasi, dan pengelolaan runtime tambahan.
+ 
+Jangan mengklaim aplikasi otomatis menginstal semua dependensi jika implementasinya belum ada.
+ 
+Jangan menjalankan perintah shell yang berasal dari input pengguna tanpa validasi dan pembatasan yang sesuai.
+ 
+***
+ 
+# 4. FITUR INSTALASI OTOMATIS CLOUDFLARED
+ 
+Saya ingin aplikasi menangani instalasi cloudflared secara otomatis tanpa memaksa pengguna memasang binary secara manual setiap kali.
+ 
+Implementasikan alur instalasi berikut:
+ 
+Tahap 1: Memeriksa perangkat.
+ 
+Tahap 2: Mendeteksi ABI.
+ 
+Tahap 3: Memeriksa versi Android dan kompatibilitas runtime.
+ 
+Tahap 4: Memeriksa kebutuhan instalasi.
+ 
+Tahap 5: Memeriksa apakah binary yang kompatibel sudah tersedia.
+ 
+Tahap 6: Mengunduh binary resmi jika diperlukan.
+ 
+Tahap 7: Menampilkan progres unduhan berdasarkan jumlah byte aktual.
+ 
+Tahap 8: Memverifikasi integritas binary.
+ 
+Tahap 9: Memasang binary pada lokasi yang sesuai.
+ 
+Tahap 10: Memeriksa izin dan kelayakan eksekusi.
+ 
+Tahap 11: Menjalankan pemeriksaan versi binary.
+ 
+Tahap 12: Menguji apakah proses dapat dijalankan.
+ 
+Tahap 13: Menampilkan hasil pengujian yang sebenarnya.
+ 
+Tahap 14: Menyimpan informasi versi, sumber, dan hasil verifikasi.
+ 
+Tahap 15: Memungkinkan pengguna memulai koneksi tunnel.
+ 
+Jangan membuat progres palsu.
+ 
+Jangan menampilkan 100% jika file belum selesai diverifikasi.
+ 
+Jangan menampilkan status berhasil hanya karena unduhan selesai.
+ 
+Jika pengunduhan gagal, berikan tombol coba lagi.
+ 
+Jika file korup, hapus file yang tidak valid dan jelaskan penyebabnya.
+ 
+Jika kompatibilitas gagal, jangan terus-menerus mengulangi proses unduhan yang sama.
+ 
+Tambahkan timeout, pembatalan, retry terbatas, dan penanganan koneksi terputus.
+ 
+Gunakan mekanisme unduhan yang aman.
+ 
+Jika sumber menyediakan checksum atau signature resmi, verifikasi sesuai mekanisme yang tersedia.
+ 
+Jangan membuat checksum yang tidak berasal dari sumber tepercaya.
+ 
+Jangan mematikan verifikasi TLS.
+ 
+Jangan mengizinkan binary yang belum terverifikasi dieksekusi.
+ 
+***
+ 
+# 5. LOKASI PENYIMPANAN BINARY DAN FILE HOSTING
+ 
+Saya ingin file terkait SFR Host mudah ditemukan melalui file manager Android.
+ 
+Lokasi target yang diinginkan:
+ 
+/storage/emulated/0/Download/SFR Host/
+ 
+Struktur folder yang diharapkan:
+ 
+Download/ └── SFR Host/ ├── bin/ │   └── cloudflared ├── websites/ │   ├── website1/ │   │   └── public\_html/ │   └── website2/ │       └── public\_html/ ├── logs/ ├── backups/ ├── exports/ └── config/
+ 
+Namun, jangan memaksakan seluruh file aplikasi disimpan di folder publik apabila hal itu bertentangan dengan keamanan atau kebijakan Android.
+ 
+Pisahkan dengan jelas:
+ 
+- Binary yang aman disimpan secara publik.
+- Binary yang harus dieksekusi dari lokasi privat.
+- File website publik.
+- Konfigurasi rahasia.
+- Token Cloudflare.
+- File database.
+- Log.
+- Backup.
+- File sementara.
+
+ 
+Jangan pernah menyimpan token Cloudflare dalam direktori publik.
+ 
+Jangan menjadikan folder publik sebagai tempat penyimpanan rahasia.
+ 
+## 5.1. Permintaan izin penyimpanan
+ 
+Sebelum mengakses folder Download/SFR Host, aplikasi harus meminta akses yang diperlukan melalui mekanisme Android yang sesuai.
+ 
+Gunakan Storage Access Framework jika sesuai, termasuk pemilihan folder oleh pengguna.
+ 
+Jika aplikasi memerlukan akses khusus untuk mengelola file, jelaskan kebutuhan dan batasannya secara transparan.
+ 
+Jangan hanya menambahkan MANAGE\_EXTERNAL\_STORAGE lalu menganggap semua akses pasti berhasil.
+ 
+Jangan meminta izin yang tidak diperlukan.
+ 
+Setelah pengguna memberikan izin:
+ 
+1. Buat folder SFR Host jika belum tersedia.
+2. Buat subfolder yang dibutuhkan.
+3. Periksa apakah folder benar-benar berhasil dibuat.
+4. Simpan URI atau referensi folder jika menggunakan SAF.
+5. Periksa kembali akses setelah aplikasi dimulai ulang.
+6. Tampilkan lokasi penyimpanan yang benar.
+7. Tangani izin yang dicabut.
+8. Tangani penyimpanan penuh.
+9. Tangani kegagalan menulis file.
+
+ 
+Jika folder tidak dapat diakses, tampilkan penjelasan dan opsi memilih lokasi lain.
+ 
+Jangan mengklaim binary berhasil disimpan di Download/SFR Host jika sebenarnya berada di context.filesDir.
+ 
+Tampilkan lokasi aktual.
+ 
+Perhatikan bahwa file dalam penyimpanan bersama belum tentu dapat dieksekusi langsung. Pisahkan lokasi distribusi file dari lokasi runtime jika dibutuhkan.
+ 
+***
+ 
+# 6. INTEGRASI CLOUDFLARE ZERO TRUST
+ 
+Saya sudah membuat tunnel bernama hp-sfrhost pada Cloudflare.
+ 
+Public hostname yang dikonfigurasi:
+ 
+sfrhost-test.septianfr.web.id
+ 
+Tunnel harus mengarahkan request ke web server lokal yang sedang berjalan pada HP.
+ 
+Jangan mengasumsikan port lokal selalu 8080 tanpa memeriksa konfigurasi aplikasi.
+ 
+Buat konfigurasi origin yang konsisten antara web server dan tunnel.
+ 
+Periksa:
+ 
+- Port web server.
+- Alamat bind.
+- Protokol HTTP atau HTTPS.
+- Public hostname.
+- Service URL.
+- Status tunnel.
+- Status origin.
+- Koneksi jaringan.
+- Log connector.
+- Respons website dari jaringan eksternal.
+
+ 
+Jangan membuat API token Cloudflare yang memiliki izin berlebihan.
+ 
+Untuk remotely managed tunnel, gunakan token tunnel yang sesuai dengan connector tersebut.
+ 
+Jangan meminta Global API Key jika tidak diperlukan.
+ 
+Jangan menyimpan token dalam source code, BuildConfig, repository, atau file konfigurasi publik.
+ 
+## 6.1. Status tunnel yang nyata
+ 
+Status tunnel harus mencerminkan keadaan proses aktual.
+ 
+Sediakan status:
+ 
+- Belum terpasang.
+- Memeriksa binary.
+- Mengunduh.
+- Memverifikasi.
+- Siap dijalankan.
+- Memulai proses.
+- Menghubungkan.
+- Terhubung.
+- Menyambungkan ulang.
+- Terputus.
+- Autentikasi gagal.
+- Origin tidak tersedia.
+- Proses berhenti.
+- Error runtime.
+
+ 
+Jangan mengubah status menjadi CONNECTED hanya karena proses berhasil dimulai.
+ 
+Jangan hanya memeriksa apakah proses masih hidup.
+ 
+Gunakan bukti koneksi yang sesuai dengan output versi cloudflared yang digunakan.
+ 
+Validasi bahwa status koneksi tetap diperbarui setelah:
+ 
+- Internet mati.
+- Internet kembali.
+- Wi-Fi berpindah ke data seluler.
+- Data seluler berpindah ke Wi-Fi.
+- HP memasuki mode hemat daya.
+- Web server berhenti.
+- Tunnel berhenti.
+- Aplikasi dibuka kembali.
+
+ 
+Jika koneksi gagal, berikan informasi yang membantu pengguna menemukan sumber masalah.
+ 
+## 6.2. Auto reconnect
+ 
+Fitur reconnect harus benar-benar bekerja.
+ 
+Ketika koneksi terputus:
+ 
+1. Deteksi kegagalan.
+2. Periksa apakah pengguna masih mengaktifkan auto reconnect.
+3. Pastikan tidak ada proses tunnel duplikat.
+4. Terapkan retry dengan jeda bertahap.
+5. Gunakan batas retry atau kebijakan retry yang masuk akal.
+6. Reset jeda setelah koneksi berhasil.
+7. Berhenti mencoba ketika pengguna menonaktifkan tunnel.
+8. Hentikan retry ketika perlindungan suhu mematikan layanan.
+9. Tampilkan status yang benar.
+10. Jangan menyimpan token ke dalam log.
+
+ 
+Pastikan penghentian manual tidak menyebabkan tunnel otomatis hidup kembali beberapa detik kemudian.
+ 
+***
+ 
+# 7. WEB HOSTING LOKAL YANG BENAR-BENAR BERFUNGSI
+ 
+SFR Host harus mengoperasikan server web pada HP Android.
+ 
+Audit seluruh komponen server, terutama:
+ 
+- SfrServerService.kt.
+- SfrHttpServer.kt.
+- PhpExecutionEngine.kt.
+- FileManager.kt.
+- WebsitesScreen.kt.
+- HostingAndFilesScreen.kt.
+- WebServerPhpScreen.kt.
+- DomainManager.kt.
+- DatabaseManager.kt.
+- HtaccessManager.kt.
+- DefaultWebPages.kt.
+
+ 
+Periksa apakah setiap komponen benar-benar melakukan tugasnya atau hanya menampilkan UI.
+ 
+## 7.1. Web server
+ 
+Pastikan server:
+ 
+- Memulai proses dengan benar.
+- Menggunakan port yang dapat dikonfigurasi.
+- Menghindari port conflict.
+- Mengikat alamat sesuai kebutuhan.
+- Menangani HTTP request.
+- Mengembalikan HTTP response yang benar.
+- Melayani HTML, CSS, JavaScript, gambar, dan file statis.
+- Mengatur MIME type.
+- Menangani 404.
+- Menangani 403.
+- Menangani 500.
+- Menangani request malformed.
+- Memiliki batas ukuran request.
+- Tidak mengakses direktori di luar document root.
+- Tidak membuka direktori rahasia kepada publik.
+- Tidak crash ketika banyak request diterima.
+- Menutup socket ketika server dihentikan.
+- Menghentikan worker secara terkoordinasi.
+
+ 
+Periksa traversal seperti ../ dan encoded path traversal.
+ 
+Jangan membiarkan pengunjung mengakses token, database internal, konfigurasi rahasia, atau file sistem Android.
+ 
+## 7.2. Pengelolaan banyak website
+ 
+Saya ingin beberapa website dapat dikelola dalam satu aplikasi.
+ 
+Setiap website memiliki:
+ 
+- Nama.
+- Document root.
+- Folder public\_html.
+- Port atau aturan routing yang sesuai.
+- Status.
+- Domain.
+- Konfigurasi.
+- Access logs.
+- Backup.
+- Pengaturan PHP jika tersedia.
+
+ 
+Jika memungkinkan, dukung virtual host berdasarkan hostname.
+ 
+Jangan membuat klaim bahwa banyak domain bekerja jika seluruh request masih diarahkan ke satu folder tanpa routing yang benar.
+ 
+Pastikan konfigurasi domain lokal dan public hostname Cloudflare tidak saling bertentangan.
+ 
+## 7.3. PHP
+ 
+Audit implementasi PHP yang sudah ada.
+ 
+Jangan menampilkan label PHP aktif jika aplikasi sebenarnya hanya menyajikan file statis.
+ 
+Jika PHP belum benar-benar didukung, jelaskan komponen runtime yang diperlukan dan implementasikan solusi yang kompatibel dengan Android.
+ 
+Periksa:
+ 
+- Versi PHP aktual.
+- ABI dan runtime.
+- Dependensi.
+- Eksekusi script.
+- Request environment.
+- POST dan GET.
+- Query string.
+- Request body.
+- Content-Type.
+- Cookie.
+- Session.
+- Upload file.
+- Output buffering.
+- Error handling.
+- Timeout.
+- Batas memori.
+- Akses filesystem.
+- Batas ukuran upload.
+- Keamanan eksekusi.
+
+ 
+Jangan menjalankan file PHP melalui eval buatan sendiri.
+ 
+Jangan mengeksekusi kode yang diunggah oleh pengguna lain tanpa mempertimbangkan risiko keamanan.
+ 
+Jangan memberikan akses PHP tanpa batas terhadap filesystem perangkat.
+ 
+Jika suatu fitur tidak dapat didukung pada runtime yang dipilih, tampilkan status tidak didukung beserta alasan yang benar.
+ 
+## 7.4. Database
+ 
+Audit fitur database dan DatabaseManager.kt.
+ 
+Pastikan setiap tombol database memiliki fungsi nyata.
+ 
+Jika aplikasi mengklaim mendukung MariaDB atau MySQL, verifikasi bahwa server database benar-benar tersedia dan dapat dijalankan di Android.
+ 
+Jangan menganggap SQLite sama dengan MariaDB.
+ 
+Jika menggunakan SQLite, tampilkan informasi SQLite secara jelas.
+ 
+Jika membutuhkan runtime MariaDB terpisah, implementasikan pengelolaan runtime yang aman dan kompatibel atau jelaskan bahwa fitur tersebut belum dapat digunakan.
+ 
+Periksa:
+ 
+- Start dan stop database.
+- Port.
+- Status proses.
+- Kredensial.
+- Pembuatan database.
+- Backup.
+- Restore.
+- Koneksi PHP.
+- Error log.
+- Penyimpanan.
+- Recovery setelah aplikasi berhenti.
+
+ 
+Jangan menyimpan password database dalam log.
+ 
+***
+ 
+# 8. HOSTING DAN TUNNEL BERJALAN BERSAMAAN
+ 
+Saya ingin web server dan Cloudflare Tunnel dapat berjalan bersamaan selama kemampuan HP mencukupi.
+ 
+Contoh:
+ 
+Web Server: RUNNING
+ 
+PHP Runtime: RUNNING jika diperlukan
+ 
+Database: RUNNING jika diperlukan
+ 
+Cloudflare Tunnel: CONNECTED
+ 
+Website: PUBLIC
+ 
+Aplikasi tidak boleh menganggap semua layanan harus berjalan satu per satu.
+ 
+Namun, jangan memaksakan semua layanan berjalan ketika RAM, suhu, baterai, atau resource perangkat tidak memadai.
+ 
+Implementasikan pengelola layanan terpusat.
+ 
+Setiap layanan harus memiliki:
+ 
+- Status aktual.
+- Status yang diinginkan.
+- Proses atau service reference.
+- Waktu mulai.
+- Waktu berhenti.
+- Health check.
+- Error state.
+- Kebijakan restart.
+- Batas resource yang relevan.
+- Alasan penghentian.
+
+ 
+Buat aturan dependensi.
+ 
+Contoh:
+ 
+- Tunnel membutuhkan origin yang sesuai jika tujuannya adalah mengakses website.
+- PHP membutuhkan runtime PHP yang kompatibel.
+- Website statis tidak wajib menjalankan PHP.
+- Website yang tidak menggunakan database tidak wajib menjalankan database.
+
+ 
+Ketika tombol START ALL ditekan:
+ 
+1. Periksa kondisi perangkat.
+2. Periksa konfigurasi.
+3. Periksa dependensi.
+4. Mulai layanan sesuai urutan.
+5. Tunggu health check.
+6. Lanjutkan ke layanan berikutnya.
+7. Hentikan proses yang sudah dimulai jika startup gagal dan rollback diperlukan.
+8. Tampilkan layanan mana yang berhasil dan mana yang gagal.
+
+ 
+Ketika tombol STOP ALL ditekan:
+ 
+1. Hentikan penerimaan pekerjaan baru jika diperlukan.
+2. Hentikan tunnel.
+3. Hentikan layanan yang bergantung pada tunnel sesuai kebijakan.
+4. Hentikan web server.
+5. Hentikan database dan runtime lain jika dipilih.
+6. Pastikan proses benar-benar berhenti.
+7. Perbarui UI.
+
+ 
+Sediakan juga START dan STOP untuk masing-masing layanan.
+ 
+Jangan membuat satu tombol yang hanya mengubah boolean status tanpa mengendalikan service sebenarnya.
+ 
+***
+ 
+# 9. MONITORING SUHU DAN PERLINDUNGAN HP
+ 
+Saya ingin aplikasi memiliki sistem perlindungan perangkat saat hosting berjalan.
+ 
+Tujuan:
+ 
+- Mencegah beban berlebihan.
+- Mengurangi risiko overheating.
+- Menghindari crash akibat resource tidak mencukupi.
+- Menghentikan layanan secara otomatis jika diperlukan.
+
+ 
+Jangan membuat angka suhu palsu.
+ 
+Jangan menggunakan random number untuk membuat grafik CPU, RAM, baterai, atau suhu.
+ 
+Gunakan data aktual yang tersedia dari Android.
+ 
+Periksa Android PowerManager, BatteryManager, thermal status API, dan sumber informasi lain yang relevan.
+ 
+Perhatikan bahwa akses pembacaan suhu baterai tidak sama dengan pengukuran suhu CPU.
+ 
+Jangan mengklaim membaca suhu CPU jika perangkat hanya menyediakan suhu baterai.
+ 
+## 9.1. Sistem tingkat suhu
+ 
+Buat tingkat perlindungan yang dapat dikonfigurasi.
+ 
+Contoh desain:
+ 
+NORMAL: Layanan berjalan seperti biasa.
+ 
+WARM: Tampilkan peringatan dan kurangi pekerjaan yang tidak penting.
+ 
+HOT: Hentikan pekerjaan berat yang tidak esensial dan kurangi beban.
+ 
+CRITICAL: Hentikan layanan hosting secara terkoordinasi untuk melindungi perangkat.
+ 
+EMERGENCY: Jika kondisi perangkat benar-benar memerlukan penghentian, matikan layanan yang dikelola aplikasi dan cegah restart otomatis selama kondisi kritis masih berlangsung.
+ 
+Ambang batas harus ditentukan berdasarkan sumber data yang tersedia, kemampuan perangkat, dan API Android. Jangan mengarang ambang universal yang cocok untuk semua HP.
+ 
+Utamakan thermal status resmi Android apabila tersedia.
+ 
+Jika data suhu tidak tersedia, jangan menyatakan bahwa sistem telah mengukur suhu secara akurat.
+ 
+## 9.2. Prioritas penghentian layanan
+ 
+Saya ingin ketika HP panas, jumlah layanan yang berjalan dapat dikurangi.
+ 
+Implementasikan prioritas yang jelas.
+ 
+Contoh:
+ 
+1. Hentikan pekerjaan latar belakang yang tidak penting.
+2. Hentikan proses berat yang tidak dibutuhkan.
+3. Kurangi aktivitas database jika aman.
+4. Hentikan hosting jika kondisi tetap memburuk.
+5. Hentikan tunnel apabila origin tidak tersedia atau ketika shutdown memerlukannya.
+6. Pertahankan aplikasi dalam keadaan aman.
+
+ 
+Urutan akhir harus mempertimbangkan dependensi layanan yang benar-benar digunakan.
+ 
+Jangan membiarkan tunnel terus-menerus reconnect ketika hosting sengaja dihentikan akibat suhu kritis.
+ 
+## 9.3. Kontrol On/Off perlindungan
+ 
+Sediakan pengaturan:
+ 
+- Aktifkan perlindungan suhu.
+- Nonaktifkan perlindungan suhu.
+- Pilih perilaku saat panas.
+- Lihat status thermal.
+- Lihat alasan layanan dihentikan.
+- Lihat riwayat kejadian.
+- Atur pemulihan otomatis.
+- Atur apakah layanan dapat hidup kembali setelah kondisi normal.
+
+ 
+Perubahan pengaturan keamanan atau perlindungan penting harus diautentikasi jika fitur penguncian keamanan diaktifkan.
+ 
+Jika pengguna menonaktifkan perlindungan, tampilkan peringatan risiko yang jelas.
+ 
+Jangan membuat sistem yang mematikan HP secara paksa. Android tidak memberikan aplikasi biasa kewenangan untuk mematikan perangkat secara umum tanpa hak istimewa khusus. Implementasikan penghentian layanan yang dikelola aplikasi.
+ 
+## 9.4. Pemulihan otomatis
+ 
+Ketika kondisi perangkat kembali normal:
+ 
+- Tunggu selama periode stabil yang dapat dikonfigurasi.
+- Periksa ulang resource.
+- Jangan langsung menyalakan semua layanan.
+- Mulai layanan sesuai prioritas.
+- Pastikan tidak ada proses duplikat.
+- Hormati pilihan pengguna untuk tetap berhenti.
+- Jangan menghidupkan layanan yang dimatikan secara manual.
+
+ 
+***
+ 
+# 10. BACKGROUND SERVICE DAN AUTO START
+ 
+Saya ingin sistem hosting dapat berjalan ketika aplikasi berada di background dan, jika memungkinkan, dilanjutkan setelah perangkat menyala kembali.
+ 
+Audit:
+ 
+- SfrServerService.kt.
+- BootReceiver.kt.
+- NotificationHelper.kt.
+- SfrApplication.kt.
+- DataStoreManager.kt.
+- AndroidManifest.xml.
+- Konfigurasi foreground service.
+- Notifikasi.
+- Pengelolaan lifecycle.
+
+ 
+Periksa apakah BootReceiver benar-benar memulai hosting atau hanya menjadwalkan pekerjaan lain.
+ 
+Jangan mengklaim auto-start berfungsi apabila receiver hanya menjalankan sinkronisasi notifikasi.
+ 
+Implementasikan mekanisme yang sesuai dengan versi Android yang ditargetkan.
+ 
+Perhatikan:
+ 
+- Foreground service.
+- Notifikasi wajib.
+- Pembatasan background execution.
+- Izin Android terbaru.
+- Battery optimization.
+- Kondisi startup setelah reboot.
+- Kondisi setelah force-stop.
+- Kondisi setelah aplikasi diperbarui.
+- Izin notifikasi.
+- Batasan produsen perangkat.
+
+ 
+Jangan menjanjikan hosting selalu hidup setelah force-stop. Android dapat membatasi pemulihan otomatis.
+ 
+Jelaskan perilaku yang memang tidak dapat dijamin.
+ 
+Ketika pengguna mengaktifkan auto-start, simpan preferensi dengan benar.
+ 
+Saat boot, periksa preferensi tersebut sebelum menyalakan layanan.
+ 
+Jangan menyalakan layanan yang sengaja dimatikan pengguna.
+ 
+Jangan menjalankan proses berulang akibat beberapa broadcast.
+ 
+Gunakan idempotency dan pencegahan proses duplikat.
+ 
+Pastikan notifikasi foreground service menampilkan status yang benar.
+ 
+***
+ 
+# 11. KEAMANAN PIN, POLA, PASSWORD, DAN SIDIK JARI
+ 
+Aplikasi sudah memiliki AppLockManager.kt.
+ 
+Audit implementasi tersebut secara menyeluruh.
+ 
+Saya ingin ketika pengguna mengaktifkan atau menonaktifkan penguncian keamanan, aplikasi meminta autentikasi yang benar-benar dilakukan oleh Android.
+ 
+Jangan membuat dialog PIN palsu.
+ 
+Jangan membuat tombol yang hanya mengubah status UI.
+ 
+Jangan menyimpan PIN perangkat dalam aplikasi.
+ 
+Gunakan mekanisme autentikasi resmi Android.
+ 
+## 11.1. Perilaku penguncian
+ 
+Ketika pengguna mengaktifkan App Lock:
+ 
+1. Periksa apakah perangkat memiliki secure lock screen.
+2. Jika belum, minta pengguna mengaturnya melalui Android.
+3. Tampilkan autentikasi sistem.
+4. Simpan perubahan hanya setelah autentikasi berhasil.
+5. Jika autentikasi dibatalkan, jangan mengubah pengaturan.
+
+ 
+Ketika pengguna menonaktifkan App Lock:
+ 
+1. Minta autentikasi terlebih dahulu.
+2. Jangan mengubah status sebelum autentikasi berhasil.
+3. Jika autentikasi gagal atau dibatalkan, pertahankan status sebelumnya.
+
+ 
+Jangan membiarkan pengguna melewati autentikasi dengan menekan tombol kembali atau membuka screen lain.
+ 
+## 11.2. Audit seluruh tindakan sensitif
+ 
+Periksa kebutuhan autentikasi untuk:
+ 
+- Mengaktifkan atau menonaktifkan App Lock.
+- Mengaktifkan atau menonaktifkan anti-screenshot.
+- Mengubah konfigurasi Cloudflare.
+- Mengganti token.
+- Menghapus token.
+- Menghapus website.
+- Menghapus database.
+- Menghapus backup.
+- Mengubah pengaturan hosting.
+- Menghentikan atau menghidupkan perlindungan suhu.
+- Mengekspor konfigurasi sensitif.
+- Mengubah pengaturan keamanan.
+
+ 
+Jangan meminta autentikasi untuk setiap tindakan kecil yang tidak berisiko.
+ 
+Buat kebijakan autentikasi yang konsisten.
+ 
+## 11.3. Biometrik
+ 
+Gunakan AndroidX Biometric jika lebih sesuai dengan arsitektur proyek dan versi Android yang didukung.
+ 
+Periksa:
+ 
+- BiometricManager.
+- BiometricPrompt.
+- DEVICE\_CREDENTIAL.
+- Dukungan PIN.
+- Dukungan pola.
+- Dukungan password.
+- Sidik jari.
+- Pembatalan.
+- Timeout.
+- Kegagalan autentikasi.
+- Device tanpa biometric hardware.
+- Perangkat yang tidak memiliki secure lock screen.
+- Versi Android yang lebih lama.
+
+ 
+Jangan mengklaim semua metode tersedia pada semua perangkat.
+ 
+Jika autentikasi sistem tidak tersedia, berikan penjelasan yang benar dan jangan diam-diam melewati pengamanan.
+ 
+Perbaiki fallback autentikasi yang tidak memiliki penanganan hasil yang benar.
+ 
+***
+ 
+# 12. FITUR ANTI-SCREENSHOT
+ 
+Saya ingin fitur anti-screenshot benar-benar bekerja.
+ 
+Audit SecurityScreen.kt, SettingsScreen.kt, SecurityLockScreen.kt, MainActivity.kt, dan seluruh layar yang relevan.
+ 
+Gunakan mekanisme Android yang sesuai, termasuk FLAG\_SECURE pada window yang harus dilindungi.
+ 
+Terapkan perlindungan pada layar sensitif seperti:
+ 
+- Token Cloudflare.
+- Konfigurasi rahasia.
+- Kredensial.
+- Informasi keamanan.
+- Data yang secara eksplisit ditandai sensitif.
+
+ 
+Sediakan pengaturan global atau per layar sesuai desain aplikasi.
+ 
+Jika pengguna mengaktifkan perlindungan global:
+ 
+- Terapkan pada seluruh layar yang memang harus dilindungi.
+- Pastikan perpindahan Activity tidak membuka celah yang tidak disengaja.
+- Periksa Dialog dan window terpisah.
+- Pastikan status konfigurasi dipertahankan.
+- Periksa ketika aplikasi dibuka kembali.
+
+ 
+Jika pengguna ingin menonaktifkan perlindungan, minta autentikasi sesuai kebijakan App Lock.
+ 
+Jangan mengklaim perlindungan terhadap semua bentuk perekaman.
+ 
+Jelaskan batasan: FLAG\_SECURE dapat membatasi screenshot dan perekaman layar Android yang didukung, tetapi bukan jaminan terhadap kamera eksternal atau seluruh mekanisme penangkapan gambar.
+ 
+Jangan merusak fitur yang memang membutuhkan screenshot untuk tujuan debugging yang diizinkan.
+ 
+***
+ 
+# 13. AUDIT TOTAL SELURUH FITUR DUMMY
+ 
+Ini salah satu prioritas paling penting.
+ 
+Jangan hanya memeriksa Cloudflare Tunnel.
+ 
+Periksa semua layar, tombol, switch, dialog, menu, grafik, kartu status, formulir, pengaturan, dan navigasi.
+ 
+Telusuri semua file dalam proyek.
+ 
+Minimal periksa:
+ 
+- MainActivity.kt.
+- SfrApplication.kt.
+- DataStoreManager.kt.
+- DatabaseManager.kt.
+- DomainManager.kt.
+- FileManager.kt.
+- AppLockManager.kt.
+- SfrHttpServer.kt.
+- SfrServerService.kt.
+- PhpExecutionEngine.kt.
+- HtaccessManager.kt.
+- DefaultWebPages.kt.
+- CloudflareTunnelRunner.kt.
+- TunnelManager.kt.
+- BootReceiver.kt.
+- NotificationHelper.kt.
+- NotificationRepository.kt.
+- NotificationSyncWorker.kt.
+- SfrFirebaseMessagingService.kt.
+- SfrFloatingWidgetService.kt.
+- Semua screen di ui/screens.
+- Semua komponen UI.
+- AndroidManifest.xml.
+- Semua konfigurasi Gradle.
+- Resource XML.
+- Test.
+- Dokumentasi.
+
+ 
+Daftar di atas adalah titik awal, bukan daftar yang membatasi pemeriksaan.
+ 
+## 13.1. Kategori audit
+ 
+Klasifikasikan setiap fitur menjadi:
+ 
+A. Berfungsi dan dapat dibuktikan.
+ 
+B. Berfungsi sebagian.
+ 
+C. UI tersedia tetapi implementasi belum lengkap.
+ 
+D. Dummy atau hanya mengubah tampilan.
+ 
+E. Menghasilkan data statis.
+ 
+F. Menghasilkan data palsu.
+ 
+G. Tidak terhubung ke backend.
+ 
+H. Error saat dijalankan.
+ 
+I. Tidak kompatibel dengan Android yang ditargetkan.
+ 
+J. Tidak aman.
+ 
+K. Duplikat atau tidak diperlukan.
+ 
+L. Belum dapat diverifikasi.
+ 
+Jangan menghapus fitur hanya karena implementasinya belum sempurna. Perbaiki jika fitur tersebut masih relevan.
+ 
+Jika fitur benar-benar tidak dapat diterapkan, jelaskan alasan teknisnya dan sediakan status yang transparan.
+ 
+## 13.2. Audit tombol
+ 
+Untuk setiap tombol, periksa:
+ 
+1. Apakah onClick terhubung?
+2. Apakah callback benar-benar melakukan pekerjaan?
+3. Apakah pekerjaan dijalankan pada thread yang sesuai?
+4. Apakah operasi dapat gagal?
+5. Apakah error ditangani?
+6. Apakah status UI diperbarui berdasarkan hasil?
+7. Apakah perubahan disimpan?
+8. Apakah perubahan tetap ada setelah aplikasi dimulai ulang?
+9. Apakah proses dapat dihentikan?
+10. Apakah pengguna mendapatkan feedback yang jelas?
+
+ 
+Jangan membiarkan tombol menampilkan toast sukses tanpa operasi nyata.
+ 
+Jangan membiarkan tombol START mengubah status menjadi ON tanpa menyalakan service.
+ 
+Jangan membiarkan tombol STOP mengubah status menjadi OFF ketika proses sebenarnya masih berjalan.
+ 
+Jangan menggunakan delay buatan untuk mensimulasikan operasi.
+ 
+## 13.3. Audit switch dan pengaturan
+ 
+Setiap switch harus:
+ 
+- Memiliki nilai aktual.
+- Menyimpan nilai dengan benar.
+- Memuat nilai saat aplikasi dibuka.
+- Mengubah perilaku sistem.
+- Menangani kegagalan.
+- Memiliki keterangan yang sesuai.
+
+ 
+Jangan membuat pengaturan yang hanya mengubah boolean tetapi tidak memengaruhi fungsi apa pun.
+ 
+Jika fitur belum tersedia, jangan menampilkan switch seolah-olah fitur sudah aktif.
+ 
+## 13.4. Audit analytics dan grafik
+ 
+Jangan menggunakan data acak. ini
+ 
+Gunakan sumber data aktual jika tersedia.
+ 
+Jika data belum tersedia, tampilkan:
+ 
+- Belum ada data.
+- Pengumpulan data belum dimulai.
+- Fitur membutuhkan izin.
+- Sumber data tidak tersedia.
+
+ 
+Jangan menampilkan statistik traffic, request, uptime, CPU, RAM, atau pengunjung yang dibuat-buat.
+ 
+Jika menghitung statistik dari access logs, jelaskan periode penghitungan dan metode perhitungannya.
+ 
+***
+ 
+# 14. PENGAMANAN TOKEN DAN KONFIGURASI
+ 
+Token Cloudflare merupakan kredensial sensitif.
+ 
+Implementasikan penyimpanan yang aman.
+ 
+Periksa apakah DataStore saat ini menyimpan token dalam plaintext.
+ 
+Jika diperlukan, gunakan penyimpanan terenkripsi dengan desain yang kompatibel dengan Android dan Android Keystore.
+ 
+Jangan menganggap EncryptedSharedPreferences sebagai pilihan otomatis tanpa memeriksa status dukungan dan pemeliharaannya.
+ 
+Jangan menyimpan token di:
+ 
+- Logcat.
+- Crash report.
+- Analytics.
+- File website publik.
+- File konfigurasi yang dapat diakses pengunjung.
+- Source code.
+- Repository.
+- Screenshot.
+- Pesan error.
+- Backup publik.
+
+ 
+Pastikan token tidak bocor melalui exception.
+ 
+Jangan mencetak argumen proses lengkap yang mengandung token.
+ 
+Perhatikan bahwa ketika menggunakan command-line argument `--token`, token berpotensi terlihat pada command line di lingkungan tertentu. Evaluasi risiko pada Android dan pilih pendekatan yang paling aman serta kompatibel dengan cloudflared.
+ 
+Jangan menjanjikan perlindungan sempurna terhadap perangkat yang sudah dikompromikan.
+ 
+Jika token terlanjur terekspos, sediakan panduan untuk merotasi token dari dashboard Cloudflare.
+ 
+Jangan pernah meminta saya menempelkan token asli ke laporan audit.
+ 
+***
+ 
+# 15. KEAMANAN WEB HOSTING
+ 
+Karena website akan dapat diakses dari internet, lakukan audit keamanan menyeluruh.
+ 
+Periksa:
+ 
+- Path traversal.
+- Directory listing.
+- Arbitrary file read.
+- Arbitrary file write.
+- Upload file berbahaya.
+- PHP execution.
+- Command injection.
+- SQL injection pada fitur terkait.
+- Cross-site scripting.
+- CSRF jika terdapat panel admin berbasis web.
+- Autentikasi dashboard.
+- Session handling.
+- Password storage.
+- Directory permissions.
+- Port exposure.
+- Localhost binding.
+- Remote access.
+- Error disclosure.
+- Debug mode.
+- Backup exposure.
+- File konfigurasi.
+- Secret leakage.
+- Batas ukuran request.
+- Rate limiting.
+- Resource exhaustion.
+- Request timeout.
+- Symlink handling.
+- MIME type.
+- Security headers.
+
+ 
+Jangan menambahkan fitur berbahaya hanya demi kemudahan.
+ 
+Jangan membuka terminal root atau shell arbitrer kepada pengunjung website.
+ 
+Jangan memberikan akses internet ke seluruh filesystem Android.
+ 
+Batasi file website pada document root yang sesuai.
+ 
+Jika fitur remote file management tersedia, lindungi dengan autentikasi yang benar.
+ 
+Pastikan endpoint administratif tidak dapat diakses publik tanpa perlindungan yang memadai.
+ 
+***
+ 
+# 16. ARSITEKTUR DAN KUALITAS KODE
+ 
+Lakukan refactoring jika diperlukan agar sistem lebih stabil.
+ 
+Gunakan pembagian tanggung jawab yang jelas.
+ 
+Pisahkan:
+ 
+- UI.
+- State management.
+- Repository.
+- Runtime manager.
+- Service controller.
+- Process manager.
+- Storage.
+- Security.
+- Monitoring.
+- Networking.
+- Error reporting.
+
+ 
+Gunakan Kotlin coroutines secara benar.
+ 
+Hindari:
+ 
+- Global mutable state yang tidak terkontrol.
+- Proses duplikat.
+- Coroutine yang bocor.
+- Job yang tidak pernah dibatalkan.
+- Memory leak.
+- Activity reference yang disimpan terlalu lama.
+- Blocking operasi berat pada main thread.
+- Exception yang diabaikan.
+- Catch-all tanpa logging yang aman.
+- Race condition saat start dan stop.
+- Status yang tidak sinkron.
+- Penggunaan SharedFlow atau StateFlow yang tidak tepat.
+- Callback yang tidak pernah dipanggil.
+- Resource yang tidak ditutup.
+- Socket yang bocor.
+- Proses native yang tidak dibersihkan.
+
+ 
+Gunakan state machine yang konsisten untuk layanan hosting dan tunnel.
+ 
+Jangan menggunakan satu enum status untuk menggambarkan banyak layanan yang dapat berjalan secara bersamaan.
+ 
+Sediakan status independen untuk web server, PHP, database, tunnel, dan perlindungan perangkat.
+ 
+Jika diperlukan, implementasikan ServiceManager atau arsitektur sejenis.
+ 
+Pastikan status UI berasal dari state aktual, bukan dari nilai hardcoded.
+ 
+***
+ 
+# 17. DESAIN UI DAN UX
+ 
+Pertahankan identitas visual SFR Host.
+ 
+Jangan mengganti semua tampilan tanpa alasan.
+ 
+Namun, perbaiki tampilan jika membingungkan atau menampilkan status yang tidak sesuai.
+ 
+Pastikan:
+ 
+- Status ONLINE benar-benar ONLINE.
+- Status OFFLINE benar-benar OFFLINE.
+- Error mudah dibaca.
+- Progres instalasi akurat.
+- Tombol disabled ketika operasi tidak memungkinkan.
+- Tombol loading saat operasi sedang berjalan.
+- Form validasi bekerja.
+- Dialog konfirmasi tersedia untuk operasi destruktif.
+- Pesan kesalahan menjelaskan tindakan yang dapat dilakukan.
+- Informasi teknis tersedia melalui bagian detail.
+- UI tidak crash saat proses background berubah.
+- Navigasi tidak menyebabkan proses kehilangan kendali.
+- Tampilan dapat digunakan pada layar HP kecil.
+
+ 
+Jangan membuat desain yang sekadar menarik tetapi tidak memiliki fungsi.
+ 
+Jangan menghilangkan fitur yang sudah berfungsi hanya untuk menyederhanakan UI.
+ 
+***
+ 
+# 18. KOMPATIBILITAS ANDROID
+ 
+Audit minimum SDK, target SDK, permission, foreground service, penyimpanan, biometrik, dan pembatasan background.
+ 
+Periksa versi Android yang didukung oleh proyek.
+ 
+Jangan menambahkan API yang hanya tersedia pada versi Android baru tanpa fallback yang benar.
+ 
+Periksa kompatibilitas perangkat dengan ABI berbeda.
+ 
+Periksa apakah penggunaan MANAGE\_EXTERNAL\_STORAGE benar-benar diperlukan.
+ 
+Periksa izin foreground service sesuai target SDK.
+ 
+Periksa notifikasi Android 13+.
+ 
+Periksa perilaku Android 14+ dan versi setelahnya jika relevan.
+ 
+Periksa batasan perangkat dengan battery optimization agresif.
+ 
+Jangan menjanjikan perilaku yang tidak dapat dijamin oleh Android.
+ 
+Jika fitur membutuhkan izin khusus, minta izin pada saat yang relevan dengan penjelasan yang jelas.
+ 
+***
+ 
+# 19. PENGUJIAN OTOMATIS DAN MANUAL
+ 
+Buat atau perbarui test untuk memastikan perbaikan tidak hanya bekerja pada UI.
+ 
+Minimal buat pengujian untuk:
+ 
+## Token dan tunnel
+ 
+- Token kosong.
+- Token dengan format tidak sesuai asumsi aplikasi.
+- Token valid yang benar-benar diterima cloudflared.
+- Token tidak valid.
+- Binary tidak ditemukan.
+- Binary tidak executable.
+- Binary salah ABI.
+- Proses gagal dimulai.
+- Proses keluar mendadak.
+- Reconnect.
+- Stop manual.
+- Tidak ada proses duplikat.
+
+ 
+## Instalasi
+ 
+- Unduhan berhasil.
+- Unduhan gagal.
+- Unduhan dibatalkan.
+- File kosong.
+- File korup.
+- Checksum tidak sesuai.
+- File tidak dapat disimpan.
+- Storage penuh.
+- Eksekusi binary gagal.
+
+ 
+## Web server
+ 
+- Start dan stop.
+- Port conflict.
+- HTTP GET.
+- HTTP POST.
+- File statis.
+- 
+
+ 
+
+404. 
+
+ 
+- 
+
+ 
+
+403. 
+
+ 
+- 
+
+ 
+
+500. 
+
+ 
+- Path traversal.
+- Request terlalu besar.
+- Banyak request.
+- Client disconnect.
+
+ 
+## Keamanan
+ 
+- Aktivasi App Lock.
+- Penonaktifan App Lock.
+- Autentikasi dibatalkan.
+- Perangkat tidak memiliki secure lock screen.
+- Anti-screenshot aktif.
+- Anti-screenshot nonaktif.
+- Token tidak muncul dalam log.
+- File rahasia tidak dapat diakses publik.
+
+ 
+## Thermal protection
+ 
+- Thermal status normal.
+- Thermal status meningkat.
+- Shutdown layanan.
+- Auto reconnect diblokir selama shutdown.
+- Pemulihan setelah kondisi normal.
+- Preferensi penghentian manual dihormati.
+
+ 
+## Background service
+ 
+- Aplikasi berpindah ke background.
+- Notifikasi.
+- Stop service.
+- Restart aplikasi.
+- Boot behavior jika dapat diuji.
+- Pencegahan proses duplikat.
+
+ 
+Jangan menganggap unit test cukup untuk membuktikan seluruh fitur Android.
+ 
+Gunakan instrumented test dan pengujian perangkat nyata jika tersedia.
+ 
+Jika tidak tersedia, jelaskan bagian yang belum teruji.
+ 
+***
+ 
+# 20. PROSEDUR AUDIT WAJIB
+ 
+Kerjakan secara sistematis.
+ 
+## Tahap A: Inventarisasi proyek
+ 
+1. Baca seluruh struktur ZIP.
+2. Baca source code yang relevan.
+3. Identifikasi modul, dependency, dan resource.
+4. Periksa manifest.
+5. Periksa konfigurasi Gradle.
+6. Identifikasi semua fitur.
+7. Identifikasi dependensi antarf fitur.
+8. Identifikasi konfigurasi yang sudah tersedia.
+9. Jangan menebak isi file yang belum dibaca.
+
+ 
+## Tahap B: Buat matriks audit
+ 
+Untuk setiap fitur, catat:
+ 
+- Nama fitur.
+- File terkait.
+- Implementasi saat ini.
+- Bug.
+- Penyebab.
+- Risiko.
+- Perbaikan.
+- File yang perlu diubah.
+- Test yang diperlukan.
+- Status hasil verifikasi.
+
+ 
+Prioritaskan bug yang menyebabkan:
+ 
+1. Aplikasi tidak dapat dibangun.
+2. Cloudflare tidak dapat dijalankan.
+3. Hosting tidak berfungsi.
+4. Keamanan gagal.
+5. Kehilangan data.
+6. Background service gagal.
+7. Fitur utama tidak berfungsi.
+8. Fitur tambahan tidak berfungsi.
+9. UI dan UX.
+
+ 
+## Tahap C: Perbaikan bertahap
+ 
+Jangan melakukan perubahan besar secara acak.
+ 
+Perbaiki secara berkelompok:
+ 
+1. Build dan dependency.
+2. Cloudflare runtime.
+3. Instalasi binary.
+4. Token dan keamanan.
+5. Web server.
+6. PHP dan database.
+7. Process management.
+8. Thermal protection.
+9. Background service.
+10. File management.
+11. Domain dan routing.
+12. Authentication dan anti-screenshot.
+13. Fitur tambahan.
+14. UI.
+15. Pengujian akhir.
+
+ 
+Setelah setiap kelompok perubahan, periksa apakah perubahan merusak modul lain.
+ 
+## Tahap D: Audit ulang
+ 
+Setelah perbaikan, lakukan pemeriksaan kedua.
+ 
+Cari:
+ 
+- Bug yang belum terselesaikan.
+- Tombol dummy yang tersisa.
+- Callback yang belum terhubung.
+- Fitur yang hanya sebagian berfungsi.
+- Data palsu.
+- Error handling yang tidak memadai.
+- Pengaturan yang tidak persisten.
+- Proses background yang bocor.
+- Ketidaksesuaian dokumentasi.
+- Fitur keamanan yang belum diterapkan secara menyeluruh.
+
+ 
+Jangan menyatakan audit selesai hanya karena daftar awal telah dikerjakan.
+ 
+***
+ 
+# 21. OUTPUT YANG WAJIB DIHASILKAN
+ 
+Saya membutuhkan hasil yang konkret.
+ 
+## Output 1: Audit report
+ 
+Buat laporan lengkap berisi:
+ 
+- Temuan.
+- File terkait.
+- Penyebab.
+- Dampak.
+- Tingkat prioritas.
+- Solusi.
+- Status perbaikan.
+- Bukti pengujian.
+
+ 
+## Output 2: Source code yang diperbaiki
+ 
+Ubah file proyek yang benar-benar memerlukan perubahan.
+ 
+Jangan hanya memberikan contoh implementasi yang tidak terhubung ke proyek.
+ 
+Jangan menghilangkan fitur yang masih dibutuhkan.
+ 
+Jangan menimpa file yang sudah benar tanpa alasan.
+ 
+## Output 3: Daftar perubahan
+ 
+Catat:
+ 
+- File baru.
+- File yang diubah.
+- File yang dihapus.
+- Alasan perubahan.
+- Hubungan perubahan dengan bug.
+- Dampak terhadap fitur lain.
+
+ 
+## Output 4: Pengujian
+ 
+Jalankan pengujian yang dapat dilakukan.
+ 
+Laporkan:
+ 
+- Build berhasil atau gagal.
+- Unit test berhasil atau gagal.
+- Instrumented test yang dapat dijalankan.
+- Masalah yang belum teratasi.
+- Pengujian yang memerlukan perangkat nyata.
+- Pengujian yang memerlukan kredensial atau konfigurasi pengguna.
+
+ 
+Jangan mengarang hasil build.
+ 
+## Output 5: Proyek akhir
+ 
+Pertahankan struktur proyek Android yang valid.
+ 
+Pastikan perubahan dapat diintegrasikan kembali ke source code.
+ 
+Jika lingkungan mendukung pengeditan dan pembuatan file, hasilkan arsip ZIP proyek akhir yang berisi source code lengkap dan perubahan aktual.
+ 
+Jangan mengganti source code dengan README atau laporan saja.
+ 
+Jangan memasukkan token Cloudflare asli, kredensial, keystore, atau rahasia pengguna ke dalam arsip.
+ 
+## Output 6: Panduan penggunaan
+ 
+Buat panduan penggunaan singkat untuk:
+ 
+- Memasang APK.
+- Memberikan izin yang diperlukan.
+- Menyiapkan folder SFR Host.
+- Memasang cloudflared.
+- Memasukkan token.
+- Mengonfigurasi public hostname.
+- Menyalakan hosting.
+- Menyalakan tunnel.
+- Memeriksa website dari jaringan eksternal.
+- Menggunakan auto reconnect.
+- Mengaktifkan perlindungan suhu.
+- Mengaktifkan App Lock.
+- Mengaktifkan anti-screenshot.
+- Melihat log error.
+- Mengatasi masalah umum.
+
+ 
+***
+ 
+# 22. ATURAN PENTING SELAMA PENGERJAAN
+ 
+1. Jangan hanya menjelaskan teori.
+2. Jangan berhenti setelah menemukan bug pertama.
+3. Jangan hanya mengubah UI.
+4. Jangan membuat status sukses palsu.
+5. Jangan membuat data monitoring palsu.
+6. Jangan membuat fungsi dummy baru.
+7. Jangan menganggap token salah hanya karena gagal didekode sebagai Base64.
+8. Jangan menganggap token valid hanya karena inputnya diterima.
+9. Jangan menganggap arm64-v8a menjamin binary kompatibel.
+10. Jangan menganggap setExecutable() menjamin proses dapat dijalankan.
+11. Jangan memaksa pengguna melakukan root.
+12. Jangan menonaktifkan keamanan Android.
+13. Jangan menghapus fitur yang masih berfungsi tanpa alasan.
+14. Jangan mengubah applicationId tanpa kebutuhan yang jelas.
+15. Jangan menghapus konfigurasi penting.
+16. Jangan memasukkan kredensial ke source code.
+17. Jangan menyimpan token dalam folder publik.
+18. Jangan menampilkan token dalam log.
+19. Jangan menyatakan build berhasil jika belum dijalankan.
+20. Jangan menyatakan fitur berhasil jika belum diverifikasi.
+21. Jangan menyembunyikan keterbatasan platform.
+22. Jangan mengganti seluruh proyek dengan template generik.
+23. Jangan berhenti pada rencana implementasi jika Anda memiliki kemampuan untuk langsung mengubah source code.
+24. Jika terdapat informasi yang belum diketahui, periksa source code atau dokumentasi resmi terlebih dahulu.
+25. Jika suatu perubahan memerlukan keputusan yang tidak dapat ditentukan dari proyek, jelaskan asumsi yang dipakai.
+26. Jika lingkungan Anda tidak mendukung pengeditan langsung, berikan patch atau file lengkap yang tepat untuk diterapkan.
+27. Pertahankan perubahan yang sudah benar dan hindari regresi.
+28. Jangan meminta saya mengirim token asli untuk debugging.
+29. Jangan menonaktifkan validasi TLS atau verifikasi integritas binary.
+30. Jangan membuat fitur keamanan yang hanya terlihat aktif pada UI.
+
+ 
+***
+ 
+# 23. KRITERIA KEBERHASILAN AKHIR
+ 
+Proyek hanya boleh dinyatakan selesai jika setiap kriteria memiliki status yang jelas.
+ 
+A. Source code telah diperiksa secara menyeluruh sesuai ruang lingkup proyek.
+ 
+B. Error permission denied telah diinvestigasi sampai penyebabnya diketahui atau keterbatasan lingkungan dijelaskan.
+ 
+C. Instalasi dan eksekusi cloudflared telah diperbaiki atau hambatan platform yang tersisa telah dibuktikan.
+ 
+D. Validasi token tidak lagi menolak token hanya karena asumsi format Base64 yang keliru.
+ 
+E. Autentikasi token diuji melalui cloudflared dan koneksi Cloudflare yang sebenarnya.
+ 
+F. Lokasi penyimpanan dan permission Android bekerja sesuai desain.
+ 
+G. Web server dapat dinyalakan dan dihentikan dengan status aktual.
+ 
+H. Tunnel dan hosting dapat berjalan bersamaan ketika kondisi perangkat memungkinkan.
+ 
+I. Status tunnel tidak menjadi CONNECTED sebelum ada bukti koneksi yang memadai.
+ 
+J. Auto reconnect tidak menghasilkan proses duplikat.
+ 
+K. Thermal protection mengendalikan layanan nyata.
+ 
+L. Auto-start mematuhi batasan Android dan preferensi pengguna.
+ 
+M. App Lock menggunakan autentikasi sistem yang benar.
+ 
+N. Anti-screenshot diterapkan pada layar yang ditentukan.
+ 
+O. Tidak ada token yang bocor melalui log atau penyimpanan publik.
+ 
+P. Seluruh fitur dummy yang ditemukan telah diperbaiki, dihapus secara terencana, atau ditandai belum didukung beserta alasannya.
+ 
+Q. Tidak ada klaim pengujian yang dibuat-buat.
+ 
+R. Build dan pengujian telah dijalankan sejauh lingkungan memungkinkan.
+ 
+S. Dokumentasi mencerminkan kemampuan aplikasi yang sebenarnya.
+ 
+T. Hasil akhir mencakup source code yang telah diperbaiki, bukan hanya laporan.
+ 
+***
+ 
+# 24. INSTRUKSI MULAI
+ 
+Mulai sekarang dengan membaca dan menginventarisasi seluruh proyek ZIP yang saya berikan.
+ 
+Jangan langsung menulis ulang aplikasi.
+ 
+Mulailah dengan audit source code aktual.
+ 
+Identifikasi bug konkret, termasuk kesalahan validasi token, masalah eksekusi binary, implementasi background service, penyimpanan, keamanan, dan fitur dummy.
+ 
+Buat matriks audit.
+ 
+Setelah itu, perbaiki implementasi secara bertahap, jalankan pengujian yang tersedia, audit ulang, dan siapkan source code akhir.
+ 
+Jika satu respons tidak cukup, lanjutkan pekerjaan secara terstruktur. Jangan menghilangkan tahap audit, implementasi, atau verifikasi hanya demi menghasilkan jawaban yang lebih singkat.
+ 
+Saya menginginkan aplikasi SFR Host yang benar-benar bekerja, bukan sekadar aplikasi dengan banyak menu dan tombol yang tampak berfungsi.
+ 
+**Prioritas utama: implementasi nyata, kompatibilitas Android, keamanan, kestabilan, transparansi status, dan hasil yang dapat diverifikasi.**
+ 
+***
+ 
+## 🛠️ Cara menggunakan prompt ini di Google AI Studio
+ 
+1. Buka .
+2. Buat percakapan baru menggunakan model yang mendukung analisis dan coding.
+3. Lampirkan ZIP `sfr-host-main (3).zip` jika ukuran dan formatnya didukung. Jika tidak, ekstrak proyek dan gunakan kemampuan unggah file atau lingkungan coding yang tersedia.
+4. Tempelkan seluruh prompt di atas.
+5. Minta AI memeriksa file proyek sebelum melakukan perubahan.
+6. Jika AI hanya memberikan laporan atau rencana, minta implementasi langsung pada source code menggunakan lingkungan yang tersedia.
+
+ 
+**Penting:** Kemampuan mengunggah ZIP dan mengedit banyak file sekaligus bergantung pada mode dan fitur AI Studio yang sedang digunakan. Prompt ini tidak otomatis memberikan akses untuk mengubah file lokal di HP lu.
+ 
+***
+ 
+## ⚠️ Satu hal yang menurut gw paling penting
+ 
+Jangan buru-buru memindahkan binary `cloudflared` ke folder Download lalu berharap error-nya selesai.
+ 
+Error yang muncul adalah:
+ 
+`error=13, Permission denied`
+ 
+Sedangkan aplikasi sekarang menggunakan lokasi:
+ 
+`/data/user/0/com.sfrhostapp/files/bin/cloudflared`
+ 
+Ada kemungkinan masalahnya berhubungan dengan kebijakan eksekusi Android, tetapi penyebab pastinya harus dibuktikan. Memindahkan binary ke penyimpanan bersama juga belum tentu menyelesaikannya, karena Android dapat membatasi eksekusi file dari lokasi tersebut.
+ 
+Selain itu, kalau lu ingin pendekatan seperti teman lu yang menggunakan Termux, AI harus mengevaluasi integrasi runtime secara realistis. **Binary Linux untuk Debian tidak otomatis bisa dijalankan langsung oleh aplikasi Android biasa.** Kebutuhan dynamic linker, dependensi, dan pembatasan eksekusi harus diperhitungkan.
+ 
+Terakhir, karena lu menginginkan audit tanpa terkecuali, jangan puas hanya dengan tampilan yang bagus dan tombol yang berubah warna. Pastikan AI menghasilkan perubahan source code yang nyata, laporan pengujian, serta daftar fitur yang masih belum dapat diverifikasi. 🔥

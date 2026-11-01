@@ -39,6 +39,9 @@ object PrefKeys {
     val PHP_MEMORY_LIMIT = stringPreferencesKey("php_memory_limit") // 128M, 256M, 512M
     val PHP_UPLOAD_MAX = stringPreferencesKey("php_upload_max") // 10M, 50M, 100M
     val PHP_DISPLAY_ERRORS = booleanPreferencesKey("php_display_errors")
+    val THERMAL_PROTECTION_ENABLED = booleanPreferencesKey("thermal_protection_enabled")
+    val THERMAL_AUTO_REDUCE = booleanPreferencesKey("thermal_auto_reduce")
+    val THERMAL_CRITICAL_CUTOFF = booleanPreferencesKey("thermal_critical_cutoff")
 }
 
 class DataStoreManager(private val context: Context) {
@@ -242,5 +245,29 @@ class DataStoreManager(private val context: Context) {
 
     suspend fun setPhpDisplayErrors(display: Boolean) {
         context.dataStore.edit { it[PrefKeys.PHP_DISPLAY_ERRORS] = display }
+    }
+
+    val thermalProtectionEnabled: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[PrefKeys.THERMAL_PROTECTION_ENABLED] ?: true
+    }
+
+    suspend fun setThermalProtectionEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[PrefKeys.THERMAL_PROTECTION_ENABLED] = enabled }
+    }
+
+    val thermalAutoReduce: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[PrefKeys.THERMAL_AUTO_REDUCE] ?: true
+    }
+
+    suspend fun setThermalAutoReduce(enabled: Boolean) {
+        context.dataStore.edit { it[PrefKeys.THERMAL_AUTO_REDUCE] = enabled }
+    }
+
+    val thermalCriticalCutoff: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[PrefKeys.THERMAL_CRITICAL_CUTOFF] ?: true
+    }
+
+    suspend fun setThermalCriticalCutoff(enabled: Boolean) {
+        context.dataStore.edit { it[PrefKeys.THERMAL_CRITICAL_CUTOFF] = enabled }
     }
 }

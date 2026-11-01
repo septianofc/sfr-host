@@ -22,13 +22,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import android.app.Activity
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.VisibilityOff
+import com.example.monitoring.DeviceThermalManager
+import com.example.monitoring.ThermalLevel
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -76,10 +80,26 @@ fun SecurityScreen(
     val scope = rememberCoroutineScope()
     val dataStore = remember { DataStoreManager(context) }
 
+    fun findActivity(ctx: Context): Activity? {
+        var current: Context = ctx
+        while (current is android.content.ContextWrapper) {
+            if (current is Activity) return current
+            current = current.baseContext
+        }
+        return null
+    }
+
     val isLockEnabled by appLockManager.isLockEnabled.collectAsState(initial = false)
     val isDeviceSecure = remember { appLockManager.isDeviceSecure() }
     val screenshotProtection by dataStore.screenshotProtection.collectAsState(initial = false)
     val lockTimeoutMode by dataStore.lockTimeoutMode.collectAsState(initial = "IMMEDIATELY")
+
+    val thermalManager = remember { DeviceThermalManager(context) }
+    val currentTemp by thermalManager.temperatureCelsius.collectAsState()
+    val thermalLevel by thermalManager.thermalLevel.collectAsState()
+    val thermalProtectionEnabled by dataStore.thermalProtectionEnabled.collectAsState(initial = true)
+    val thermalAutoReduce by dataStore.thermalAutoReduce.collectAsState(initial = true)
+    val thermalCriticalCutoff by dataStore.thermalCriticalCutoff.collectAsState(initial = true)
 
     var rateLimitEnabled by remember { mutableStateOf(true) }
     var traversalGuardEnabled by remember { mutableStateOf(true) }
@@ -101,7 +121,7 @@ fun SecurityScreen(
                     color = SfrPrimaryBlue
                 )
                 Text(
-                    text = "Keamanan bawaan Android (Sidik Jari / PIN / Pola HP) dan proteksi server",
+                    text = "Keamanan bawaan Android (Sidik Jari / PIN / Pola HP) dan proteksi hardware server",
                     style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.outline)
                 )
             }
@@ -135,7 +155,7 @@ fun SecurityScreen(
                             Column {
                                 Text("Kunci Aplikasi (App Lock)", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                 Text(
-                                    if (isLockEnabled) "Aktif (Sidik Jari & Kunci Layar HP)" else "Nonaktif",
+                                    if (isLockEnabled) "Aktif (Wajib Sidik Jari / PIN HP)" else "Nonaktif",
                                     fontSize = 11.sp,
                                     color = if (isLockEnabled) StatusOnlineGreen else MaterialTheme.colorScheme.outline
                                 )
@@ -145,8 +165,25 @@ fun SecurityScreen(
                         Switch(
                             checked = isLockEnabled,
                             onCheckedChange = { enabled ->
-                                if (enabled && !appLockManager.isDeviceSecure()) {
+                                val activity = findActivity(context)
+                                if (!appLockManager.isDeviceSecure()) {
                                     Toast.makeText(context, "Perangkat belum memiliki Kunci Layar. Aktifkan PIN/Pola di pengaturan HP terlebih dahulu.", Toast.LENGTH_LONG).show()
+                                } else if (activity != null) {
+                                    appLockManager.authenticateWithDevice(
+                                        activity = activity,
+                                        onSuccess = {
+                                            scope.launch {
+                                                appLockManager.setLockEnabled(enabled)
+                                                Toast.makeText(context, if (enabled) "App Lock diaktifkan (Verifikasi Berhasil)!" else "App Lock dinonaktifkan (Verifikasi Berhasil)!", Toast.LENGTH_SHORT).show()
+                                            }
+                                        },
+                                        onCancel = {
+                                            Toast.makeText(context, "Verifikasi sidik jari/PIN dibatalkan. Pengaturan tidak diubah.", Toast.LENGTH_SHORT).show()
+                                        },
+                                        onError = { err ->
+                                            Toast.makeText(context, "Verifikasi gagal: $err", Toast.LENGTH_SHORT).show()
+                                        }
+                                    )
                                 } else {
                                     scope.launch { appLockManager.setLockEnabled(enabled) }
                                 }
@@ -188,13 +225,137 @@ fun SecurityScreen(
                         Switch(
                             checked = screenshotProtection,
                             onCheckedChange = { checked ->
-                                scope.launch { dataStore.setScreenshotProtection(checked) }
+                                val activity = findActivity(context)
+                                if (isLockEnabled && activity != null) {
+                                    appLockManager.authenticateWithDevice(
+                                        activity = activity,
+                                        onSuccess = {
+                                            scope.launch {
+                                                dataStore.setScreenshotProtection(checked)
+                                                Toast.makeText(context, if (checked) "Proteksi Layar diaktifkan!" else "Proteksi Layar dinonaktifkan!", Toast.LENGTH_SHORT).show()
+                                            }
+                                        },
+                                        onCancel = {
+                                            Toast.makeText(context, "Verifikasi dibatalkan.", Toast.LENGTH_SHORT).show()
+                                        },
+                                        onError = { err ->
+                                            Toast.makeText(context, "Verifikasi gagal: $err", Toast.LENGTH_SHORT).show()
+                                        }
+                                    )
+                                } else {
+                                    scope.launch { dataStore.setScreenshotProtection(checked) }
+                                }
                             },
                             colors = SwitchDefaults.colors(
                                 checkedThumbColor = Color.White,
                                 checkedTrackColor = SfrButtonColors.PrimaryBlue
                             )
                         )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Divider()
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Proteksi Suhu Hardware (Thermal Protection)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        when (thermalLevel) {
+                                            ThermalLevel.NORMAL -> StatusOnlineGreen.copy(alpha = 0.12f)
+                                            ThermalLevel.WARM -> SfrSecondaryOrange.copy(alpha = 0.15f)
+                                            ThermalLevel.HOT -> SfrSecondaryOrange.copy(alpha = 0.25f)
+                                            ThermalLevel.CRITICAL -> StatusOfflineRed.copy(alpha = 0.25f)
+                                        }
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Thermostat,
+                                    contentDescription = null,
+                                    tint = when (thermalLevel) {
+                                        ThermalLevel.NORMAL -> StatusOnlineGreen
+                                        ThermalLevel.WARM -> SfrSecondaryOrange
+                                        ThermalLevel.HOT -> SfrSecondaryOrange
+                                        ThermalLevel.CRITICAL -> StatusOfflineRed
+                                    },
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text("Proteksi Suhu HP", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                Text("Sensor: ${currentTemp}°C (${thermalLevel.label})", fontSize = 11.sp, color = MaterialTheme.colorScheme.outline)
+                            }
+                        }
+
+                        Switch(
+                            checked = thermalProtectionEnabled,
+                            onCheckedChange = { checked ->
+                                val activity = findActivity(context)
+                                if (isLockEnabled && activity != null) {
+                                    appLockManager.authenticateWithDevice(
+                                        activity = activity,
+                                        onSuccess = {
+                                            scope.launch { dataStore.setThermalProtectionEnabled(checked) }
+                                        },
+                                        onCancel = {},
+                                        onError = { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
+                                    )
+                                } else {
+                                    scope.launch { dataStore.setThermalProtectionEnabled(checked) }
+                                }
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = SfrPrimaryBlue
+                            )
+                        )
+                    }
+
+                    if (thermalProtectionEnabled) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Batasi ke 1 Website saat Panas", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                                Text("Kurangi beban saat suhu ≥44°C", fontSize = 10.sp, color = MaterialTheme.colorScheme.outline)
+                            }
+                            Switch(
+                                checked = thermalAutoReduce,
+                                onCheckedChange = { scope.launch { dataStore.setThermalAutoReduce(it) } },
+                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = SfrPrimaryBlue)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("Matikan Total saat Panas Kritis", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                                Text("Stop darurat saat suhu ≥48°C", fontSize = 10.sp, color = MaterialTheme.colorScheme.outline)
+                            }
+                            Switch(
+                                checked = thermalCriticalCutoff,
+                                onCheckedChange = { scope.launch { dataStore.setThermalCriticalCutoff(it) } },
+                                colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = StatusOfflineRed)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))

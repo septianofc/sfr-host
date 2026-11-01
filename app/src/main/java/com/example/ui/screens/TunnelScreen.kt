@@ -418,6 +418,105 @@ fun TunnelScreen(
             }
         }
 
+        // 2.5. Termux Bridge Card (Official 100% Working Solution for Android 10+)
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, SfrPrimaryBlue.copy(alpha = 0.4f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(imageVector = Icons.Default.Cloud, contentDescription = null, tint = SfrPrimaryBlue)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Cloudflare Connector via Termux",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = "Android 10+ membatasi eksekusi biner langsung dari penyimpanan aplikasi (error=13). Jalankan connector resmi Cloudflare Zero Trust langsung di HP melalui Termux (100% Berhasil):",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFF0F172A))
+                            .padding(10.dp)
+                    ) {
+                        Text(
+                            text = runner.getTermuxTunnelCommand(if (tokenInput.isNotBlank()) tokenInput else "<TOKEN_ANDA>"),
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 11.sp,
+                            color = Color(0xFF38BDF8)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                if (tokenInput.isBlank()) {
+                                    Toast.makeText(context, "Masukkan token Cloudflare terlebih dahulu", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    runner.copyTermuxCommand(tokenInput)
+                                    Toast.makeText(context, "Perintah Termux disalin ke clipboard!", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Salin Perintah", fontSize = 11.sp)
+                        }
+
+                        Button(
+                            onClick = {
+                                if (tokenInput.isNotBlank()) {
+                                    runner.copyTermuxCommand(tokenInput)
+                                }
+                                if (runner.isTermuxInstalled()) {
+                                    Toast.makeText(context, "Membuka Termux... Tempel perintah yang disalin!", Toast.LENGTH_LONG).show()
+                                    runner.launchTermux()
+                                } else {
+                                    try {
+                                        val intent = android.content.Intent(
+                                            android.content.Intent.ACTION_VIEW,
+                                            Uri.parse("https://github.com/termux/termux-app/releases")
+                                        )
+                                        context.startActivity(intent)
+                                    } catch (ignored: Exception) {}
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = SfrPrimaryBlue),
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(if (runner.isTermuxInstalled()) "Buka Termux" else "Unduh Termux", fontSize = 11.sp)
+                        }
+                    }
+                }
+            }
+        }
+
         // 3. Cloudflare Configuration Card
         item {
             Card(

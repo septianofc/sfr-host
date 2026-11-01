@@ -14,7 +14,9 @@ import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import com.example.MainActivity
 import com.example.R
+import com.example.data.DataStoreManager
 import com.example.files.FileManager
+import com.example.monitoring.DeviceThermalManager
 import com.example.tunnel.TunnelManager
 import com.example.util.NetworkUtils
 import kotlinx.coroutines.CoroutineScope
@@ -26,6 +28,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.File
@@ -35,6 +38,7 @@ class SfrServerService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var wakeLock: PowerManager.WakeLock? = null
     private var notificationTickerJob: Job? = null
+    private var thermalManager: DeviceThermalManager? = null
 
     companion object {
         const val CHANNEL_ID = "sfrhost_server"
@@ -72,6 +76,39 @@ class SfrServerService : Service() {
         val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
         wakeLock = powerManager?.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SfrHost::ServerWakeLock")
         wakeLock?.acquire(24 * 60 * 60 * 1000L) // Safe 24h timeout
+
+        val dataStore = DataStoreManager(this)
+        thermalManager = DeviceThermalManager(
+            context = this,
+            onHotState = {
+                serviceScope.launch {
+                    val enabled = dataStore.thermalProtectionEnabled.first()
+                    val autoReduce = dataStore.thermalAutoReduce.first()
+                    if (enabled && autoReduce) {
+                        if (_currentWebsite.value != "website1") {
+                            _currentWebsite.value = "website1"
+                            currentServerInstance?.stop()
+                            val websiteDir = FileManager(applicationContext).getWebsiteDirectory("website1")
+                            val newServer = SfrHttpServer(_currentPort.value, websiteDir)
+                            if (newServer.start()) {
+                                currentServerInstance = newServer
+                            }
+                        }
+                    }
+                }
+            },
+            onCriticalState = {
+                serviceScope.launch {
+                    val enabled = dataStore.thermalProtectionEnabled.first()
+                    val cutoff = dataStore.thermalCriticalCutoff.first()
+                    if (enabled && cutoff) {
+                        stopServerInternal()
+                        stopForeground(STOP_FOREGROUND_REMOVE)
+                        stopSelf()
+                    }
+                }
+            }
+        )
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

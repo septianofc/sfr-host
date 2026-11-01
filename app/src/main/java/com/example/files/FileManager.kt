@@ -81,42 +81,74 @@ data class FileItem(
 
 class FileManager(private val context: Context) {
 
-    val rootBaseDir: File
+    val sfrHostDir: File
         get() {
             val state = Environment.getExternalStorageState()
             if (state == Environment.MEDIA_MOUNTED) {
                 try {
-                    val sharedDir = File(Environment.getExternalStorageDirectory(), "SFRHost/websites")
-                    if (sharedDir.exists() || sharedDir.mkdirs()) {
-                        return sharedDir
+                    val downloadFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                    val sfrFolder = File(downloadFolder, "SFR Host")
+                    if (sfrFolder.exists() || sfrFolder.mkdirs()) {
+                        return sfrFolder
                     }
                 } catch (ignored: Exception) {}
 
                 try {
-                    val appExtDir = context.getExternalFilesDir("SFRHost/websites")
-                    if (appExtDir != null && (appExtDir.exists() || appExtDir.mkdirs())) {
-                        return appExtDir
+                    val appExt = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+                    val sfrFolder = File(appExt, "SFR Host")
+                    if (sfrFolder.exists() || sfrFolder.mkdirs()) {
+                        return sfrFolder
                     }
                 } catch (ignored: Exception) {}
             }
 
-            return File(context.filesDir, "SFRHost/websites").apply {
+            return File(context.filesDir, "SFR Host").apply {
                 if (!exists()) mkdirs()
             }
         }
 
+    val rootBaseDir: File
+        get() = File(sfrHostDir, "websites").apply { if (!exists()) mkdirs() }
+
+    val binDir: File
+        get() = File(sfrHostDir, "bin").apply { if (!exists()) mkdirs() }
+
+    val logsDir: File
+        get() = File(sfrHostDir, "logs").apply { if (!exists()) mkdirs() }
+
+    val backupsDir: File
+        get() = File(sfrHostDir, "backups").apply { if (!exists()) mkdirs() }
+
+    val exportsDir: File
+        get() = File(sfrHostDir, "exports").apply { if (!exists()) mkdirs() }
+
+    val configDir: File
+        get() = File(sfrHostDir, "config").apply { if (!exists()) mkdirs() }
+
     val storageLocationDescription: String
         get() {
-            val path = rootBaseDir.absolutePath
+            val path = sfrHostDir.absolutePath
             return when {
-                path.startsWith("/storage/emulated/0") || path.startsWith("/sdcard") -> "Penyimpanan Bersama HP (/sdcard/SFRHost/websites)"
-                path.contains("/Android/data/") -> "Penyimpanan Eksternal Aplikasi"
+                path.startsWith("/storage/emulated/0") || path.startsWith("/sdcard") -> "Penyimpanan HP (Download/SFR Host)"
+                path.contains("/Android/data/") -> "Penyimpanan Eksternal Aplikasi (Download/SFR Host)"
                 else -> "Penyimpanan Internal Aplikasi"
             }
         }
 
     init {
+        initializeDirectories()
         initializeSampleWebsitesIfNeeded()
+    }
+
+    fun initializeDirectories() {
+        try {
+            binDir.mkdirs()
+            rootBaseDir.mkdirs()
+            logsDir.mkdirs()
+            backupsDir.mkdirs()
+            exportsDir.mkdirs()
+            configDir.mkdirs()
+        } catch (ignored: Exception) {}
     }
 
     fun initializeSampleWebsitesIfNeeded() {
